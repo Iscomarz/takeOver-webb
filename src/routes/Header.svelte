@@ -2,6 +2,14 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/takeover-logo.png';
 	import github from '$lib/images/github.svg';
+	import {onMount} from 'svelte';
+
+	let showHeader = false;
+
+	$: currentPath = $page.url.pathname;
+
+	$: showHeader = currentPath !== '/';
+
 </script>
 
 <header>
@@ -11,10 +19,11 @@
 		</a>
 	</div>
 
+	{#if showHeader}
 	<nav>	
 		<ul>
-			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
-				<a href="/">TICKETS</a>
+			<li aria-current={$page.url.pathname === '/tickets' ? 'page' : undefined}>
+				<a href="/tickets">TICKETS</a>
 			</li>
 			<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
 				<a href="/about">ABOUT TAKE OVER</a>
@@ -27,6 +36,7 @@
 			</li>
 		</ul>	
 	</nav>
+	{/if}
 
 	<div class="corner">
 		<a href="https://github.com/sveltejs/kit">
@@ -38,7 +48,7 @@
 <style>
 	header {
 		display: flex;
-		justify-content: space-between;
+		justify-content: space-around;
 	}
 
 	.corner {
@@ -64,6 +74,7 @@
 		display: flex;
 		justify-content: center;
 		--background: rgba(255, 255, 255, 0.7);
+		width: 70%;
 	}
 
 	svg {
@@ -83,7 +94,7 @@
 		width: 80%;
 		height: 4em;
 		display: flex;
-		justify-content: center;
+		justify-content: space-evenly;
 		align-items: center;
 		list-style: none;
 		background: var(--background);
@@ -122,7 +133,8 @@
 		transition: color 0.2s linear;
 	}
 
-	a:hover {
+	nav a:hover{
 		color: var(--color-theme-1);
 	}
+
 </style>

@@ -1,5 +1,4 @@
 <script>
-  import Counter from "./Counter.svelte";
   import welcome from "$lib/images/takeover-logo.png";
   import welcome_fallback from "$lib/images/svelte-welcome.png";
 </script>
@@ -8,6 +7,7 @@
   <title>HOME</title>
   <meta name="description" content="Svelte demo app" />
 </svelte:head>
+
 <div class="centro">
   <div>
     <section id="welcome">
@@ -17,10 +17,10 @@
 
     <section id="navMenu">
       <ul>
-        <li><a href="">TICKETS</a></li>
-        <li><a href="">ABOUT TAKE OVER</a></li>
-        <li><a href="">CREW</a></li>
-        <li><a href="">CONTACT</a></li>
+        <li><a class="link" href="/tickets">TICKETS</a></li>
+        <li><a class="link" href="about">ABOUT TAKE OVER</a></li>
+        <li><a class="link" href="crew">CREW</a></li>
+        <li><a class="link" href="contact">CONTACT</a></li>
       </ul>
     </section>
   </div>
@@ -65,20 +65,8 @@
     gap: 80px;
   }
 
-  ul li a {
+  .link {
     color: whitesmoke;
-  }
-
-  @font-face {
-    font-family: Blacklisted;
-    src: url(../lib/fonts/Blacklisted.ttf) format("truetype");
-  }
-  @font-face {
-    font-family: JockeyOne;
-    src: url(../lib/fonts/jockey-one.regular.ttf) format("truetype");
-  }
-  @font-face {
-    font-family: JostRegular;
-    src: url(../lib/fonts/static/Jost-Regular.ttf) format("truetype");
+	font-family: "JostRegular";
   }
 </style>

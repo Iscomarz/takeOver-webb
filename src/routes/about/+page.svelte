@@ -3,24 +3,56 @@
 	<meta name="description" content="About this app" />
 </svelte:head>
 
-<div class="text-column">
-	<h1>About this app</h1>
+<div class="general">
+	<h1>About Take Over</h1>
 
-	<p>
-		This is a <a href="https://kit.svelte.dev">SvelteKit</a> app. You can make your own by typing the
-		following into your command line and following the prompts:
-	</p>
-
-	<pre>npm create svelte@latest</pre>
-
-	<p>
-		The page you're looking at is purely static HTML, with no client-side interactivity needed.
-		Because of that, we don't need to load any JavaScript. Try viewing the page's source, or opening
-		the devtools network panel and reloading.
-	</p>
-
-	<p>
-		The <a href="/sverdle">Sverdle</a> page illustrates SvelteKit's data loading and form handling. Try
-		using it with JavaScript disabled!
-	</p>
+	<div class="about-content">
+		<span class="img-con">
+			<img src="src/lib/images/covers/cover-about.jpg" alt="">
+		</span>
+		<div class="text-con">
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis sapien eget neque tristique, nec vestibulum ante.</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis sapien eget neque tristique, nec vestibulum ante.</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis sapien eget neque tristique, nec vestibulum ante.</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+			<button>
+				<a href="/contact">CONTACT</a>
+			</button>
+		</div>
+	</div>
 </div>
+
+
+
+<style>
+	.general{
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+	}
+	h1{
+        font-family: "JockeyOne";
+        color: whitesmoke;
+		font-size: 1.8em;
+    }
+	p{
+		font-family: "JostRegular";
+		color: whitesmoke;
+	}
+	.about-content{
+		width: 85%;
+		display: flex;
+		gap: 20px;
+	}
+	.img-con{
+		width: 50%;
+	}
+	.text-con{
+		width: 50%;
+	}
+	button{
+		color: var(--color-theme-1);
+	}
+</style>
