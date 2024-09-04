@@ -32,7 +32,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 60vh;
   }
 
   section {
@@ -50,7 +50,7 @@
     align-items: center;
     gap: 20px;
     font-family: "Blacklisted" !important;
-    font-size: 128px;
+    font-size: clamp(3em, 15vw, 9em);
     color: whitesmoke;
   }
 
@@ -68,5 +68,14 @@
   .link {
     color: whitesmoke;
 	font-family: "JostRegular";
+  }
+
+  @media screen and (max-width: 600px) {
+	ul{
+		display: flex;
+		flex-direction: column;
+		text-align: center;
+		gap: 20px;
+	}
   }
 </style>

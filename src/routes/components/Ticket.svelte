@@ -72,4 +72,8 @@
         color: #848484;
         font-size: .8em;
     }
+
+    h4, p{
+        font-size: clamp(.8em, 3vw, 1em);
+    }
 </style>

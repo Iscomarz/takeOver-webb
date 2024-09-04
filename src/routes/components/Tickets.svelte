@@ -48,7 +48,7 @@
         color: rgb(0, 0, 0);
         border: none;
         padding: 10px 20px;
-        font-size: 1.2rem;
+        font-size: clamp(.9em, 3vw, 1.2em);
         cursor: pointer;
         border-radius: 5px;
         font-family: "JostRegular";

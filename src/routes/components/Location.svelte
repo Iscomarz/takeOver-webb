@@ -20,8 +20,9 @@
     font-family: "JostRegular";
     color: whitesmoke;
   }
-  p {
+  p a{
     font-family: "JostRegular";
     color: whitesmoke;
+    font-size: clamp(.8em, 3vw, 1em);
   }
 </style>
