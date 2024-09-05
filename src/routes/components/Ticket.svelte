@@ -1,7 +1,7 @@
 <script>
     import { tickets } from './ticketStore.js';
     import Counter from "./Counter.svelte";
-    import { onMount } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
 
     export let nombre = "General Access";
     export let vigencia = "Expires August 16";
@@ -10,6 +10,8 @@
 
     let cantidad = 0;
 
+    const dispatch = createEventDispatcher();
+
     function updateTickets(newCantidad) {
         cantidad = newCantidad;
         tickets.update((currentTickets) => {
@@ -17,6 +19,9 @@
             updatedTickets[index] = { precio, cantidad };
             return updatedTickets;
         });
+
+        // Emitir evento con la nueva cantidad
+        dispatch('quantityChange', { index, cantidad });
     }
 
     onMount(() => {

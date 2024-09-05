@@ -1,27 +1,29 @@
 import Stripe from 'stripe';
 
-export async function post({ request }) {
+export async function POST({ request }) {
     const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
-    console.log(import.meta.env.VITE_SECRET_STRIPE_KEY);
-    const { lineItems } = await request.json();
+
+    const { items } = await request.json();
 
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'payment',
-            line_items: lineItems,
+            line_items: items,
             success_url: `${request.headers.get('origin')}/success`,
-            cancel_url: `${request.headers.get('origin')}/cancelled`,
+            cancel_url: `${request.headers.get('origin')}/tickets`,
         });
 
-        return {
+        console.log('Session creada:', session);
+        // Devuelve una respuesta adecuada
+        return new Response(JSON.stringify({ id: session.id }), {
             status: 200,
-            body: { id: session.id },
-        };
+            headers: { 'Content-Type': 'application/json' },
+        });
     } catch (err) {
-        return {
+        return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
-            body: { error: err.message },
-        };
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 }

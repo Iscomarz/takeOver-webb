@@ -4,7 +4,6 @@
   import Location from "../components/Location.svelte";
   import AboutEvent from "../components/AboutEvent.svelte";
   import Tickets from "../components/Tickets.svelte";
-  import Checkout from "../components/Checkout.svelte";
 </script>
 
 <svelte:head>
@@ -44,7 +43,6 @@ locura dj
 chata dj"
   />
   <Tickets/>
-  <Checkout/>
   </div>
 </section>
 
