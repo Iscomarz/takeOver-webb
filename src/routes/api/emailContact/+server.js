@@ -11,7 +11,7 @@ export async function POST({ request }) {
     secure:false,
     service: 'gmail',
     auth: {
-      user: 'franmtz96@gmail.com', // Tu correo de Gmail
+      user: process.env.GMAIL_ADDRESS, // Correo de Gmail
       pass: process.env.GMAIL_APP_PASSWORD, // Contraseña de aplicación generada
     },
   });
@@ -21,6 +21,7 @@ export async function POST({ request }) {
     to: 'franmtz96@gmail.com', // Destinatario
     subject: "Take Over Web App Message From: "+ name,
     text: message+ ' Dj set:'+ djset+ ' Email: ' +email ,
+    html: `<p><b>From:</b> ${name} <br> <b>Email:</b> ${email} <br> <b>DJ Set:</b> ${djset} <br> <b>Message:</b> ${message}</p>`,
   };
 
   try {

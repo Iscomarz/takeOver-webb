@@ -1,8 +1,3 @@
-<script>
-  import welcome from "$lib/images/takeover-logo.png";
-  import welcome_fallback from "$lib/images/svelte-welcome.png";
-</script>
-
 <svelte:head>
   <title>HOME</title>
   <meta name="description" content="Svelte demo app" />

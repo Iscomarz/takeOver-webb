@@ -1,29 +1,32 @@
 <script>
     import toast, { Toaster } from 'svelte-french-toast';
+
     let name = '';
     let email = '';
     let djSetLink = '';
     let message = '';
+    let styleToast = 'border-radius: 200px; background: #333; color: #fff;';
 
-    // Función de validaciones
+    //validaciones
     function validarFormulario() {
         // Expresión regular para validar el correo electrónico
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         // Expresión regular para validar una URL
         const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
-        // Validar el correo
+        
         if(name===''){
             toast.error('Por favor, ingresa un nombre.',
                 {
-                    style: 'border-radius: 200px; background: #333; color: #fff;' 
+                    style: styleToast 
                 }
             );
             return false;
         }
+        // Validar el correo
         if (!emailRegex.test(email)) {
             toast.error('Por favor, ingresa un correo electrónico válido.',
                 {
-                    style: 'border-radius: 200px; background: #333; color: #fff;' 
+                    style: styleToast 
                 }
             );
             return false;
@@ -33,7 +36,7 @@
             if (!urlRegex.test(djSetLink)) {
             toast.error('Por favor, ingresa un link válido para el DJ Set.',
                 {
-                    style: 'border-radius: 200px; background: #333; color: #fff;'
+                    style: styleToast
                 }
             );
             return false;
@@ -52,7 +55,7 @@
         return true;
     }
 
-    // Función para enviar el mensaje
+    // Función para enviar el email
     async function sendMessage() {
         // Primero validar el formulario
         if (!validarFormulario()) {
@@ -78,6 +81,9 @@
                 loading: 'Enviando...',
                 success: 'Correo enviado correctamente, gracias por contactarnos!',
                 error: 'No se pudo enviar el correo.',
+            },
+            {
+                duration: 5000
             }
         );
 
@@ -152,9 +158,9 @@
 		font-family: 'JostRegular';
     }
     .fixed-textarea {
-        resize: none; /* Deshabilita el redimensionamiento */
-        width: 100%; /* Ancho fijo */
-        height: 150px; /* Altura fija, puedes ajustar según necesites */
+        resize: none;
+        width: 100%; 
+        height: 150px; 
     }
 
 	h1{
