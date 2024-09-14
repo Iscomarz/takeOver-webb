@@ -26,6 +26,7 @@
 	--color-theme-1: #56FDB8;
 	--color-theme-2: #4075a6;
 	--color-text: rgba(0, 0, 0, 0.7);
+	--color-text-white: rgb(226, 222, 222);
 	--column-width: 42rem;
 	--column-margin-top: 4rem;
 	font-family: var(--font-body);

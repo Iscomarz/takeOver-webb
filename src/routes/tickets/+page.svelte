@@ -3,9 +3,7 @@
   import Date from "../components/Date.svelte";
   import Location from "../components/Location.svelte";
   import AboutEvent from "../components/AboutEvent.svelte";
-  import Counter from "../components/Counter.svelte";
   import Tickets from "../components/Tickets.svelte";
-  import Ticket from "../components/Ticket.svelte";
 </script>
 
 <svelte:head>

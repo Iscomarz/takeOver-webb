@@ -9,6 +9,7 @@ export let descripcion = 'Breve descripcion';
       <h2>{titulo}</h2>
       <h4>{fecha}</h4>
     </div>
+    <br>
     <p>
       {descripcion}
     </p>
@@ -22,7 +23,7 @@ export let descripcion = 'Breve descripcion';
   }
   h2 {
     font-family: "JockeyOne";
-	font-size: 2.5em;
+	font-size: clamp(1.5em, 5vw, 2.5em);
 	padding: 0px;
 	margin: 0px;
   }
@@ -30,7 +31,11 @@ export let descripcion = 'Breve descripcion';
 	font-family: "JostRegular";
   }
   h4{
-	font-size: 1.2em;
+	font-size: clamp(.8em, 3vw, 1.2em);
 	margin-top: -10px;
+  }
+
+  p{
+    font-size: clamp(.8em, 3vw, 1em);
   }
 </style>
