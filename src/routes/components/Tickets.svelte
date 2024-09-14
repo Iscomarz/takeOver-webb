@@ -22,7 +22,7 @@
 
     <div class="total-price">
         <button>
-            <p>Buy</p> ${$totalPrice}
+            <p>Buy</p> Mex${$totalPrice}
         </button>
     </div>
 </div>
