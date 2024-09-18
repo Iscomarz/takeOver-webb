@@ -6,7 +6,9 @@
 <div class="centro">
   <div>
     <section id="welcome">
-      <h3>WELCOME TO</h3>
+      <div class="wel-container">
+        <h3 class="welcome">WELCOME  </h3><h3>  TO</h3>
+      </div>
       <h1>TAKE OVER</h1>
     </section>
 
@@ -23,6 +25,13 @@
 
 <style>
 
+  .wel-container{
+    display: flex;
+    gap: 2px;
+  }
+  .welcome{
+    color: var(--color-theme-1);
+  }
   .centro {
     display: flex;
     justify-content: center;

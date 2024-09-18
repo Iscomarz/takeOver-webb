@@ -31,6 +31,11 @@
     {#each ticketData as {nombre, vigencia, precio, tipo}, index}
         <Ticket {nombre} {vigencia} {precio} {index} on:quantityChange={(e) => updateTicketQuantity(e.detail)} />
     {/each}
+    <div class="total-price">
+        <button>
+            <p>Buy</p> Mex${$totalPrice}
+        </button>
+    </div>
     <Checkout cantidadGeneral={generalTickets} totalPrice={totalPrice}/>
 </div>
 

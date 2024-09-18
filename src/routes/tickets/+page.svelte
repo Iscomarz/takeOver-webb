@@ -32,7 +32,7 @@
   <Location
     nombreLugar="Bar El Azteca"
     direccion="Calle Ignacio Ramirez s/n Centro"
-    linkMaps="https://g.co/kgs/jD8h2aQ"
+    linkMaps="https://maps.app.goo.gl/n1mhoLPbnv4xCium6"
   />
   <AboutEvent
     descripcion="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis sapien eget neque tristique, nec vestibulum ante.

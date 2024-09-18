@@ -30,6 +30,7 @@
 		"jspdf": "^2.5.2",
 		"nodemailer": "^6.9.15",
 		"qr-code-styling": "^1.6.0-rc.1",
-		"svelte-french-toast": "^1.2.0"
+		"svelte-french-toast": "^1.2.0",
+		"takeover-web-app": "file:"
 	}
 }
