@@ -4,6 +4,8 @@
   import Location from "../components/Location.svelte";
   import AboutEvent from "../components/AboutEvent.svelte";
   import Tickets from "../components/Tickets.svelte";
+
+  export const ssr = false;
 </script>
 
 <svelte:head>

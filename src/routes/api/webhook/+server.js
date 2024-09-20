@@ -2,9 +2,10 @@ import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "../utils/generarTicket.js";
+import { enviarCorreoConTicket } from "../utils/enviarTicket.js"
 
 let pago = {
-  idFormaPago: 3,
+  idFormaPago: 3,//id forma de pago stripe/tarjeta
   cantidad: 0,
   fechaPago: new Date(),
   acreditado: false,
@@ -80,10 +81,11 @@ export async function POST({ request }) {
     venta.cantidadTickets = cantidad;
     venta.idPago = idPagoVenta;
     venta.idFaseEvento = await obtenerFaseEvento(venta.idEvento, descripcion);
-    guardaVenta(venta);
+    await guardaVenta(venta);
 
-    await generarTicket(venta);
-
+    const pdfBuffer = await generarTicket(venta);
+    console.log(venta);
+    enviarCorreoConTicket(pdfBuffer, venta);
   }
   await cerrarSesion();
   return json({ received: true });
