@@ -75,15 +75,21 @@ export async function POST({ request }) {
       console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
     });
 
-    venta.idEvento = await obtenerEventoActivo();
+  
+    let evento = await obtenerEventoActivo();
+    let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
+    
+    venta.idEvento = evento.idevento;
     venta.nombre = name;
     venta.correo = email;
     venta.cantidadTickets = cantidad;
     venta.idPago = idPagoVenta;
-    venta.idFaseEvento = await obtenerFaseEvento(venta.idEvento, descripcion);
+    venta.idFaseEvento = faseEvento.idFase;
     await guardaVenta(venta);
 
-    const pdfBuffer = await generarTicket(venta);
+    //Guardar tickets en supabase
+
+    const pdfBuffer = await generarTicket(venta, evento, faseEvento);
     console.log(venta);
     enviarCorreoConTicket(pdfBuffer, venta);
   }
@@ -121,14 +127,14 @@ async function guardaVenta(venta) {
 async function obtenerEventoActivo() {
   let { data: mEvento, error } = await supabase
     .from("mEvento")
-    .select("idevento")
+    .select("*")
     .eq("activo", true);
 
   if (error) {
     console.error("Error obteniendo los eventos activos:", error.message);
     return;
   }
-  return mEvento.length > 0 ? mEvento[0].idevento : null;
+  return mEvento.length > 0 ? mEvento[0] : null;
 }
 
 async function login() {
@@ -154,7 +160,7 @@ async function cerrarSesion() {
 async function obtenerFaseEvento(idEvento, descripcion) {
   let { data: cFaseEvento, error } = await supabase
     .from("cFaseEvento")
-    .select("idFase")
+    .select("*")
     .eq("idEvento", idEvento)
     .eq("nombreFace", descripcion);
 
@@ -162,6 +168,6 @@ async function obtenerFaseEvento(idEvento, descripcion) {
     console.error("No se pudo traer la fase", error.message);
     cerrarSesion();
   } else {
-    return cFaseEvento[0].idFase;
+    return cFaseEvento[0];
   }
 }
