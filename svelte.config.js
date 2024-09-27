@@ -11,11 +11,11 @@ const config = {
 					console.warn(`404 error on prerendering: ${path}`);
 					return;
 				}
-				throw new Error();
+				throw new Error(`${status} ${path} (linked from ${referrer})`);
 			}
 		}
 	},
-	preprocess: vitePreprocess(`${status} ${path} (linked from ${referrer})`)
+	preprocess: vitePreprocess()
 };
 
 export default config;
