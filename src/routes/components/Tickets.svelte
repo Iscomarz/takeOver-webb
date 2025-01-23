@@ -3,6 +3,7 @@
     import Ticket from './Ticket.svelte';
     import { derived } from 'svelte/store';
     import Checkout from "../components/Checkout.svelte";
+    export let ticketDataEve;
 
     let ticketData = [
         { nombre: "General Access", vigencia: "Expires August 16", precio: 150, tipo: 'general' },
@@ -28,7 +29,7 @@
 
 <h3>TICKETS</h3>
 <div class="tickets-container">
-    {#each ticketData as {nombre, vigencia, precio, tipo}, index}
+    {#each ticketData as {nombre, vigencia, precio}, index}
         <Ticket {nombre} {vigencia} {precio} {index} on:quantityChange={(e) => updateTicketQuantity(e.detail)} />
     {/each}
     <Checkout cantidadGeneral={generalTickets} totalPrice={totalPrice}/>
