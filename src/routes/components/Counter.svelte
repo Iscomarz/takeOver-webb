@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let count = 0; // Aceptar `count` como prop
+	export let desactivar = false;
 
 	const displayed_count = spring(count);
 	$: displayed_count.set(count);
@@ -30,7 +31,7 @@
 </script>
 
 <div class="counter">
-	<button on:click={decrement} aria-label="Decrease the counter by one">
+	<button disabled={!desactivar} on:click={decrement} aria-label="Decrease the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5" />
 		</svg>
@@ -43,7 +44,7 @@
 		</div>
 	</div>
 
-	<button on:click={increment} aria-label="Increase the counter by one">
+	<button disabled={!desactivar} on:click={increment} aria-label="Increase the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5 M0.5,0 L0.5,1" />
 		</svg>

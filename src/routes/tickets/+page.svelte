@@ -9,6 +9,8 @@
 
   let mEvento = {};
   let fases = [];
+  let productosStripe = [];
+  let urlImagenPortada;
 
   onMount(async () => {
     //Obtener evento activo
@@ -31,28 +33,55 @@
 
       if (cFases.length > 0) {
         fases = cFases;
+        // Llama a la función para obtener los productos
+        productosStripe = await getProducts();
+        //enlazar identificador de precio con fase (Despues hay que hacerlo directamente al crear la fase en supabase y el producto en stripe)
+        for(const producto of productosStripe){
+          for(const fase of fases){
+            if(producto.name == fase.nombreFace){
+              fase.idPrecioStripe = producto.default_price;
+            }
+          }
+        }
+
+        console.log('fases:', fases);
+
       } else if (errorF) {
         console.log("Error al traer las fases");
       }
-
-      console.log('Ruta de imagen:', mEvento.pathImage);
       //Traer portada del evento
-      let { data: image , error: errorIamge } = await supabase.storage
-      .from('imageEventos')
-      .createSignedUrl(mEvento.pathImage, 60 * 60);
+      const { data } = supabase.storage
+        .from("imageEventos")
+        .getPublicUrl(mEvento.pathImage);
 
-      if(errorIamge){
-        console.log('Error al traer imagen',errorIamge);
-      }else{
-        console.log('llamada correcta al storage');
-        mEvento.pathImage = image.signedUrl;
-      }
+      urlImagenPortada = data.publicUrl;
     }
 
     await tick();
   });
 
-  export const ssr = false;
+  async function getProducts() {
+    try {
+      // Llamada al endpoint
+      const response = await fetch("/api/get-products-stripe", {
+        method: "GET",
+      });
+
+      // Verifica si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error(`Error al obtener productos: ${response.statusText}`);
+      }
+
+      // Parsear los datos de los productos
+      const products = await response.json();
+      console.log("Productos obtenidos:", products);
+
+      return products;
+    } catch (error) {
+      console.error("Error en la llamada al endpoint:", error);
+      return null;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -60,11 +89,13 @@
   <meta name="description" content="About this app" />
 </svelte:head>
 
-<div class="img-event">
-  <span>
-    <img src={mEvento.pathImage} alt="portada"/>
-  </span>
-</div>
+{#if urlImagenPortada}
+  <div class="img-event">
+    <span>
+      <img src={urlImagenPortada} alt="portada" />
+    </span>
+  </div>
+{/if}
 
 <section class="info-event-short">
   <Title
@@ -82,10 +113,10 @@
       direccion={mEvento.direccion}
       linkMaps="https://maps.app.goo.gl/n1mhoLPbnv4xCium6"
     />
-    <AboutEvent
-      descripcion={mEvento.descripcion}
-    />
-    <Tickets />
+    <AboutEvent descripcion={mEvento.descripcion} />
+    {#if fases.length > 0}
+      <Tickets ticketDataEve={fases} />
+    {/if}
   </div>
 </section>
 

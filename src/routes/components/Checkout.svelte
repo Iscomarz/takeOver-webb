@@ -4,26 +4,27 @@
   import toast, { Toaster } from 'svelte-french-toast';
 
   export let totalPrice = 0;
-  export let cantidadGeneral;
-  //export let cantidadVIP;
-
-  const ticketGeneral = import.meta.env.VITE_PRICE_TICKET_G;
-  const ticketVIP = import.meta.env.VITE_PRICE_TICKET_V;
+  export let cantidad;
+  export let idPrecioStripe;
 
   let stripe;
+
   onMount(async () => {
     stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
   });
 
   async function handleCheckout() {
-    if ($totalPrice !== 0) {
+    // Se asegura de que totalPrice esté correctamente suscrito
+    const finalPrice = $totalPrice;
+    console.log(idPrecioStripe, cantidad);
+    if (finalPrice !== 0) {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: [{ price: ticketGeneral, quantity: cantidadGeneral }],
+          items: [{ price: idPrecioStripe, quantity: cantidad }],
         }),
       });
 
@@ -42,20 +43,21 @@
       } else {
         console.error("Error: no se recibió sessionId.");
       }
-    }else{
-        toast.error("Selecciona un ticket para continuar la compra",{
-            position:"bottom-center",
-            style: 'background: #333; color: #fff;'
-        });
-        console.log("Sin tickets");
+    } else {
+      toast.error("Selecciona un ticket para continuar la compra", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+      console.log("Sin tickets");
     }
   }
 </script>
+
 <Toaster />
 
-<button on:click={handleCheckout}
-  >Checkout <p>Mex${$totalPrice}</p></button
->
+<button on:click={handleCheckout}>
+  Checkout <p>Mex${$totalPrice}</p>
+</button>
 
 <style>
   button {
