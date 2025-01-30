@@ -2,11 +2,10 @@
 	import { spring } from 'svelte/motion';
 	import { createEventDispatcher } from 'svelte';
 
-	export let count = 0; // Aceptar `count` como prop
-	export let desactivar = false;
+	export let cantidad = 0; // Aceptar `count` como prop
 
-	const displayed_count = spring(count);
-	$: displayed_count.set(count);
+	const displayed_count = spring(cantidad);
+	$: displayed_count.set(cantidad);
 	$: offset = modulo($displayed_count, 1);
 
 	const dispatch = createEventDispatcher();
@@ -16,22 +15,22 @@
 	}
 
 	function decrement() {
-		if (count > 0) {
-			count -= 1;
-			dispatch('countChange', count); // Disparar evento al cambiar `count`
+		if (cantidad > 0) {
+			cantidad -= 1;
+			dispatch('countChange', cantidad); // Disparar evento al cambiar `count`
 		}
 	}
 
 	function increment() {
-		if (count < 10) {  // Limitar el incremento a un máximo de 10
-			count += 1;
-			dispatch('countChange', count); // Disparar evento al cambiar `count`
+		if (cantidad < 10) {  // Limitar el incremento a un máximo de 10
+			cantidad += 1;
+			dispatch('countChange', cantidad); // Disparar evento al cambiar `count`
 		}
 	}
 </script>
 
 <div class="counter">
-	<button disabled={!desactivar} on:click={decrement} aria-label="Decrease the counter by one">
+	<button on:click={decrement} aria-label="Decrease the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5" />
 		</svg>
@@ -44,7 +43,7 @@
 		</div>
 	</div>
 
-	<button disabled={!desactivar} on:click={increment} aria-label="Increase the counter by one">
+	<button on:click={increment} aria-label="Increase the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5 M0.5,0 L0.5,1" />
 		</svg>

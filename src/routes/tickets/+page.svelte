@@ -44,8 +44,6 @@
           }
         }
 
-        console.log('fases:', fases);
-
       } else if (errorF) {
         console.log("Error al traer las fases");
       }
@@ -74,7 +72,6 @@
 
       // Parsear los datos de los productos
       const products = await response.json();
-      console.log("Productos obtenidos:", products);
 
       return products;
     } catch (error) {

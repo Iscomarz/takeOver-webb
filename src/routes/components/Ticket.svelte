@@ -1,17 +1,23 @@
 <script>
-  import { tickets } from "./ticketStore.js";
+  import { tickets, inactivoState } from "./ticketStore.js";
   import Counter from "./Counter.svelte";
   import { createEventDispatcher, onMount } from "svelte";
+  import { get } from "svelte/store";
 
-  export let nombre = "General Access";
-  export let vigencia = "Expires August 16";
-  export let precio = 150;
+  export let nombre;
+  export let vigencia;
+  export let precio;
   export let index;
   export let inactivo;
 
   let cantidad = 0;
 
   const dispatch = createEventDispatcher();
+
+  // Suscribirse al store inactivoState
+  $: inactivoState.subscribe((state) => {
+    inactivo = state[index];
+  });
 
   function formatearFechas(dateString) {
     const date = new Date(dateString);
@@ -24,20 +30,45 @@
     cantidad = newCantidad;
     tickets.update((currentTickets) => {
       const updatedTickets = [...currentTickets];
-      updatedTickets[index] = { precio, cantidad };
+      updatedTickets[index] = {
+        precio: precio,
+        cantidad: cantidad,
+      };
       return updatedTickets;
     });
 
     // Emitir evento con la nueva cantidad
     dispatch("quantityChange", { index, cantidad });
+
+    // Obtener el estado actual de los tickets
+    const currentTickets = get(tickets);
+    // Validar si todas las cantidades son 0
+    const allZero = currentTickets.every((ticket) => ticket.cantidad === 0);
+    console.log(currentTickets);
+    console.log(allZero);
+
+    // Actualizar el estado de inactivoState
+    inactivoState.update((state) => {
+      if (allZero) {
+        const updatedTickets = [...currentTickets];
+        return inactivoState.update(
+          updatedTickets.map((ticket) => !ticket.activo)
+        );
+      } else {
+        const updatedState = state.map((_, i) => i !== index);
+        updatedState[index] = cantidad === 0;
+        return updatedState;
+      }
+    });
   }
 
   onMount(() => {
-    updateTickets(0);
+    //updateTickets(0);
+    console.log(index, nombre, precio, vigencia);
   });
 </script>
 
-<div class="rounded">
+<div class="rounded" class:inactivo>
   <div class="grid-container">
     <div class="nombre">
       <h4>{nombre}</h4>
@@ -49,11 +80,7 @@
       <p>{formatearFechas(vigencia)}</p>
     </div>
     <div class="contador">
-      <Counter
-        desactivar={inactivo}
-        bind:count={cantidad}
-        on:countChange={(e) => updateTickets(e.detail)}
-      />
+      <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
     </div>
   </div>
 </div>
@@ -68,6 +95,11 @@
     justify-content: center;
     align-items: start;
     width: 100%;
+  }
+
+  .inactivo {
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   .grid-container {
