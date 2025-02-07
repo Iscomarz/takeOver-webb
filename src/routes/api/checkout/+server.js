@@ -14,7 +14,7 @@ export async function POST({ request }) {
             cancel_url: `${request.headers.get('origin')}/tickets`,
         });
 
-        console.log('Session creada:', session);
+        //console.log('Session creada:', session);
         // Devuelve una respuesta adecuada
         return new Response(JSON.stringify({ id: session.id }), {
             status: 200,

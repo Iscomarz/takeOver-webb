@@ -4,11 +4,15 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { get } from "svelte/store";
 
-  export let nombre;
   export let vigencia;
   export let precio;
   export let index;
   export let inactivo;
+  export let nombreFace;
+  export let activo;
+  export let idPrecioStripe;
+  export let idFase;
+  export let idEvento;
 
   let cantidad = 0;
 
@@ -33,27 +37,32 @@
       updatedTickets[index] = {
         precio: precio,
         cantidad: cantidad,
+        nombreFace: nombreFace,
+        activo:activo,
+        idPrecioStripe: idPrecioStripe,
+        idFase: idFase,
+        idEvento: idEvento,
+        fechaExpira: vigencia
       };
       return updatedTickets;
     });
 
     // Emitir evento con la nueva cantidad
-    dispatch("quantityChange", { index, cantidad });
+    dispatch("quantityChange", { index, cantidad, idPrecioStripe });
 
     // Obtener el estado actual de los tickets
     const currentTickets = get(tickets);
     // Validar si todas las cantidades son 0
     const allZero = currentTickets.every((ticket) => ticket.cantidad === 0);
-    console.log(currentTickets);
-    console.log(allZero);
 
     // Actualizar el estado de inactivoState
     inactivoState.update((state) => {
       if (allZero) {
         const updatedTickets = [...currentTickets];
-        return inactivoState.update(
+        inactivoState.update(() =>
           updatedTickets.map((ticket) => !ticket.activo)
         );
+        return state;
       } else {
         const updatedState = state.map((_, i) => i !== index);
         updatedState[index] = cantidad === 0;
@@ -64,14 +73,14 @@
 
   onMount(() => {
     //updateTickets(0);
-    console.log(index, nombre, precio, vigencia);
+    //console.log(index, nombreFace, precio, vigencia);
   });
 </script>
 
 <div class="rounded" class:inactivo>
   <div class="grid-container">
     <div class="nombre">
-      <h4>{nombre}</h4>
+      <h4>{nombreFace}</h4>
     </div>
     <div class="precio">
       <p>Mex${precio}</p>

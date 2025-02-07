@@ -16,7 +16,7 @@
   async function handleCheckout() {
     // Se asegura de que totalPrice esté correctamente suscrito
     const finalPrice = $totalPrice;
-    console.log(idPrecioStripe, cantidad);
+    console.log('boton checkout',idPrecioStripe, cantidad);
     if (finalPrice !== 0) {
       const response = await fetch("/api/checkout", {
         method: "POST",
