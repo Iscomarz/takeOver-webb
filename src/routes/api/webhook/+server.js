@@ -1,8 +1,8 @@
 import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
-import { generarTicket } from "../utils/generarTicket.js";
-import { enviarCorreoConTicket } from "../utils/enviarTicket.js"
+import { generarTicket } from "$lib/utils/generarTicket";
+import { enviarCorreoConTicket } from "$lib/utils/enviarTicket"; 
 import QRCode from "qrcode";
 
 let pago = {
@@ -189,7 +189,7 @@ async function obtenerEventoActivo() {
 async function login() {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: process.env.GMAIL_ADDRESS,
+      email: 'franmtz96@gmail.com',
       password: process.env.SUPABASE_PASSWORD,
     });
 

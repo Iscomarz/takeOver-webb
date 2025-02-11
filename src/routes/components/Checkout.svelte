@@ -10,7 +10,10 @@
   let stripe;
 
   onMount(async () => {
-    stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
+    //live
+    stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY_LIVE);
+    //test
+    //stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
   });
 
   async function handleCheckout() {

@@ -1,8 +1,10 @@
 import Stripe from 'stripe';
 
 export async function POST({ request }) {
-    const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
-
+    //test
+    //const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+    //live
+    const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
     const { items } = await request.json();
 
     try {

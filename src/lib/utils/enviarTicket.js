@@ -2,8 +2,6 @@ import nodemailer from 'nodemailer';
 //import { generarTicket } from './generarTicket'; // Asegúrate de que está correctamente importado
 
 export async function enviarCorreoConTicket(pdfBuffer, venta) {
-  // Generar el ticket PDF
-  //const pdfBuffer = await generarTicket(venta);
 
   // Crear el transportador de nodemailer
   const transporter = nodemailer.createTransport({
@@ -22,7 +20,7 @@ export async function enviarCorreoConTicket(pdfBuffer, venta) {
     text: `Hola ${venta.nombre}, adjunto encontrarás tu ticket para el evento.`,
     attachments: [
       {
-        filename: `ticket_${venta.idVenta}.pdf`,   // Nombre del archivo adjunto
+        filename: `ticket_${venta.nombre}.pdf`,   // Nombre del archivo adjunto
         content: pdfBuffer,                        // Contenido del PDF como Buffer
         contentType: 'application/pdf'             // Tipo MIME del archivo
       }

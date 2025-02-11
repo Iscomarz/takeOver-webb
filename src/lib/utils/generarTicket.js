@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import supabase from "$lib/supabase";
+import { Buffer } from 'buffer';
 
 //Variables de prueba
 
@@ -8,13 +9,11 @@ export async function generarTicket(venta, evento, tickets) {
 	let altura = 0;
 	const ticketsPorPagina = 2; // Número de tickets por página
 	let contadorTickets = 0;
+
 	let eventoImageDataUrl = await obtenerImagenEvento(evento.pathImage);
-  console.log('tickets',tickets);
-  console.log("se obtuvo la imagen del evento");
 
 	for (var i = 0; i < tickets.length; i++) {
 		let qrImageDataUrl = await obtenerQR(tickets[i]);
-    console.log('qr obtenido');
 
 		if (contadorTickets % 2 === 0) {
 			doc.setFont('helvetica', 'bold');
@@ -100,8 +99,9 @@ export async function generarTicket(venta, evento, tickets) {
   console.log('generando pdf');
 	// Generar el PDF como un array buffer
 	const pdfArrayBuffer = doc.output('arraybuffer');
+	const pdfBuffer = Buffer.from(pdfArrayBuffer); // Convertir a Buffer para enviar por correo
   console.log('pdf generado');
-	return pdfArrayBuffer; // Devolver el PDF en formato ArrayBuffer
+	return pdfBuffer; // Devolver el PDF en formato ArrayBuffer
 }
 
 async function obtenerQR(ticket) {
@@ -113,7 +113,7 @@ async function obtenerQR(ticket) {
 		console.log('Error al obtener imagen QR:', error);
 	} else {
     console.log('Qr desde storage',data);
-		return data.signedUrl;
+		return convertirImagenABase64(data.signedUrl);
 	}
 }
 
@@ -137,6 +137,18 @@ async function obtenerImagenEvento(path) {
 		console.log('Error al traer imagen de evento', error);
 	} else {
     console.log('Imagen del evento desde storage',data);
-		return data.signedUrl;
+		return await convertirImagenABase64(data.signedUrl);
 	}
 }
+
+async function convertirImagenABase64(url) {
+	try {
+	  const response = await fetch(url);
+	  const buffer = await response.arrayBuffer();
+	  const base64 = Buffer.from(buffer).toString('base64');
+	  return `data:image/png;base64,${base64}`;
+	} catch (error) {
+	  console.error('Error convirtiendo imagen a Base64:', error);
+	  throw error;
+	}
+  }
