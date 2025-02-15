@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
-import { enviarCorreoConTicket } from "$routes/api/enviarCorreo/enviarTicket"; 
+import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js"; 
 import QRCode from "qrcode";
 
 let pago = {
