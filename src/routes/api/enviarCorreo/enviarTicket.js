@@ -28,7 +28,8 @@ export async function enviarCorreoConTicket(pdfBuffer, venta) {
   };
 
   // Enviar el correo
-  transporter.sendMail(mailOptions, (error, info) => {
+  console.log("enviando correo");
+ await transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       return console.error("Error enviando el correo: ", error);
     }
