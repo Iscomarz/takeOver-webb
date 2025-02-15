@@ -141,7 +141,7 @@ export async function POST({ request }) {
 
     const pdfBuffer = await generarTicket(venta, evento, tickets);
     console.log(venta);
-    enviarCorreoConTicket(pdfBuffer, venta);
+    await enviarCorreoConTicket(pdfBuffer, venta);
   }
   await cerrarSesion();
   return json({ received: true });
