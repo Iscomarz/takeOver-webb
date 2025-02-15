@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
-import { enviarCorreoConTicket } from "$lib/utils/enviarTicket"; 
+import { enviarCorreoConTicket } from "$routes/api/enviarCorreo/enviarTicket"; 
 import QRCode from "qrcode";
 
 let pago = {
@@ -142,6 +142,7 @@ export async function POST({ request }) {
     const pdfBuffer = await generarTicket(venta, evento, tickets);
     console.log(venta);
     await enviarCorreoConTicket(pdfBuffer, venta);
+    console.log("correo enviado")
   }
   await cerrarSesion();
   return json({ received: true });
