@@ -26,6 +26,7 @@ export let descripcion = 'Breve descripcion';
 	font-size: clamp(1.5em, 5vw, 2.5em);
 	padding: 0px;
 	margin: 0px;
+  color: var(--color-theme-1);
   }
   h4, p{
 	font-family: "JostRegular";

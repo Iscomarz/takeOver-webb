@@ -108,7 +108,7 @@
     <Location
       nombreLugar={mEvento.venue}
       direccion={mEvento.direccion}
-      linkMaps="https://maps.app.goo.gl/n1mhoLPbnv4xCium6"
+      linkMaps={mEvento.direccionURL}
     />
     <AboutEvent descripcion={mEvento.descripcion} />
     {#if fases.length > 0}
@@ -126,7 +126,7 @@
     align-items: center;
   }
   span {
-    width: 85%;
+    width: 70%;
   }
   img {
     border-radius: 40px;

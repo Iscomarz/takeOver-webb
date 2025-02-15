@@ -24,5 +24,6 @@
     font-family: "JostRegular";
     color: whitesmoke;
     font-size: clamp(.8em, 3vw, 1em);
+    color: var(--color-theme-1);
   }
 </style>
