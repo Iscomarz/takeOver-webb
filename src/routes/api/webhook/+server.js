@@ -310,7 +310,7 @@ async function agregarVendidosaInventario(faseEvento, idVenta) {
       cantidadVendida: nuevaCantidadVendida,
       activo: activo,
     })
-    .eq("id", faseEvento.idFase)
+    .eq("idFase", faseEvento.idFase)
     .select();
 
   if (error) {
