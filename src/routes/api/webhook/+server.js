@@ -35,7 +35,6 @@ export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
   const body = await event.request.arrayBuffer();
   const rawBody = Buffer.from(body);
-
   const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
@@ -52,16 +51,18 @@ export async function POST(event) {
     const email = session.customer_details.email;
     const name = session.customer_details.name;
     const amount = session.amount_total / 100;
-    
+
     console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
-    // Responder a Stripe antes de hacer procesamiento adicional
-    event.respondWith(new Response(JSON.stringify({ received: true }), { status: 200 }));
-    try {
-      await procesarPago(session, email, name, amount);
-    } catch (error) {
-      console.error("Error procesando el pago:", error);
-      return json({ error: "Error procesando el pago." }, { status: 500 });
-    }
+
+    // **Responde inmediatamente a Stripe para evitar reintentos**
+    const response = json({ received: true }, { status: 200 });
+
+    // Ejecutar en segundo plano sin bloquear la respuesta a Stripe
+    procesarPago(session, email, name, amount).catch(error => {
+      console.error("Error procesando el pago en segundo plano:", error);
+    });
+
+    return response; // **Stripe recibirá 200 OK y no reintentará**
   }
 
   return json({ message: "Evento no manejado" }, { status: 400 });
