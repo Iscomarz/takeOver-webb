@@ -292,5 +292,32 @@ async function procesarPago(session, email, name, amount, idEventoStripe) {
   console.log(venta);
   await enviarCorreoConTicket(pdfBuffer, venta);
   console.log("correo enviado");
+  await agregarVendidosaInventario(faseEvento, mVenta.idventa);
   await cerrarSesion();
+}
+
+async function agregarVendidosaInventario(faseEvento, idVenta) {
+  // Obtener la cantidad actual vendida
+  const nuevaCantidadVendida = faseEvento.cantidadVendida + idVenta.cantidadTickets;
+
+  // Verificar si se alcanzó o superó el límite
+  const activo = nuevaCantidadVendida >= faseEvento.limite ? false : true;
+
+  // Actualizar la cantidadVendida y el estado activo en la tabla
+  const { data, error } = await supabase
+    .from("cFaseEvento")
+    .update({
+      cantidadVendida: nuevaCantidadVendida,
+      activo: activo,
+    })
+    .eq("id", faseEvento.id)
+    .select();
+
+  if (error) {
+    console.error("No se pudo guardar los tickets vendidos ", error.message);
+    return null;
+  } else {
+    console.log("Tickets vendidos guardados correctamente", data);
+    return data;
+  }
 }
