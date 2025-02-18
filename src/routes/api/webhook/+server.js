@@ -58,9 +58,11 @@ export async function POST(event) {
     const response = json({ received: true }, { status: 200 });
 
     // Ejecutar en segundo plano sin bloquear la respuesta a Stripe
+    console.log("Antes de llamar procesarPago...");
     procesarPago(session, email, name, amount).catch(error => {
       console.error("Error procesando el pago en segundo plano:", error);
     });
+    console.log("Después de llamar procesarPago (terminó bien)");
 
     return response; // **Stripe recibirá 200 OK y no reintentará**
   }
@@ -181,6 +183,7 @@ async function subirQRASupabase(base64Image, referencia) {
 }
 
 async function procesarPago(session, email,name,amount) {
+    console.log("🔹 Iniciando procesarPago()...");
     idSupabase = await login();
     pago.acreditado = true;
     pago.fechaAcreditacion = new Date();
