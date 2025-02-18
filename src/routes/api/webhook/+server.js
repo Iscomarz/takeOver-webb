@@ -4,7 +4,8 @@ import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
 import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
 import QRCode from "qrcode";
-import { Queue } from "bull";
+import pkg from 'bull';
+const { Queue } = pkg;
 
 let pago = {
   idFormaPago: 3, //id forma de pago stripe/tarjeta
