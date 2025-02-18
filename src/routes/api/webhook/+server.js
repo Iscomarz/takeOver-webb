@@ -32,7 +32,7 @@ let tickets = [];
 const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
-  const sig = event.headers.get("stripe-signature");
+  const sig = event.request.headers.get("stripe-signature");
   const body = await event.request.text();
 
   const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
