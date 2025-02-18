@@ -2,11 +2,12 @@ import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
-import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js"; 
+import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
 import QRCode from "qrcode";
+import { Queue } from "bull";
 
 let pago = {
-  idFormaPago: 3,//id forma de pago stripe/tarjeta
+  idFormaPago: 3, //id forma de pago stripe/tarjeta
   cantidad: 0,
   fechaPago: new Date(),
   acreditado: false,
@@ -27,9 +28,9 @@ let venta = {
 let idSupabase = "";
 let tickets = [];
 //test
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
@@ -42,7 +43,10 @@ export async function POST(event) {
     eventStripe = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error("Webhook signature verification failed.", err.message);
-    return json({ error: "Webhook signature verification failed." }, { status: 400 });
+    return json(
+      { error: "Webhook signature verification failed." },
+      { status: 400 }
+    );
   }
 
   // Solo procesamos pagos completados
@@ -58,11 +62,25 @@ export async function POST(event) {
     const response = json({ received: true }, { status: 200 });
 
     // Ejecutar en segundo plano sin bloquear la respuesta a Stripe
-    console.log("Antes de llamar procesarPago...");
-    procesarPago(session, email, name, amount).catch(error => {
-      console.error("Error procesando el pago en segundo plano:", error);
+    const pagoQueue = new Queue("pagoQueue");
+
+    // Crear una tarea en la cola
+    await pagoQueue.add({
+      session,
+      email,
+      name,
+      amount,
     });
-    console.log("Después de llamar procesarPago (terminó bien)");
+
+    // Procesar la tarea en segundo plano
+    pagoQueue.process(async (job) => {
+      const { session, email, name, amount } = job.data;
+      try {
+        await procesarPago(session, email, name, amount);
+      } catch (error) {
+        console.error("Error procesando el pago en segundo plano:", error);
+      }
+    });
 
     return response; // **Stripe recibirá 200 OK y no reintentará**
   }
@@ -114,13 +132,13 @@ async function obtenerEventoActivo() {
 async function login() {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'franmtz96@gmail.com',
+      email: "franmtz96@gmail.com",
       password: process.env.SUPABASE_PASSWORD,
     });
 
     if (error) {
       throw new Error(error.message);
-    }else{
+    } else {
       //console.log("Inicio de sesión correcto", data);
       return data.user.id;
     }
@@ -154,111 +172,112 @@ async function generarQRCode(texto) {
     const qrBase64 = await QRCode.toDataURL(texto);
     return qrBase64; // Este es el string base64 de la imagen
   } catch (err) {
-    console.error('Error generando el QR:', err);
+    console.error("Error generando el QR:", err);
   }
 }
 
 async function subirQRASupabase(base64Image, referencia) {
   // Convertir la imagen base64 a un Blob
-  const base64Data = base64Image.split(',')[1]; // Eliminar el prefijo "data:image/png;base64,"
+  const base64Data = base64Image.split(",")[1]; // Eliminar el prefijo "data:image/png;base64,"
   const byteCharacters = atob(base64Data);
   const byteNumbers = new Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
   const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/png' });
+  const blob = new Blob([byteArray], { type: "image/png" });
 
   // Subir el archivo a Supabase Storage
   const { data, error } = await supabase.storage
-    .from('codigosQR')
+    .from("codigosQR")
     .upload(`qr_${referencia}.png`, blob);
 
   if (error) {
-    console.log('Error subiendo el QR a Supabase:', error);
+    console.log("Error subiendo el QR a Supabase:", error);
   } else {
-    console.log('QR subido correctamente:', data);
+    console.log("QR subido correctamente:", data);
     return data.path; // Devolver la ruta del archivo
   }
 }
 
-async function procesarPago(session, email,name,amount) {
-    console.log("🔹 Iniciando procesarPago()...");
-    idSupabase = await login();
-    pago.acreditado = true;
-    pago.fechaAcreditacion = new Date();
-    pago.cantidad = amount;
-    
-    const idPagoVenta = await guardaPago(pago);
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-    let evento = await obtenerEventoActivo();
+async function procesarPago(session, email, name, amount) {
+  console.log("🔹 Iniciando procesarPago()...");
+  idSupabase = await login();
+  pago.acreditado = true;
+  pago.fechaAcreditacion = new Date();
+  pago.cantidad = amount;
 
-    let descripcion = "";
-    let cantidad = 0;
-    lineItems.data.forEach((item) => {
-      descripcion = item.description;
-      cantidad = item.quantity;
-      console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
-    });
+  const idPagoVenta = await guardaPago(pago);
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+  let evento = await obtenerEventoActivo();
 
-    let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
-    
-    venta.idEvento = evento.idevento;
-    venta.nombre = name;
-    venta.correo = email;
-    venta.cantidadTickets = cantidad;
-    venta.idPago = idPagoVenta;
-    venta.idFaseEvento = faseEvento.idFase;
-    venta.idUsuario = idSupabase;
+  let descripcion = "";
+  let cantidad = 0;
+  lineItems.data.forEach((item) => {
+    descripcion = item.description;
+    cantidad = item.quantity;
+    console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
+  });
 
-    const mVenta = await guardaVenta(venta);
-    if(mVenta){
-      //Generar qr, tickets y guardar en supabase
-      for (let i = 0; i < mVenta.cantidadTickets; i++) {
-        //Generar referencia aleatoria de 8 digitos
-        let referencia = Math.floor(10000000 + Math.random() * 90000000);
-        //Crear un salt unico
-        let salt = crypto.randomUUID();
-        //Combinar la referencia con el salt y aplicar una funcion hash (SHA-256)
-        let codigoQR = await crypto.subtle
+  let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
+
+  venta.idEvento = evento.idevento;
+  venta.nombre = name;
+  venta.correo = email;
+  venta.cantidadTickets = cantidad;
+  venta.idPago = idPagoVenta;
+  venta.idFaseEvento = faseEvento.idFase;
+  venta.idUsuario = idSupabase;
+
+  const mVenta = await guardaVenta(venta);
+  if (mVenta) {
+    //Generar qr, tickets y guardar en supabase
+    for (let i = 0; i < mVenta.cantidadTickets; i++) {
+      //Generar referencia aleatoria de 8 digitos
+      let referencia = Math.floor(10000000 + Math.random() * 90000000);
+      //Crear un salt unico
+      let salt = crypto.randomUUID();
+      //Combinar la referencia con el salt y aplicar una funcion hash (SHA-256)
+      let codigoQR = await crypto.subtle
         .digest("SHA-256", new TextEncoder().encode(referencia + salt))
         .then((hash) => {
           return Array.from(new Uint8Array(hash))
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
         });
 
-        let base64QR = await generarQRCode(codigoQR);
-        let pathQR = await subirQRASupabase(base64QR, referencia);
+      let base64QR = await generarQRCode(codigoQR);
+      let pathQR = await subirQRASupabase(base64QR, referencia);
 
-        //Guardar en tabla ticket de supabase
-        const { data: dataTicket, error:errorTicket } = await supabase
+      //Guardar en tabla ticket de supabase
+      const { data: dataTicket, error: errorTicket } = await supabase
         .from("ticket")
-        .insert([{
-          codigoQR: codigoQR,
-          validado: false,
-          pathStorage: pathQR,
-          idVenta: mVenta.idventa,
-          referencia: referencia,
-          idFase: mVenta.idFaseEvento,
-          fechaValidacion: null
-        }]).select();
-        if(errorTicket){
-          console.error("No se pudo guardar el ticket ", errorTicket.message);
-        }else{
-          console.log("Ticket guardado correctamente");
-          tickets.push(dataTicket[0]);
-        }
-
+        .insert([
+          {
+            codigoQR: codigoQR,
+            validado: false,
+            pathStorage: pathQR,
+            idVenta: mVenta.idventa,
+            referencia: referencia,
+            idFase: mVenta.idFaseEvento,
+            fechaValidacion: null,
+          },
+        ])
+        .select();
+      if (errorTicket) {
+        console.error("No se pudo guardar el ticket ", errorTicket.message);
+      } else {
+        console.log("Ticket guardado correctamente");
+        tickets.push(dataTicket[0]);
       }
-
     }
+  }
 
-    //Guardar tickets en supabase
+  //Guardar tickets en supabase
 
-    const pdfBuffer = await generarTicket(venta, evento, tickets);
-    console.log(venta);
-    await enviarCorreoConTicket(pdfBuffer, venta);
-    console.log("correo enviado")
-    await cerrarSesion();
+  const pdfBuffer = await generarTicket(venta, evento, tickets);
+  console.log(venta);
+  await enviarCorreoConTicket(pdfBuffer, venta);
+  console.log("correo enviado");
+  await cerrarSesion();
 }
