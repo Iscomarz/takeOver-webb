@@ -11,22 +11,20 @@
       <img src="src/lib/images/covers/cover-about.jpg" alt="" />
     </span>
     <div class="text-con">
+      <h3>
+        ¿Qué es Take Over?
+      </h3>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-        sagittis sapien eget neque tristique, nec vestibulum ante.
+        Take Over es más que una fiesta, es una experiencia. Organizamos eventos en Chihuahua, llevando el mejor house, techno, indie dance y melodic house a lugares donde normalmente no se escucha este sonido. Como su nombre lo dice, tomamos el control por un día para transformar el espacio con música, energía y buena vibra.
       </p>
       <br />
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-        sagittis sapien eget neque tristique, nec vestibulum ante.
+        Cada evento es una fusión de coctelería, talento emergente y sets de DJs que harán vibrar el lugar. Creemos en impulsar la escena local y conectar a las personas a través de la música.
       </p>
       <br />
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-        sagittis sapien eget neque tristique, nec vestibulum ante.
+        Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser parte?
       </p>
-      <br />
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       <br />
       <button style="width: 100%; text-align: center;">
         <a href="/contact">CONTACT</a>
