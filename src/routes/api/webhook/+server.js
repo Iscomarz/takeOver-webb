@@ -287,7 +287,7 @@ async function procesarPago(session, email, name, amount, idEventoStripe) {
   }
 
   //Guardar tickets en supabase
-  await agregarVendidosaInventario(faseEvento, mVenta.idventa);
+  await agregarVendidosaInventario(faseEvento, venta);
   const pdfBuffer = await generarTicket(venta, evento, tickets);
   console.log(venta);
   await enviarCorreoConTicket(pdfBuffer, venta);
