@@ -287,12 +287,12 @@ async function procesarPago(session, email, name, amount, idEventoStripe) {
   }
 
   //Guardar tickets en supabase
-
+  await agregarVendidosaInventario(faseEvento, mVenta.idventa);
   const pdfBuffer = await generarTicket(venta, evento, tickets);
   console.log(venta);
   await enviarCorreoConTicket(pdfBuffer, venta);
   console.log("correo enviado");
-  await agregarVendidosaInventario(faseEvento, mVenta.idventa);
+  
   await cerrarSesion();
 }
 
@@ -310,7 +310,7 @@ async function agregarVendidosaInventario(faseEvento, idVenta) {
       cantidadVendida: nuevaCantidadVendida,
       activo: activo,
     })
-    .eq("id", faseEvento.id)
+    .eq("id", faseEvento.idFase)
     .select();
 
   if (error) {
