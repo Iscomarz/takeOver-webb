@@ -97,14 +97,13 @@
 <section class="info-event-short">
   <Title
     titulo={mEvento.nombreEvento}
-    fecha="Domingo, 18 de agosto "
-    descripcion="Descripcion Corta"
+    fecha="Domingo, 16 de Marzo 2025"
   />
 </section>
 
 <section class="info-event">
   <div class="components">
-    <Date fecha="Dom, 18 Ago 2024 14:00 - 23:00 " />
+    <Date fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
     <Location
       nombreLugar={mEvento.venue}
       direccion={mEvento.direccion}

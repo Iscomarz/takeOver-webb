@@ -1,7 +1,7 @@
 <script>
 export let titulo = 'Nombre del evento';
 export let fecha = 'Dia del evento';
-export let descripcion = 'Breve descripcion';
+//export let descripcion = 'Breve descripcion';
 </script>
 
 <div class="info-content">
@@ -10,9 +10,9 @@ export let descripcion = 'Breve descripcion';
       <h4>{fecha}</h4>
     </div>
     <br>
-    <p>
+    <!-- <p>
       {descripcion}
-    </p>
+    </p> -->
 </div>
 
 <style>
