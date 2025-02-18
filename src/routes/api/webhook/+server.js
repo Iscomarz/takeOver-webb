@@ -33,119 +33,41 @@ const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
-  const body = await event.request.text();
+  const body = await event.request.arrayBuffer();
+  const rawBody = Buffer.from(body);
 
   const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
-
-  console.log("Webhook received");
   try {
-    // Verificar que el webhook proviene de Stripe
-    eventStripe = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    eventStripe = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error("Webhook signature verification failed.", err.message);
-    return json(
-      { error: "Webhook signature verification failed." },
-      { status: 400 }
-    );
+    return json({ error: "Webhook signature verification failed." }, { status: 400 });
   }
 
-  // Manejar el evento de pago completado
+  // Solo procesamos pagos completados
   if (eventStripe.type === "checkout.session.completed") {
-    idSupabase = await login();
     const session = eventStripe.data.object;
-
-    // Obtener detalles como el email del comprador
     const email = session.customer_details.email;
     const name = session.customer_details.name;
-    const amount = session.amount_total / 100; // Cantidad pagada en la moneda menor (p. ej., centavos)
-    const currency = session.currency;
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-
-    //console.log("Line items: ", lineItems);
-
-    console.log(
-      `Pago completado. Email: ${email}, Monto: ${amount} ${currency}`
-    );
-
-    pago.acreditado = true;
-    pago.fechaAcreditacion = new Date();
-    pago.cantidad = amount;
-    const idPagoVenta = await guardaPago(pago);
-
-    let descripcion = "";
-    let cantidad = 0;
-    lineItems.data.forEach((item) => {
-      descripcion = item.description;
-      cantidad = item.quantity;
-      console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
-    });
-
-  
-    let evento = await obtenerEventoActivo();
-    let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
+    const amount = session.amount_total / 100;
     
-    venta.idEvento = evento.idevento;
-    venta.nombre = name;
-    venta.correo = email;
-    venta.cantidadTickets = cantidad;
-    venta.idPago = idPagoVenta;
-    venta.idFaseEvento = faseEvento.idFase;
-    venta.idUsuario = idSupabase;
+    console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
 
-    const mVenta = await guardaVenta(venta);
-    if(mVenta){
-      //Generar qr, tickets y guardar en supabase
-      for (let i = 0; i < mVenta.cantidadTickets; i++) {
-        //Generar referencia aleatoria de 8 digitos
-        let referencia = Math.floor(10000000 + Math.random() * 90000000);
-        //Crear un salt unico
-        let salt = crypto.randomUUID();
-        //Combinar la referencia con el salt y aplicar una funcion hash (SHA-256)
-        let codigoQR = await crypto.subtle
-        .digest("SHA-256", new TextEncoder().encode(referencia + salt))
-        .then((hash) => {
-          return Array.from(new Uint8Array(hash))
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-        });
-
-        let base64QR = await generarQRCode(codigoQR);
-        let pathQR = await subirQRASupabase(base64QR, referencia);
-
-        //Guardar en tabla ticket de supabase
-        const { data: dataTicket, error:errorTicket } = await supabase
-        .from("ticket")
-        .insert([{
-          codigoQR: codigoQR,
-          validado: false,
-          pathStorage: pathQR,
-          idVenta: mVenta.idventa,
-          referencia: referencia,
-          idFase: mVenta.idFaseEvento,
-          fechaValidacion: null
-        }]).select();
-        if(errorTicket){
-          console.error("No se pudo guardar el ticket ", errorTicket.message);
-        }else{
-          console.log("Ticket guardado correctamente");
-          tickets.push(dataTicket[0]);
-        }
-
+    // Responder inmediatamente a Stripe
+    setTimeout(async () => {
+      try {
+        await procesarPago(session, email, name, amount);
+      } catch (error) {
+        console.error("Error procesando el pago en segundo plano:", error);
       }
+    }, 0);
 
-    }
-
-    //Guardar tickets en supabase
-
-    const pdfBuffer = await generarTicket(venta, evento, tickets);
-    console.log(venta);
-    await enviarCorreoConTicket(pdfBuffer, venta);
-    console.log("correo enviado")
+    return json({ received: true }, { status: 200 });
   }
-  await cerrarSesion();
-  return json({ received: true });
+
+  return json({ message: "Evento no manejado" }, { status: 400 });
 }
 
 async function guardaPago(pago) {
@@ -258,4 +180,84 @@ async function subirQRASupabase(base64Image, referencia) {
     console.log('QR subido correctamente:', data);
     return data.path; // Devolver la ruta del archivo
   }
+}
+
+async function procesarPago(session, email,name,amount) {
+    idSupabase = await login();
+    pago.acreditado = true;
+    pago.fechaAcreditacion = new Date();
+    pago.cantidad = amount;
+    
+    const idPagoVenta = await guardaPago(pago);
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+    let evento = await obtenerEventoActivo();
+
+    let descripcion = "";
+    let cantidad = 0;
+    lineItems.data.forEach((item) => {
+      descripcion = item.description;
+      cantidad = item.quantity;
+      console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
+    });
+
+    let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
+    
+    venta.idEvento = evento.idevento;
+    venta.nombre = name;
+    venta.correo = email;
+    venta.cantidadTickets = cantidad;
+    venta.idPago = idPagoVenta;
+    venta.idFaseEvento = faseEvento.idFase;
+    venta.idUsuario = idSupabase;
+
+    const mVenta = await guardaVenta(venta);
+    if(mVenta){
+      //Generar qr, tickets y guardar en supabase
+      for (let i = 0; i < mVenta.cantidadTickets; i++) {
+        //Generar referencia aleatoria de 8 digitos
+        let referencia = Math.floor(10000000 + Math.random() * 90000000);
+        //Crear un salt unico
+        let salt = crypto.randomUUID();
+        //Combinar la referencia con el salt y aplicar una funcion hash (SHA-256)
+        let codigoQR = await crypto.subtle
+        .digest("SHA-256", new TextEncoder().encode(referencia + salt))
+        .then((hash) => {
+          return Array.from(new Uint8Array(hash))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        });
+
+        let base64QR = await generarQRCode(codigoQR);
+        let pathQR = await subirQRASupabase(base64QR, referencia);
+
+        //Guardar en tabla ticket de supabase
+        const { data: dataTicket, error:errorTicket } = await supabase
+        .from("ticket")
+        .insert([{
+          codigoQR: codigoQR,
+          validado: false,
+          pathStorage: pathQR,
+          idVenta: mVenta.idventa,
+          referencia: referencia,
+          idFase: mVenta.idFaseEvento,
+          fechaValidacion: null
+        }]).select();
+        if(errorTicket){
+          console.error("No se pudo guardar el ticket ", errorTicket.message);
+        }else{
+          console.log("Ticket guardado correctamente");
+          tickets.push(dataTicket[0]);
+        }
+
+      }
+
+    }
+
+    //Guardar tickets en supabase
+
+    const pdfBuffer = await generarTicket(venta, evento, tickets);
+    console.log(venta);
+    await enviarCorreoConTicket(pdfBuffer, venta);
+    console.log("correo enviado")
+    await cerrarSesion();
 }
