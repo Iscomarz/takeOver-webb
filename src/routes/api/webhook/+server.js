@@ -29,9 +29,9 @@ let venta = {
 let idSupabase = "";
 let tickets = [];
 //test
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
