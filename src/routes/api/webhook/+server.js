@@ -39,9 +39,9 @@ export async function POST(event) {
   const rawBody = Buffer.from(body);
 
   //test
-  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
+  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
   //live
-  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {
