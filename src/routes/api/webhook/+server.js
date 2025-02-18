@@ -31,18 +31,18 @@ let tickets = [];
 //live
 const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
-export async function POST({ request }) {
-  const sig = request.headers.get("stripe-signature");
-  const body = await request.text();
+export async function POST(event) {
+  const sig = event.headers.get("stripe-signature");
+  const body = await event.request.text();
 
   const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
-  let event;
+  let eventStripe;
 
   console.log("Webhook received");
   try {
     // Verificar que el webhook proviene de Stripe
-    event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    eventStripe = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err) {
     console.error("Webhook signature verification failed.", err.message);
     return json(
@@ -52,9 +52,9 @@ export async function POST({ request }) {
   }
 
   // Manejar el evento de pago completado
-  if (event.type === "checkout.session.completed") {
+  if (eventStripe.type === "checkout.session.completed") {
     idSupabase = await login();
-    const session = event.data.object;
+    const session = eventStripe.data.object;
 
     // Obtener detalles como el email del comprador
     const email = session.customer_details.email;
