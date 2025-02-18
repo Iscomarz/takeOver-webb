@@ -54,17 +54,13 @@ export async function POST(event) {
     const amount = session.amount_total / 100;
     
     console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
-
-    // Responder inmediatamente a Stripe
-    setTimeout(async () => {
-      try {
-        await procesarPago(session, email, name, amount);
-      } catch (error) {
-        console.error("Error procesando el pago en segundo plano:", error);
-      }
-    }, 0);
-
-    return json({ received: true }, { status: 200 });
+    try {
+      await procesarPago(session, email, name, amount);
+      return json({ received: true }, { status: 200 });
+    } catch (error) {
+      console.error("Error procesando el pago:", error);
+      return json({ error: "Error procesando el pago." }, { status: 500 });
+    }
   }
 
   return json({ message: "Evento no manejado" }, { status: 400 });
