@@ -4,8 +4,7 @@ import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
 import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
 import QRCode from "qrcode";
-import pkg from 'bull';
-const { Queue } = pkg;
+import { Queue } from "bull";
 
 let pago = {
   idFormaPago: 3, //id forma de pago stripe/tarjeta
@@ -13,6 +12,7 @@ let pago = {
   fechaPago: new Date(),
   acreditado: false,
   fechaAcreditacion: null,
+  idTransaccionStripe: "",
 };
 
 let venta = {
@@ -29,18 +29,15 @@ let venta = {
 let idSupabase = "";
 let tickets = [];
 //test
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
   const body = await event.request.arrayBuffer();
   const rawBody = Buffer.from(body);
-  //test
-  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
-  //live
-  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {
@@ -65,28 +62,25 @@ export async function POST(event) {
     // **Responde inmediatamente a Stripe para evitar reintentos**
     const response = json({ received: true }, { status: 200 });
 
-    // Ejecutar en segundo plano sin bloquear la respuesta a Stripe
-    const pagoQueue = new Queue("pagoQueue");
+    // **Obtener el ID del evento**
+    const stripeEventId = eventStripe.id;
+    console.log("Stripe Event ID:", stripeEventId);
 
-    // Crear una tarea en la cola
-    await pagoQueue.add({
-      session,
-      email,
-      name,
-      amount,
-    });
+    if (await eventoYaProcesado(stripeEventId)) {
+      console.log("Evento ya procesado, omitiendo...");
+      return response;
+    } else {
+      console.log("Antes de llamar procesarPago...");
+      await procesarPago(session, email, name, amount, stripeEventId).catch(
+        (error) => {
+          console.error("Error procesando el pago en segundo plano:", error);
+        }
+      );
+      console.log("Después de llamar procesarPago (terminó bien)");
 
-    // Procesar la tarea en segundo plano
-    pagoQueue.process(async (job) => {
-      const { session, email, name, amount } = job.data;
-      try {
-        await procesarPago(session, email, name, amount);
-      } catch (error) {
-        console.error("Error procesando el pago en segundo plano:", error);
-      }
-    });
-
-    return response; // **Stripe recibirá 200 OK y no reintentará**
+      return response;
+    }
+    // **Stripe recibirá 200 OK y no reintentará**
   }
 
   return json({ message: "Evento no manejado" }, { status: 400 });
@@ -102,6 +96,15 @@ async function guardaPago(pago) {
     console.log("Pago guardado correctamente");
     return data[0].idpago;
   }
+}
+
+async function eventoYaProcesado(stripeEventId) {
+  const { data, error } = await supabase
+    .from("mPago")
+    .select("stripeEventId")
+    .eq("stripeEventId", stripeEventId);
+
+  return data && data.length > 0; // Devuelve `true` si ya existe
 }
 
 async function guardaVenta(venta) {
@@ -204,12 +207,13 @@ async function subirQRASupabase(base64Image, referencia) {
   }
 }
 
-async function procesarPago(session, email, name, amount) {
+async function procesarPago(session, email, name, amount, idEventoStripe) {
   console.log("🔹 Iniciando procesarPago()...");
   idSupabase = await login();
   pago.acreditado = true;
   pago.fechaAcreditacion = new Date();
   pago.cantidad = amount;
+  pago.idTransaccionStripe = idEventoStripe;
 
   const idPagoVenta = await guardaPago(pago);
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
