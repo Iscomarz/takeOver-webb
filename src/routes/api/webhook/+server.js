@@ -105,9 +105,10 @@ async function guardaPago(pago) {
 async function eventoYaProcesado(stripeEventId) {
   const { data, error } = await supabase
     .from("mPago")
-    .select("stripeEventId")
-    .eq("stripeEventId", stripeEventId);
+    .select("idTransaccionStripe")
+    .eq("idTransaccionStripe", stripeEventId);
 
+    //console.log("data", data);
   return data && data.length > 0; // Devuelve `true` si ya existe
 }
 
