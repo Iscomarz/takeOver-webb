@@ -11,9 +11,9 @@
       <img src="src/lib/images/covers/cover-about.jpg" alt="" />
     </span>
     <div class="text-con">
-      <h3>
+      <h2>
         ¿Qué es Take Over?
-      </h3>
+      </h2>
       <p>
         Take Over es más que una fiesta, es una experiencia. Organizamos eventos en Chihuahua, llevando el mejor house, techno, indie dance y melodic house a lugares donde normalmente no se escucha este sonido. Como su nombre lo dice, tomamos el control por un día para transformar el espacio con música, energía y buena vibra.
       </p>
@@ -45,6 +45,11 @@
     font-family: "JockeyOne";
     color: whitesmoke;
     font-size: 1.8em;
+  }
+  h2 {
+    font-family: "JockeyOne";
+    color: whitesmoke;
+    font-size: 1.5em;
   }
   p {
     font-family: "JostRegular";
