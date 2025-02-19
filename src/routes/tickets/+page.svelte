@@ -6,11 +6,11 @@
   import Tickets from "../components/Tickets.svelte";
   import supabase from "../../lib/supabase";
   import { onMount, tick } from "svelte";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidateAll, goto  } from "$app/navigation";
   import { tweened } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
   import logo from "$lib/images/takeover-logo.png";
-  import { fade } from 'svelte/transition';
+  import { fade } from "svelte/transition";
 
   let scale = tweened(1, {
     duration: 400,
@@ -69,6 +69,9 @@
 
   onMount(async () => {
     invalidateAll();
+    setTimeout(() => {
+      goto(window.location.pathname, { replaceState: true });
+    }, 500);
     //Obtener evento activo
     await loadData();
     let interval = setInterval(() => {
@@ -113,11 +116,7 @@
 
 {#if loading}
   <div class="loading-container" transition:fade={{ duration: 200 }}>
-    <img
-      src={logo}
-      style="transform: scale({$scale})"
-      alt="loading"
-    />
+    <img src={logo} style="transform: scale({$scale})" alt="loading" />
   </div>
 {:else}
   {#if urlImagenPortada}
