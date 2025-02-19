@@ -26,7 +26,7 @@
   async function loadData() {
     let { data: evento, error } = await supabase
       .from("mEvento")
-      .select("*",{ head: true, cache: 'no-store' })
+      .select("*")
       .eq("activo", 1);
     if (evento) {
       mEvento = evento[0];
