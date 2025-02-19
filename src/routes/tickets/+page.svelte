@@ -27,7 +27,7 @@
     let { data: evento, error } = await supabase
       .from("mEvento")
       .select("*")
-      .eq("activo", 1);
+      .neq("activo", 1);
     if (evento) {
       mEvento = evento[0];
     }
