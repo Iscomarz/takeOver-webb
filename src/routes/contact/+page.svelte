@@ -32,16 +32,16 @@
             return false;
         }
         // Validar el DJ Set link
-        if(djSetLink !== ''){
-            if (!urlRegex.test(djSetLink)) {
-            toast.error('Por favor, ingresa un link válido para el DJ Set.',
-                {
-                    style: styleToast
-                }
-            );
-            return false;
-        }
-        }
+        // if(djSetLink !== ''){
+        //     if (!urlRegex.test(djSetLink)) {
+        //     toast.error('Por favor, ingresa un link válido para el DJ Set.',
+        //         {
+        //             style: styleToast
+        //         }
+        //     );
+        //     return false;
+        // }
+        // }
 
         if(message===''){
             toast.error('Por favor, ingresa un mensaje.',
@@ -144,7 +144,7 @@
     <br><br>
     
     <!-- Botón de envío -->
-    <button style="width: 100%; text-align: center;" on:click={sendMessage}>
+    <button style="width: 50%; text-align: center; border-radius: 20px; border: 2px solid var(--color-theme-1);" on:click={sendMessage}>
         SEND
     </button>
 </div>
@@ -156,6 +156,8 @@
     button {
         color: var(--color-theme-1);
 		font-family: 'JostRegular';
+        justify-content: center;
+        align-items: center;
     }
     .fixed-textarea {
         resize: none;
