@@ -58,6 +58,7 @@
     // Función para enviar el email
     async function sendMessage() {
         // Primero validar el formulario
+        console.log("Botón presionado");
         if (!validarFormulario()) {
             return; // Si la validación falla, no continúa
         }
@@ -144,7 +145,7 @@
     <br><br>
     
     <!-- Botón de envío -->
-    <button type="button" style="width: 50%; text-align: center; border-radius: 20px; border: 2px solid var(--color-theme-1);" on:click={sendMessage}>
+    <button style="width: 50%; text-align: center; border-radius: 20px; border: 2px solid var(--color-theme-1);" on:click={sendMessage}>
         SEND
     </button>
 </div>
