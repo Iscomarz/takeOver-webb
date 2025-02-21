@@ -1,6 +1,6 @@
 <svelte:head>
-  <title>HOME</title>
-  <meta name="description" content="Svelte demo app" />
+  <title>Take Over HOME</title>
+  <meta name="description" content="Take Over Show Official Website" />
 </svelte:head>
 
 <div class="centro">
