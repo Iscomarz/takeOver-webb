@@ -144,7 +144,7 @@
     <br><br>
     
     <!-- Botón de envío -->
-    <button style="width: 50%; text-align: center; border-radius: 20px; border: 2px solid var(--color-theme-1);" on:click={sendMessage}>
+    <button type="button" style="width: 50%; text-align: center; border-radius: 20px; border: 2px solid var(--color-theme-1);" on:tap={sendMessage}>
         SEND
     </button>
 </div>
