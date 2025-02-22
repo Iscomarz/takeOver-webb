@@ -6,14 +6,16 @@
   let showHeader = false;
   let showMenuIcon = false;
   let titleHeader = "titulo";
+  let backBlack = false;
 
   $: currentPath = $page.url.pathname;
   $: showHeader = currentPath !== "/";
   $: showMenuIcon = currentPath !== "/";
+  $: backBlack = currentPath !== "/";
   $: titleHeader = currentPath;
 </script>
 
-<header>
+<header style={backBlack ? "background: var(--color-bg-2)" : ""}>
   <div class="corner">
     <a href="/">
       <img src={logo} alt="TakeOver" />
@@ -69,7 +71,6 @@
     position: fixed;
     width: 100%;
     z-index: 1000;
-    background: var(--color-bg-2);
   }
 
   .corner {
