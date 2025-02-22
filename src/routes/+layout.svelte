@@ -49,6 +49,8 @@
     margin: 0 auto;
     box-sizing: border-box;
     margin-top: 50px;
+    position: relative;
+    overflow: hidden;
   }
 
   footer {
@@ -70,7 +72,7 @@
   }
 
   @media screen and (max-width: 600px) {
-	main {
+    main {
       padding: 0rem;
     }
   }

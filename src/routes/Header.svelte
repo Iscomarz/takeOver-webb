@@ -2,18 +2,14 @@
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
   import insta from "$lib/images/instagram-logo.svg";
-  import menu from "$lib/images/icons/list.svg";
-  import { onMount } from "svelte";
 
   let showHeader = false;
   let showMenuIcon = false;
   let titleHeader = "titulo";
 
   $: currentPath = $page.url.pathname;
-
   $: showHeader = currentPath !== "/";
   $: showMenuIcon = currentPath !== "/";
-
   $: titleHeader = currentPath;
 </script>
 
@@ -47,7 +43,7 @@
     </nav>
   {/if}
   <div class="title-header">
-    <h3>{titleHeader.slice(1).toUpperCase()}</h3>
+    <h3>{titleHeader.slice(1).toUpperCase() == "TICKETS" ? "Next Event": titleHeader.slice(1).toUpperCase()}</h3>
   </div>
 
   <div class="corner">
@@ -59,8 +55,8 @@
       <img src={insta} alt="Instagram" />
     </a>
     {#if showMenuIcon}
-      <a class="menu-icon" href="/">
-        <img src={menu} alt="menu" />
+      <a class="menu-icon" href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5">
+        <img src={insta} alt="menu" />
       </a>
     {/if}
   </div>
@@ -73,11 +69,13 @@
     position: fixed;
     width: 100%;
     z-index: 1000;
+    background: var(--color-bg-2);
   }
 
   .corner {
     width: 4em;
     height: 4em;
+    margin-right: 20px;
   }
 
   .corner a {
@@ -156,6 +154,12 @@
     display: none !important;
   }
 
+  .menu-icon img {
+    width: 2.2em;
+    height: 2.2em;
+    object-fit: contain;
+  }
+
   .title-header {
     display: none !important;
   }
@@ -167,7 +171,7 @@
     }
 
     .menu-icon {
-      display: block !important;
+      display: flex !important;
     }
 
     .title-header {
@@ -186,7 +190,6 @@
 
     .corner{
       margin-left: 20px;
-      margin-top: 20px;
     }
   }
 </style>

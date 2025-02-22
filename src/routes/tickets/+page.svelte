@@ -110,7 +110,7 @@
 </script>
 
 <svelte:head>
-  <title>Tickets</title>
+  <title>Next Event</title>
   <meta
     name="description"
     content="Compra tus accesos para el proximo Take Over"

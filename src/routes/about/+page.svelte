@@ -40,6 +40,7 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    margin-top: 20px;
   }
   h1 {
     font-family: "JockeyOne";
