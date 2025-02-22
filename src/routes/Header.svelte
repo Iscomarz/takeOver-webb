@@ -6,11 +6,13 @@
   import { onMount } from "svelte";
 
   let showHeader = false;
-  let titleHeader = 'titulo';
+  let showMenuIcon = false;
+  let titleHeader = "titulo";
 
   $: currentPath = $page.url.pathname;
 
   $: showHeader = currentPath !== "/";
+  $: showMenuIcon = currentPath !== "/";
 
   $: titleHeader = currentPath;
 </script>
@@ -43,23 +45,28 @@
         </li>
       </ul>
     </nav>
-	{/if}
-	<div class="title-header">
-		<h3>{titleHeader.slice(1).toUpperCase()}</h3>
-	</div>
+  {/if}
+  <div class="title-header">
+    <h3>{titleHeader.slice(1).toUpperCase()}</h3>
+  </div>
 
   <div class="corner">
-    <a class="instagram-icon" target="_blank" href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5">
+    <a
+      class="instagram-icon"
+      target="_blank"
+      href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5"
+    >
       <img src={insta} alt="Instagram" />
     </a>
-	<a class="menu-icon" href="/">
-		<img src={menu} alt="menu" />
-	</a>
+    {#if showMenuIcon}
+      <a class="menu-icon" href="/">
+        <img src={menu} alt="menu" />
+      </a>
+    {/if}
   </div>
 </header>
 
 <style>
-
   header {
     display: flex;
     justify-content: space-around;
@@ -87,7 +94,7 @@
     object-fit: contain;
   }
 
-  nav { 
+  nav {
     display: flex;
     justify-content: center;
     --background: rgba(255, 255, 255, 0);
@@ -149,8 +156,8 @@
     display: none !important;
   }
 
-  .title-header{
-	display: none !important;
+  .title-header {
+    display: none !important;
   }
 
   /* Mostrar el icono de menú y ocultar el logo de Instagram en pantallas pequeñas */
@@ -163,18 +170,23 @@
       display: block !important;
     }
 
-	.title-header{
-		display: flex !important;
-    	justify-content: center;
-		align-items: center;
-		width: 70%;
-		color: whitesmoke;
-		font-family: "JockeyOne";
-		font-size: 1.6em;
-	}
+    .title-header {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      width: 70%;
+      color: whitesmoke;
+      font-family: "JockeyOne";
+      font-size: 1.6em;
+    }
 
-	nav{
-		display: none;
-	}
+    nav {
+      display: none;
+    }
+
+    .corner{
+      margin-left: 20px;
+      margin-top: 20px;
+    }
   }
 </style>

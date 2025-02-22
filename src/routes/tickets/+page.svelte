@@ -6,7 +6,7 @@
   import Tickets from "../components/Tickets.svelte";
   import supabase from "../../lib/supabase";
   import { onMount, tick } from "svelte";
-  import { invalidateAll, goto  } from "$app/navigation";
+  import { invalidateAll, goto } from "$app/navigation";
   import { tweened } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
   import logo from "$lib/images/takeover-logo.png";
@@ -111,7 +111,10 @@
 
 <svelte:head>
   <title>Tickets</title>
-  <meta name="description" content="About this app" />
+  <meta
+    name="description"
+    content="Compra tus accesos para el proximo Take Over"
+  />
 </svelte:head>
 
 {#if loading}
@@ -122,13 +125,16 @@
   {#if urlImagenPortada}
     <div class="img-event">
       <span>
+        <div class="background-blur" style="background-image: url({urlImagenPortada});"></div>
         <img src={urlImagenPortada} alt="portada" />
       </span>
     </div>
   {/if}
 
   <section class="info-event-short">
-    <Title titulo={mEvento.nombreEvento} fecha="Domingo, 16 de Marzo 2025" />
+    <Title titulo={mEvento.nombreEvento} 
+    descripcion={mEvento.descripcionCorta}
+    fecha="Domingo, 16 de Marzo 2025" />
   </section>
 
   <section class="info-event">
@@ -162,23 +168,41 @@
     transition: transform 0.75s ease-in-out;
   }
   .img-event {
-    padding: 20px;
+    margin-top: 20px;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   span {
+    position: relative;
     width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .background-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); /* Ajusta este valor para cambiar el nivel de desenfoque */
+    z-index: -1;
   }
   img {
     border-radius: 40px;
+    width: 70%;
+    z-index: 1;
   }
   .info-event-short {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 20px;
   }
 
   .info-event {
@@ -191,9 +215,21 @@
   }
   .components {
     width: 85%;
-    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 30px;
+    margin-top: 20px;
+  }
+  @media screen and (max-width: 600px) {
+    img {
+      border-radius: 0px;
+      width: 70%;
+    }
+    span{
+      width: 100%;
+    }
+    .img-event{
+      margin-top: 40px;
+    }
   }
 </style>

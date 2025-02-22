@@ -111,6 +111,11 @@ button:focus:not(:focus-visible) {
 	h1 {
 		font-size: 2.4rem;
 	}
+
+	body{
+		background-image: transparent;
+		background-color: rgba(0, 0, 0, 0);
+	}
 }
 
 .visually-hidden {
