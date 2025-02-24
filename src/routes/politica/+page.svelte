@@ -55,12 +55,12 @@
         h3{
             font-family: "JockeyOne" !important;
             color: whitesmoke;
-            font-size: 1.6em !important;
+            font-size: 1.4em !important;
             margin-bottom: 10px;       }
         p{
             color: whitesmoke;
             font-family: "JostRegular" !important;
-            font-size: 1em !important;
+            font-size: clamp(.8em, 3vw, 1em);
             white-space: pre-line;
         }
     </style>

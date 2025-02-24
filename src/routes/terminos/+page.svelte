@@ -37,7 +37,7 @@
         p{
             color: whitesmoke;
             font-family: "JostRegular";
-            font-size: 1em;
+            font-size: clamp(.8em, 3vw, 1em);
             white-space: pre-line;
         }
         h1{

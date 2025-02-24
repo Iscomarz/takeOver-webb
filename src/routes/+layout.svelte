@@ -63,12 +63,14 @@
 	color: whitesmoke;
 	font-size: .8em !important;
 	background-color: rgba(18, 18, 18, 0.953);
-	margin-top: 50px;
+	margin-top: 70px;
 	gap: 10px;
   }
 
   footer a {
     font-weight: bold;
+	font-size: .8em !important;
+	text-decoration: underline;
   }
 
   @media (min-width: 480px) {
