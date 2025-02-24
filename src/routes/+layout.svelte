@@ -12,6 +12,7 @@
 
 	<footer>
 		<p>Send a message to takeOver@gmail.com to contact me</p>
+		<a href="/politica">Politicas de privacidad</a>
 	</footer>
 </div>
 

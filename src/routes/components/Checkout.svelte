@@ -8,6 +8,7 @@
   export let idPrecioStripe;
 
   let stripe;
+  let acceptedTerms = false;
 
   onMount(async () => {
     //live
@@ -17,6 +18,13 @@
   });
 
   async function handleCheckout() {
+    if (!acceptedTerms) {
+      toast.error("Debes aceptar los términos y condiciones para continuar", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+      return;
+    }
     // Se asegura de que totalPrice esté correctamente suscrito
     const finalPrice = $totalPrice;
     console.log('boton checkout',idPrecioStripe, cantidad);
@@ -58,6 +66,11 @@
 
 <Toaster />
 
+<label>
+  <input type="checkbox" bind:checked={acceptedTerms} />
+  Acepto los <a href="/terminos" target="_blank">términos y condiciones</a>
+</label>
+
 <button on:click={handleCheckout}>
   Checkout <p>Mex${$totalPrice}</p>
 </button>
@@ -80,5 +93,24 @@
 
   button:hover {
     background-color: #3a3a3a;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  input[type="checkbox"] {
+    margin-right: 10px;
+  }
+
+  a {
+    color: #56fdb8;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
   }
 </style>
