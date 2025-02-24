@@ -59,8 +59,12 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 12px;
+    padding: 20px;
 	color: whitesmoke;
+	font-size: .8em !important;
+	background-color: rgba(18, 18, 18, 0.953);
+	margin-top: 50px;
+	gap: 10px;
   }
 
   footer a {

@@ -68,7 +68,7 @@
 
 <label>
   <input type="checkbox" bind:checked={acceptedTerms} />
-  Acepto los <a href="/terminos" target="_blank">términos y condiciones</a>
+  <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
 </label>
 
 <button on:click={handleCheckout}>
@@ -103,6 +103,11 @@
 
   input[type="checkbox"] {
     margin-right: 10px;
+  }
+
+  .terminos{
+    font-family: "JostRegular";
+    color: whitesmoke;
   }
 
   a {

@@ -1,5 +1,6 @@
 
-<h1>TÉRMINOS Y CONDICIONES</h1>
+<section class="condiciones">
+    <h1>TÉRMINOS Y CONDICIONES</h1>
 <p>
     Última actualización: 02/24/2025
     
@@ -27,12 +28,16 @@
     - No emitimos facturas.
     
     Cualquier duda o consulta sobre estos términos y condiciones puede dirigirse a take.oover.show@gmail.com.</p>
+</section>
 
     <style>
+        .condiciones{
+            padding: 20px;
+        }
         p{
             color: whitesmoke;
             font-family: "JostRegular";
-            font-size: 1.2em;
+            font-size: 1em;
             white-space: pre-line;
         }
         h1{

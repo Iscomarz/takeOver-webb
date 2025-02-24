@@ -1,4 +1,5 @@
-<h1>Politica de Privacidad</h1>
+<section class="politicas">
+    <h1>Politica de Privacidad</h1>
 
 <h3>¿Qué datos personales recopilamos y por qué los recopilamos?</h3>
 
@@ -38,24 +39,28 @@
     Si tienes dudas sobre esta política, puedes contactarnos en take.oover.show@gmail.com.
     
     </p>
+</section>
 
     <style>
+        .politicas{
+            padding: 20px;
+        }
         h1{
-            font-family: "JockeyOne";
-            font-size: 2em;
+            font-family: "JockeyOne" !important;
+            font-size: 2em !important;
             color: whitesmoke;
             text-align: center;
             margin-bottom: 20px;
         }
         h3{
-            font-family: "JockeyOne";
+            font-family: "JockeyOne" !important;
             color: whitesmoke;
-            font-size: 1.6em;
+            font-size: 1.6em !important;
             margin-bottom: 10px;       }
         p{
             color: whitesmoke;
-            font-family: "JostRegular";
-            font-size: 1.2em;
+            font-family: "JostRegular" !important;
+            font-size: 1em !important;
             white-space: pre-line;
         }
     </style>
