@@ -2,20 +2,20 @@
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
   import insta from "$lib/images/instagram-logo.svg";
-  import menu from "$lib/images/icons/list.svg";
-  import { onMount } from "svelte";
 
   let showHeader = false;
-  let titleHeader = 'titulo';
+  let showMenuIcon = false;
+  let titleHeader = "titulo";
+  let backBlack = false;
 
   $: currentPath = $page.url.pathname;
-
   $: showHeader = currentPath !== "/";
-
+  $: showMenuIcon = currentPath !== "/";
+  $: backBlack = currentPath !== "/";
   $: titleHeader = currentPath;
 </script>
 
-<header>
+<header style={backBlack ? "background: var(--color-bg-2)" : ""}>
   <div class="corner">
     <a href="/">
       <img src={logo} alt="TakeOver" />
@@ -43,23 +43,28 @@
         </li>
       </ul>
     </nav>
-	{/if}
-	<div class="title-header">
-		<h3>{titleHeader.slice(1).toUpperCase()}</h3>
-	</div>
+  {/if}
+  <div class="title-header">
+    <h3>{titleHeader.slice(1).toUpperCase() == "TICKETS" ? "Next Event": titleHeader.slice(1).toUpperCase()}</h3>
+  </div>
 
   <div class="corner">
-    <a class="instagram-icon" target="_blank" href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5">
+    <a
+      class="instagram-icon"
+      target="_blank"
+      href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5"
+    >
       <img src={insta} alt="Instagram" />
     </a>
-	<a class="menu-icon" href="/">
-		<img src={menu} alt="menu" />
-	</a>
+    {#if showMenuIcon}
+      <a class="menu-icon" href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5">
+        <img src={insta} alt="menu" />
+      </a>
+    {/if}
   </div>
 </header>
 
 <style>
-
   header {
     display: flex;
     justify-content: space-around;
@@ -71,6 +76,7 @@
   .corner {
     width: 4em;
     height: 4em;
+    margin-right: 20px;
   }
 
   .corner a {
@@ -87,7 +93,7 @@
     object-fit: contain;
   }
 
-  nav { 
+  nav {
     display: flex;
     justify-content: center;
     --background: rgba(255, 255, 255, 0);
@@ -149,8 +155,14 @@
     display: none !important;
   }
 
-  .title-header{
-	display: none !important;
+  .menu-icon img {
+    width: 2.2em;
+    height: 2.2em;
+    object-fit: contain;
+  }
+
+  .title-header {
+    display: none !important;
   }
 
   /* Mostrar el icono de menú y ocultar el logo de Instagram en pantallas pequeñas */
@@ -160,21 +172,25 @@
     }
 
     .menu-icon {
-      display: block !important;
+      display: flex !important;
     }
 
-	.title-header{
-		display: flex !important;
-    	justify-content: center;
-		align-items: center;
-		width: 70%;
-		color: whitesmoke;
-		font-family: "JockeyOne";
-		font-size: 1.6em;
-	}
+    .title-header {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      width: 70%;
+      color: whitesmoke;
+      font-family: "JockeyOne";
+      font-size: 1.6em;
+    }
 
-	nav{
-		display: none;
-	}
+    nav {
+      display: none;
+    }
+
+    .corner{
+      margin-left: 20px;
+    }
   }
 </style>

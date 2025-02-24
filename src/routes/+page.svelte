@@ -3,6 +3,10 @@
   <meta name="description" content="Take Over Show Official Website" />
 </svelte:head>
 
+<script>
+    import insta from "$lib/images/instagram-logo.svg";
+</script>
+
 <div class="centro">
   <div>
     <section id="welcome">
@@ -22,6 +26,12 @@
     </section>
   </div>
 </div>
+
+<section class="redes">
+  <a href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9" target="_blank">
+    <img src={insta} alt="Instagram" />
+  </a>
+</section>
 
 <style>
 
@@ -74,6 +84,10 @@
 	font-family: "JostRegular";
   }
 
+  .redes {
+    display: none;
+  }
+
   @media screen and (max-width: 600px) {
 	ul{
 		display: flex;
@@ -81,5 +95,11 @@
 		text-align: center;
 		gap: 20px;
 	}
+  .redes {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 100px;
+  }
   }
 </style>

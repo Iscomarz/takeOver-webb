@@ -22,7 +22,7 @@
 	--font-mono: 'Fira Mono', monospace;
 	--color-bg-0: rgb(59, 59, 59);
 	--color-bg-1: hsl(0, 0%, 8%);
-	--color-bg-2: hsl(0, 0%, 12%);
+	--color-bg-2: hsla(0, 0%, 12%, 0.959);
 	--color-theme-1: #56FDB8;
 	--color-theme-2: #4075a6;
 	--color-text: rgba(0, 0, 0, 0.7);
@@ -110,6 +110,11 @@ button:focus:not(:focus-visible) {
 @media (min-width: 720px) {
 	h1 {
 		font-size: 2.4rem;
+	}
+
+	body{
+		background-image: transparent;
+		background-color: rgba(0, 0, 0, 0);
 	}
 }
 

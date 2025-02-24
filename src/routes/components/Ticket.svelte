@@ -99,7 +99,7 @@
     border: 3px solid #4b4b4b;
     border-radius: 10px;
     color: whitesmoke;
-    padding: 15px;
+    padding: 10px;
     display: flex;
     justify-content: center;
     align-items: start;
