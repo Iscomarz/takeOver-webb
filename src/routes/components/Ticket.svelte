@@ -13,6 +13,7 @@
   export let idPrecioStripe;
   export let idFase;
   export let idEvento;
+  export let soldout = false;
 
   let cantidad = 0;
 
@@ -89,7 +90,12 @@
       <p>{formatearFechas(vigencia)}</p>
     </div>
     <div class="contador">
+      {#if (soldout)}
+      <p class="soldout">Sold Out</p>
+      {:else}
       <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
+      {/if}
+      
     </div>
   </div>
 </div>
@@ -104,6 +110,10 @@
     justify-content: center;
     align-items: start;
     width: 100%;
+  }
+
+  .soldout {
+    color: #ff0000;
   }
 
   .inactivo {

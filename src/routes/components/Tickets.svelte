@@ -34,7 +34,7 @@
     {#each ticketDataEve as ticket, index}
         <Ticket nombreFace={ticket.nombreFace} vigencia={ticket.fechaExpira} precio={ticket.precio} 
         activo={ticket.activo} idPrecioStripe={ticket.idPrecioStripe} idFase={ticket.idFase} 
-        idEvento={ticket.idEvento} fechaExpira={ticket.fechaExpira}
+        idEvento={ticket.idEvento} fechaExpira={ticket.fechaExpira} soldout={ticket.soldout}
         {index} on:quantityChange={handleQuantityChange}/>
     {/each}
     <Checkout idPrecioStripe={idStripeSeleccionado} cantidad={$totalCantidad} totalPrice={totalPrice}/>
