@@ -68,10 +68,6 @@
   }
 
   onMount(async () => {
-    invalidateAll();
-    setTimeout(() => {
-      goto(window.location.pathname, { replaceState: true });
-    }, 500);
     //Obtener evento activo
     await loadData();
     let interval = setInterval(() => {
