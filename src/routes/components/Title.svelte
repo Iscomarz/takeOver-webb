@@ -27,7 +27,7 @@
     font-size: clamp(1.5em, 5vw, 2.5em);
     padding: 0px;
     margin: 0px;
-    color: var(--color-theme-1);
+    color: whitesmoke;
   }
   h4,
   p {
