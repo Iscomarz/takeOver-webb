@@ -28,6 +28,7 @@ let venta = {
 
 let idSupabase = "";
 let tickets = [];
+let tipoEventoStripe = "";
 //test
 //const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
@@ -54,40 +55,71 @@ export async function POST(event) {
     );
   }
 
-  // Solo procesamos pagos completados
-  if (eventStripe.type === "checkout.session.completed") {
-    const session = eventStripe.data.object;
-    const email = session.customer_details.email;
-    const name = session.customer_details.name;
-    const amount = session.amount_total / 100;
+  tipoEventoStripe = eventStripe.type;
+  switch (tipoEventoStripe) {
+    case "checkout.session.completed":
+      console.log("Pago completado, se manda correo de confirmacion...");
+      // Llamada al procedimiento almacenado
+      const { data, error } = await supabase.rpc("guardar_pago_venta", {
+        monto: session.amount_total / 100,
+        idTransStripe: idTransStripe,
+        nombreV: session.customer_details.name,
+        correoV: session.customer_details.email,
+        cantidadT: cantidadT,
+        descripcionFase: descripcionFase,
+      });
 
-    console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
-
-    // **Responde inmediatamente a Stripe para evitar reintentos**
-    const response = json({ received: true }, { status: 200 });
-
-    // **Obtener el ID del evento**
-    const stripeEventId = eventStripe.id;
-    console.log("Stripe Event ID:", stripeEventId);
-
-    if (await eventoYaProcesado(stripeEventId)) {
-      console.log("Evento ya procesado, omitiendo...");
-      return response;
-    } else {
-      console.log("Antes de llamar procesarPago...");
-      await procesarPago(session, email, name, amount, stripeEventId).catch(
-        (error) => {
-          console.error("Error procesando el pago en segundo plano:", error);
-        }
-      );
-      console.log("Después de llamar procesarPago (terminó bien)");
-
-      return response;
-    }
+      if (error) {
+        console.error("Error al ejecutar el procedimiento:", error);
+      } else {
+        console.log("Pago guardado exitosamente:", data);
+      }
     // **Stripe recibirá 200 OK y no reintentará**
-  }
+    case "checkout.session.expired":
+      console.log("Sesión expirada, procesando...");
 
-  return json({ message: "Evento no manejado" }, { status: 400 });
+      return json({ message: "Sesión expirada" }, { status: 200 });
+    case "payment_intent.succeeded":
+      console.log("Pago exitoso, procesando...");
+      // Solo procesamos pagos completados
+      const session = eventStripe.data.object;
+      const email = session.customer_details.email;
+      const name = session.customer_details.name;
+      const amount = session.amount_total / 100;
+
+      console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
+
+      // **Responde inmediatamente a Stripe para evitar reintentos**
+      const response = json({ received: true }, { status: 200 });
+
+      // **Obtener el ID del evento**
+      const stripeEventId = eventStripe.id;
+      console.log("Stripe Event ID:", stripeEventId);
+
+      if (await eventoYaProcesado(stripeEventId)) {
+        console.log("Evento ya procesado, omitiendo...");
+        return response;
+      } else {
+        console.log("Antes de llamar procesarPago...");
+        await procesarPago(session, email, name, amount, stripeEventId).catch(
+          (error) => {
+            console.error("Error procesando el pago en segundo plano:", error);
+          }
+        );
+        console.log("Después de llamar procesarPago (terminó bien)");
+
+        return response;
+      }
+      return json({ message: "Pago exitoso" }, { status: 200 });
+    case "checkout.session.async_payment_succeeded":
+      console.log("Pago exitoso, procesando...");
+      return json({ message: "Pago exitoso" }, { status: 200 });
+    case "checkout.session.async_payment_failed":
+      console.log("Pago fallido, no se procesa el pago");
+      return json({ message: "Pago fallido" }, { status: 200 });
+    default:
+      return json({ message: "Evento no manejado" }, { status: 400 });
+  }
 }
 
 async function guardaPago(pago) {
@@ -108,7 +140,7 @@ async function eventoYaProcesado(stripeEventId) {
     .select("idTransaccionStripe")
     .eq("idTransaccionStripe", stripeEventId);
 
-    //console.log("data", data);
+  //console.log("data", data);
   return data && data.length > 0; // Devuelve `true` si ya existe
 }
 
@@ -292,13 +324,14 @@ async function procesarPago(session, email, name, amount, idEventoStripe) {
   console.log(venta);
   await enviarCorreoConTicket(pdfBuffer, venta);
   console.log("correo enviado");
-  
+
   await cerrarSesion();
 }
 
 async function agregarVendidosaInventario(faseEvento, idVenta) {
   // Obtener la cantidad actual vendida
-  const nuevaCantidadVendida = faseEvento.cantidadVendida + idVenta.cantidadTickets;
+  const nuevaCantidadVendida =
+    faseEvento.cantidadVendida + idVenta.cantidadTickets;
 
   // Verificar si se alcanzó o superó el límite
   const activo = nuevaCantidadVendida >= faseEvento.limite ? false : true;
