@@ -4,7 +4,6 @@ import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
 import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
 import QRCode from "qrcode";
-import { Queue } from "bull";
 
 let pago = {
   idFormaPago: 3, //id forma de pago stripe/tarjeta
@@ -55,16 +54,40 @@ export async function POST(event) {
     );
   }
 
+  // **Obtener el ID del evento**
+  const stripeEventId = eventStripe.data.object.id;
+
+  if (await eventoYaProcesado(stripeEventId)) {
+    console.log("Evento ya procesado, omitiendo...");
+    return json({ message: "Evento ya procesado" }, { status: 200 });
+  } 
+
   tipoEventoStripe = eventStripe.type;
+  const session = eventStripe.data.object;
+  idSupabase = await login();
+
   switch (tipoEventoStripe) {
     case "checkout.session.completed":
-      console.log("Pago completado, se manda correo de confirmacion...");
+      console.log(
+        "Sesion de pago completada, se manda correo de confirmacion y se guarda pago y venta..."
+      );
+      const email = session.customer_details.email;
+      const name = session.customer_details.name;
+      const amount = session.amount_total / 100;
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+      const cantidadT = "";
+      const descripcionFase = 0;
+      lineItems.data.forEach((item) => {
+        descripcionFase = item.description;
+        cantidadT = item.quantity;
+        console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
+      });
       // Llamada al procedimiento almacenado
       const { data, error } = await supabase.rpc("guardar_pago_venta", {
-        monto: session.amount_total / 100,
-        idTransStripe: idTransStripe,
-        nombreV: session.customer_details.name,
-        correoV: session.customer_details.email,
+        monto: amount,
+        idTransStripe: session.payment_intent,
+        nombreV: name,
+        correoV: email,
         cantidadT: cantidadT,
         descripcionFase: descripcionFase,
       });
@@ -72,45 +95,27 @@ export async function POST(event) {
       if (error) {
         console.error("Error al ejecutar el procedimiento:", error);
       } else {
-        console.log("Pago guardado exitosamente:", data);
+        console.log("Pago y venta guardados exitosamente:", data);
+        return json({ message: "Pago guardado exitoso" }, { status: 200 });
       }
-    // **Stripe recibirá 200 OK y no reintentará**
+
     case "checkout.session.expired":
       console.log("Sesión expirada, procesando...");
 
       return json({ message: "Sesión expirada" }, { status: 200 });
     case "payment_intent.succeeded":
       console.log("Pago exitoso, procesando...");
-      // Solo procesamos pagos completados
-      const session = eventStripe.data.object;
-      const email = session.customer_details.email;
-      const name = session.customer_details.name;
-      const amount = session.amount_total / 100;
 
-      console.log(`Pago recibido: ${email}, ${amount} ${session.currency}`);
+      let { data:acreditaData, error:acreditaError } = await supabase.rpc("acredita_pago_function", { idpagoStripe: session.id });
 
-      // **Responde inmediatamente a Stripe para evitar reintentos**
-      const response = json({ received: true }, { status: 200 });
-
-      // **Obtener el ID del evento**
-      const stripeEventId = eventStripe.id;
-      console.log("Stripe Event ID:", stripeEventId);
-
-      if (await eventoYaProcesado(stripeEventId)) {
-        console.log("Evento ya procesado, omitiendo...");
-        return response;
+      if (acreditaError) {
+        console.error("Error llamando la función:", error);
       } else {
-        console.log("Antes de llamar procesarPago...");
-        await procesarPago(session, email, name, amount, stripeEventId).catch(
-          (error) => {
-            console.error("Error procesando el pago en segundo plano:", error);
-          }
-        );
-        console.log("Después de llamar procesarPago (terminó bien)");
-
-        return response;
+        console.log("Respuesta:", acreditaData);
+        generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
+        return json({ message: "Pago acreditado" }, { status: 200 });
       }
-      return json({ message: "Pago exitoso" }, { status: 200 });
+      
     case "checkout.session.async_payment_succeeded":
       console.log("Pago exitoso, procesando...");
       return json({ message: "Pago exitoso" }, { status: 200 });
@@ -122,18 +127,6 @@ export async function POST(event) {
   }
 }
 
-async function guardaPago(pago) {
-  const { data, error } = await supabase.from("mPago").insert([pago]).select();
-
-  if (error) {
-    console.error("No se pudo guardar el pago ", error.message);
-    return;
-  } else {
-    console.log("Pago guardado correctamente");
-    return data[0].idpago;
-  }
-}
-
 async function eventoYaProcesado(stripeEventId) {
   const { data, error } = await supabase
     .from("mPago")
@@ -142,22 +135,6 @@ async function eventoYaProcesado(stripeEventId) {
 
   //console.log("data", data);
   return data && data.length > 0; // Devuelve `true` si ya existe
-}
-
-async function guardaVenta(venta) {
-  const { data, error } = await supabase
-    .from("mVenta")
-    .insert([venta])
-    .select();
-
-  if (error) {
-    console.error("No se pudo guardar la venta", error.message);
-    await cerrarSesion();
-    return;
-  } else {
-    console.log("Venta guardada");
-    return data[0];
-  }
 }
 
 async function obtenerEventoActivo() {
@@ -196,20 +173,6 @@ async function cerrarSesion() {
   await supabase.auth.signOut();
 }
 
-async function obtenerFaseEvento(idEvento, descripcion) {
-  let { data: cFaseEvento, error } = await supabase
-    .from("cFaseEvento")
-    .select("*")
-    .eq("idEvento", idEvento)
-    .eq("nombreFace", descripcion);
-
-  if (error) {
-    console.error("No se pudo traer la fase", error.message);
-    cerrarSesion();
-  } else {
-    return cFaseEvento[0];
-  }
-}
 
 async function generarQRCode(texto) {
   try {
@@ -232,97 +195,33 @@ async function subirQRASupabase(base64Image, referencia) {
   const blob = new Blob([byteArray], { type: "image/png" });
 
   // Subir el archivo a Supabase Storage
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("codigosQR")
     .upload(`qr_${referencia}.png`, blob);
 
   if (error) {
     console.log("Error subiendo el QR a Supabase:", error);
   } else {
-    console.log("QR subido correctamente:", data);
-    return data.path; // Devolver la ruta del archivo
+    console.log("QR subido correctamente:"); // Devolver la ruta del archivo
   }
 }
 
-async function procesarPago(session, email, name, amount, idEventoStripe) {
-  console.log("🔹 Iniciando procesarPago()...");
-  idSupabase = await login();
-  pago.acreditado = true;
-  pago.fechaAcreditacion = new Date();
-  pago.cantidad = amount;
-  pago.idTransaccionStripe = idEventoStripe;
+async function generarCorreoYTicket(tickets, nombreComprador, correoComprador) {
+  console.log("🔹 Iniciando...");
 
-  const idPagoVenta = await guardaPago(pago);
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-  let evento = await obtenerEventoActivo();
+  for (let i = 0; i < tickets.length; i++) {
+    let base64QR = await generarQRCode(tickets[i].codigoQR);
+    await subirQRASupabase(base64QR, tickets[i].referencia);
 
-  let descripcion = "";
-  let cantidad = 0;
-  lineItems.data.forEach((item) => {
-    descripcion = item.description;
-    cantidad = item.quantity;
-    console.log(`Producto: ${descripcion}, Cantidad: ${cantidad}`);
-  });
-
-  let faseEvento = await obtenerFaseEvento(evento.idevento, descripcion);
-
-  venta.idEvento = evento.idevento;
-  venta.nombre = name;
-  venta.correo = email;
-  venta.cantidadTickets = cantidad;
-  venta.idPago = idPagoVenta;
-  venta.idFaseEvento = faseEvento.idFase;
-  venta.idUsuario = idSupabase;
-
-  const mVenta = await guardaVenta(venta);
-  if (mVenta) {
-    //Generar qr, tickets y guardar en supabase
-    for (let i = 0; i < mVenta.cantidadTickets; i++) {
-      //Generar referencia aleatoria de 8 digitos
-      let referencia = Math.floor(10000000 + Math.random() * 90000000);
-      //Crear un salt unico
-      let salt = crypto.randomUUID();
-      //Combinar la referencia con el salt y aplicar una funcion hash (SHA-256)
-      let codigoQR = await crypto.subtle
-        .digest("SHA-256", new TextEncoder().encode(referencia + salt))
-        .then((hash) => {
-          return Array.from(new Uint8Array(hash))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
-        });
-
-      let base64QR = await generarQRCode(codigoQR);
-      let pathQR = await subirQRASupabase(base64QR, referencia);
-
-      //Guardar en tabla ticket de supabase
-      const { data: dataTicket, error: errorTicket } = await supabase
-        .from("ticket")
-        .insert([
-          {
-            codigoQR: codigoQR,
-            validado: false,
-            pathStorage: pathQR,
-            idVenta: mVenta.idventa,
-            referencia: referencia,
-            idFase: mVenta.idFaseEvento,
-            fechaValidacion: null,
-          },
-        ])
-        .select();
-      if (errorTicket) {
-        console.error("No se pudo guardar el ticket ", errorTicket.message);
-      } else {
-        console.log("Ticket guardado correctamente");
-        tickets.push(dataTicket[0]);
-      }
-    }
+    tickets[i].pathStorage = base64QR;
   }
-
-  //Guardar tickets en supabase
-  await agregarVendidosaInventario(faseEvento, venta);
-  const pdfBuffer = await generarTicket(venta, evento, tickets);
+      
+    
+  const evento = await obtenerEventoActivo();
+  //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
+  const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
   console.log(venta);
-  await enviarCorreoConTicket(pdfBuffer, venta);
+  await enviarCorreoConTicket(pdfBuffer, nombreComprador, correoComprador);
   console.log("correo enviado");
 
   await cerrarSesion();

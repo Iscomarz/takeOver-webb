@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export async function enviarCorreoConTicket(pdfBuffer, venta) {
+export async function enviarCorreoConTicket(pdfBuffer, nombre, correo) {
   try {
     // Crear el transportador de nodemailer
     const transporter = nodemailer.createTransport({
@@ -14,12 +14,12 @@ export async function enviarCorreoConTicket(pdfBuffer, venta) {
     // Configurar el correo
     const mailOptions = {
       from: process.env.GMAIL_ADDRESS,
-      to: venta.correo,
+      to: correo,
       subject: 'Tu ticket para el evento',
-      text: `Hola ${venta.nombre}, adjunto encontrarás tu ticket para el evento.`,
+      text: `Hola ${nombre}, adjunto encontrarás tu ticket para el evento.`,
       attachments: [
         {
-          filename: `ticket_${venta.nombre}.pdf`,
+          filename: `ticket_${nombre}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf'
         }

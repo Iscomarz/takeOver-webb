@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 
 //Variables de prueba
 
-export async function generarTicket(venta, evento, tickets) {
+export async function generarTicket(nombre, evento, tickets) {
   const doc = new jsPDF();
 	let altura = 0;
 	const ticketsPorPagina = 2; // Número de tickets por página
@@ -26,7 +26,7 @@ export async function generarTicket(venta, evento, tickets) {
 
 			doc.setFontSize(10);
 			doc.text(fechaActual.toUpperCase(), 10, 30 + altura);
-			doc.text('Payment receipt for ' + venta.nombre, 10, 35 + altura);
+			doc.text('Payment receipt for ' + nombre, 10, 35 + altura);
 		}
 
 		// Título del evento
@@ -41,7 +41,7 @@ export async function generarTicket(venta, evento, tickets) {
 				' | TICKET N. ' +
 				(i + 1) +
 				'/' +
-				venta.cantidadTickets,
+				tickets.length,
 			10,
 			45 + altura
 		);
