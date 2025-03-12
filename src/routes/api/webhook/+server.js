@@ -3,6 +3,7 @@ import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
 import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
+import { enviarCorreoProcesoPago } from "../enviarCorreo/correoProcesandoPago.js";
 import QRCode from "qrcode";
 
 let pago = {
@@ -29,19 +30,21 @@ let idSupabase = "";
 let tickets = [];
 let tipoEventoStripe = "";
 //test
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
   const body = await event.request.arrayBuffer();
   const rawBody = Buffer.from(body);
 
+  //CLI
+  const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
   //test
   //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
   //live
-  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {
@@ -55,12 +58,7 @@ export async function POST(event) {
   }
 
   // **Obtener el ID del evento**
-  const stripeEventId = eventStripe.data.object.id;
-
-  if (await eventoYaProcesado(stripeEventId)) {
-    console.log("Evento ya procesado, omitiendo...");
-    return json({ message: "Evento ya procesado" }, { status: 200 });
-  } 
+  const stripeEventId = eventStripe.id;
 
   tipoEventoStripe = eventStripe.type;
   const session = eventStripe.data.object;
@@ -71,32 +69,13 @@ export async function POST(event) {
       console.log(
         "Sesion de pago completada, se manda correo de confirmacion y se guarda pago y venta..."
       );
-      const email = session.customer_details.email;
-      const name = session.customer_details.name;
-      const amount = session.amount_total / 100;
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      const cantidadT = "";
-      const descripcionFase = 0;
-      lineItems.data.forEach((item) => {
-        descripcionFase = item.description;
-        cantidadT = item.quantity;
-        console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
-      });
-      // Llamada al procedimiento almacenado
-      const { data, error } = await supabase.rpc("guardar_pago_venta", {
-        monto: amount,
-        idTransStripe: session.payment_intent,
-        nombreV: name,
-        correoV: email,
-        cantidadT: cantidadT,
-        descripcionFase: descripcionFase,
-      });
 
-      if (error) {
-        console.error("Error al ejecutar el procedimiento:", error);
-      } else {
-        console.log("Pago y venta guardados exitosamente:", data);
+      if (await capturarCheckOut(session, stripeEventId)) {
+        // Enviar correo de confirmacion y proceso de pago
+        enviarCorreoProcesoPago(session.customer_details.name, session.customer_details.email);
         return json({ message: "Pago guardado exitoso" }, { status: 200 });
+      } else {
+        return json({ message: "Error guardando el pago" }, { status: 400 });
       }
 
     case "checkout.session.expired":
@@ -104,26 +83,74 @@ export async function POST(event) {
 
       return json({ message: "Sesión expirada" }, { status: 200 });
     case "payment_intent.succeeded":
+
       console.log("Pago exitoso, procesando...");
+      // Llamada al procedimiento almacenado
+      console.log("idpagoStripe", session.id);
+        let { data: acreditaData, error: acreditaError } = await supabase.rpc(
+          "acredita_pago_function",
+          { idpagostripe: session.id }
+        );
 
-      let { data:acreditaData, error:acreditaError } = await supabase.rpc("acredita_pago_function", { idpagoStripe: session.id });
-
-      if (acreditaError) {
-        console.error("Error llamando la función:", error);
-      } else {
-        console.log("Respuesta:", acreditaData);
-        generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
-        return json({ message: "Pago acreditado" }, { status: 200 });
-      }
+        if (acreditaError) {
+          console.error("Error llamando la función:", error);
+        } else {
+          console.log("Respuesta:", acreditaData);
+          //generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
+          return json({ message: "Pago acreditado" }, { status: 200 });
+        }
       
+
     case "checkout.session.async_payment_succeeded":
       console.log("Pago exitoso, procesando...");
+
       return json({ message: "Pago exitoso" }, { status: 200 });
     case "checkout.session.async_payment_failed":
       console.log("Pago fallido, no se procesa el pago");
       return json({ message: "Pago fallido" }, { status: 200 });
     default:
       return json({ message: "Evento no manejado" }, { status: 400 });
+  }
+}
+
+async function capturarCheckOut(sessionCheckout, stripeEventId) {
+  if (await eventoYaProcesado(sessionCheckout.payment_intent)) {
+    console.log("Evento ya procesado, omitiendo...");
+    return true;
+  } else {
+    console.log("Evento no procesado, continuando...");
+    const email = sessionCheckout.customer_details.email;
+    const name = sessionCheckout.customer_details.name;
+    const amount = sessionCheckout.amount_total / 100;
+    const lineItems = await stripe.checkout.sessions.listLineItems(
+      sessionCheckout.id
+    );
+    let cantidadT = 0;
+    let descripcionFase = "";
+    lineItems.data.forEach((item) => {
+      descripcionFase = item.description;
+      cantidadT = item.quantity;
+      console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
+    });
+    console.log("checkout_session_stripe", stripeEventId);
+    // Llamada al procedimiento almacenado
+    const { data, error } = await supabase.rpc("guardar_pago_venta", {
+      cantidadt: cantidadT,
+      correov: email,
+      descripcionfase: descripcionFase,
+      idtransstripe: sessionCheckout.payment_intent,
+      monto: amount,
+      nombrev: name,
+      checkout_session_stripe: stripeEventId,
+    });
+
+    if (error) {
+      console.error("Error al ejecutar el procedimiento:", error);
+      return false;
+    } else {
+      console.log("Pago y venta guardados exitosamente:", data);
+      return true;
+    }
   }
 }
 
@@ -173,7 +200,6 @@ async function cerrarSesion() {
   await supabase.auth.signOut();
 }
 
-
 async function generarQRCode(texto) {
   try {
     const qrBase64 = await QRCode.toDataURL(texto);
@@ -215,8 +241,7 @@ async function generarCorreoYTicket(tickets, nombreComprador, correoComprador) {
 
     tickets[i].pathStorage = base64QR;
   }
-      
-    
+
   const evento = await obtenerEventoActivo();
   //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
   const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);

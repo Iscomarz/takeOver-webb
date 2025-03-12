@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export async function enviarCorreoConTicket(nombre, correo) {
+export async function enviarCorreoProcesoPago(nombre, correo) {
   try {
     // Crear el transportador de nodemailer
     const transporter = nodemailer.createTransport({

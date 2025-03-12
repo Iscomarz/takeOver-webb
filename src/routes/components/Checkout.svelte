@@ -14,7 +14,7 @@
     //live
     stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY_LIVE);
     //test
-    //stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
+    stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
   });
 
   async function handleCheckout() {
@@ -35,7 +35,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: [{ price: idPrecioStripe, quantity: cantidad }],
+          items: [{ price: 'price_1Qr5FB2KnoE6M9dvVDNDYn5E', quantity: cantidad }],
         }),
       });
 
