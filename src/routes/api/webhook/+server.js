@@ -30,9 +30,9 @@ let idSupabase = "";
 let tickets = [];
 let tipoEventoStripe = "";
 //test
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
@@ -40,11 +40,11 @@ export async function POST(event) {
   const rawBody = Buffer.from(body);
 
   //CLI
-  const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
+  //const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
   //test
   //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
   //live
-  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {
@@ -79,7 +79,7 @@ export async function POST(event) {
       }
 
     case "checkout.session.expired":
-      console.log("Sesión expirada, procesando...");
+      console.log("Sesión expirada, no se procesa el pago");
 
       return json({ message: "Sesión expirada" }, { status: 200 });
     case "payment_intent.succeeded":
@@ -95,16 +95,29 @@ export async function POST(event) {
         if (acreditaError) {
           console.error("Error llamando la función:", error);
         } else {
-          console.log("Respuesta:", acreditaData);
-          //generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
+          console.log('stp ejectuado correctamente');
+
+          generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
-      
 
     case "checkout.session.async_payment_succeeded":
       console.log("Pago exitoso, procesando...");
+      // Llamada al procedimiento almacenado
+      console.log("idpagoStripe", session.id);
+        let { data: acreditaDataAsync, error: acreditaErrorAsync } = await supabase.rpc(
+          "acredita_pago_function",
+          { idpagostripe: session.id }
+        );
 
-      return json({ message: "Pago exitoso" }, { status: 200 });
+        if (acreditaErrorAsync) {
+          console.error("Error llamando la función:", error);
+        } else {
+          console.log('stp ejectuado correctamente');
+
+          generarCorreoYTicket(acreditaDataAsync.tickets, acreditaDataAsync.nombreComprador, acreditaDataAsync.correoComprador);
+          return json({ message: "Pago acreditado" }, { status: 200 });
+        }
     case "checkout.session.async_payment_failed":
       console.log("Pago fallido, no se procesa el pago");
       return json({ message: "Pago fallido" }, { status: 200 });
