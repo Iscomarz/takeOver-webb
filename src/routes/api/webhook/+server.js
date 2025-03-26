@@ -30,9 +30,9 @@ let idSupabase = "";
 let tickets = [];
 let tipoEventoStripe = "";
 //test
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
@@ -40,11 +40,11 @@ export async function POST(event) {
   const rawBody = Buffer.from(body);
 
   //CLI
-  //const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
+  const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
   //test
   //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
   //live
-  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {
@@ -66,114 +66,98 @@ export async function POST(event) {
 
   switch (tipoEventoStripe) {
     case "checkout.session.completed":
-      console.log(
-        "Sesion de pago completada, se manda correo de confirmacion y se guarda pago y venta..."
-      );
+      if (await existePago(session.payment_intent)) {
 
-      if (await capturarCheckOut(session, stripeEventId)) {
-        // Enviar correo de confirmacion y proceso de pago
-        enviarCorreoProcesoPago(session.customer_details.name, session.customer_details.email);
-        return json({ message: "Pago guardado exitoso" }, { status: 200 });
+        await insertaVenta(session);
+
+        if (await acreditaPagoYGeneraTickets(session.payment_intent)) {
+          return json({ message: "Pago guardado exitoso" }, { status: 200 });
+        }
       } else {
-        return json({ message: "Error guardando el pago" }, { status: 400 });
+        if (await capturarCheckOut(session, stripeEventId)) {
+          // Enviar correo de confirmacion y proceso de pago
+          enviarCorreoProcesoPago(
+            session.customer_details.name,
+            session.customer_details.email
+          );
+          return json({ message: "Pago guardado exitoso" }, { status: 200 });
+        } else {
+          return json({ message: "Error guardando el pago" }, { status: 400 });
+        }
       }
+    case "payment_intent.succeeded":
+      console.log("Pago exitoso, procesando...");
+      if (await existePago(session.id)) {
+        console.log("existe pago");
+        //Este prodecediemiento acredita el pago en mPago y genera los tickets en la tabla ticket
+        if (await acreditaPagoYGeneraTickets(session.id)) {
+          return json({ message: "Pago acreditado" }, { status: 200 });
+        }
+      } else {
+        console.log("no existe pago");
+        await insertaPago(session);
+        return json({ message: "Pago guardado exitoso" }, { status: 200 });
+      }
+    case "checkout.session.async_payment_succeeded":
+      console.log("Pago exitoso, procesando...");
 
+      return json({ message: "Pago acreditado" }, { status: 200 });
+    case "checkout.session.async_payment_failed":
+      console.log("Pago fallido, no se procesa el pago");
+      return json({ message: "Pago fallido" }, { status: 200 });
     case "checkout.session.expired":
       console.log("Sesión expirada, no se procesa el pago");
 
       return json({ message: "Sesión expirada" }, { status: 200 });
-    case "payment_intent.succeeded":
-
-      console.log("Pago exitoso, procesando...");
-      // Llamada al procedimiento almacenado
-      console.log("idpagoStripe", session.id);
-        let { data: acreditaData, error: acreditaError } = await supabase.rpc(
-          "acredita_pago_function",
-          { idpagostripe: session.id }
-        );
-
-        if (acreditaError) {
-          console.error("Error llamando la función:", error);
-        } else {
-          console.log('stp ejectuado correctamente');
-
-          generarCorreoYTicket(acreditaData.tickets, acreditaData.nombreComprador, acreditaData.correoComprador);
-          return json({ message: "Pago acreditado" }, { status: 200 });
-        }
-
-    case "checkout.session.async_payment_succeeded":
-      console.log("Pago exitoso, procesando...");
-      // Llamada al procedimiento almacenado
-      console.log("idpagoStripe", session.id);
-        let { data: acreditaDataAsync, error: acreditaErrorAsync } = await supabase.rpc(
-          "acredita_pago_function",
-          { idpagostripe: session.id }
-        );
-
-        if (acreditaErrorAsync) {
-          console.error("Error llamando la función:", error);
-        } else {
-          console.log('stp ejectuado correctamente');
-
-          generarCorreoYTicket(acreditaDataAsync.tickets, acreditaDataAsync.nombreComprador, acreditaDataAsync.correoComprador);
-          return json({ message: "Pago acreditado" }, { status: 200 });
-        }
-    case "checkout.session.async_payment_failed":
-      console.log("Pago fallido, no se procesa el pago");
-      return json({ message: "Pago fallido" }, { status: 200 });
     default:
       return json({ message: "Evento no manejado" }, { status: 400 });
   }
 }
 
 async function capturarCheckOut(sessionCheckout, stripeEventId) {
-  if (await eventoYaProcesado(sessionCheckout.payment_intent)) {
-    console.log("Evento ya procesado, omitiendo...");
-    return true;
-  } else {
-    console.log("Evento no procesado, continuando...");
-    const email = sessionCheckout.customer_details.email;
-    const name = sessionCheckout.customer_details.name;
-    const amount = sessionCheckout.amount_total / 100;
-    const lineItems = await stripe.checkout.sessions.listLineItems(
-      sessionCheckout.id
-    );
-    let cantidadT = 0;
-    let descripcionFase = "";
-    lineItems.data.forEach((item) => {
-      descripcionFase = item.description;
-      cantidadT = item.quantity;
-      console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
-    });
-    console.log("checkout_session_stripe", stripeEventId);
-    // Llamada al procedimiento almacenado
-    const { data, error } = await supabase.rpc("guardar_pago_venta", {
-      cantidadt: cantidadT,
-      correov: email,
-      descripcionfase: descripcionFase,
-      idtransstripe: sessionCheckout.payment_intent,
-      monto: amount,
-      nombrev: name,
-      checkout_session_stripe: stripeEventId,
-    });
+  console.log("Evento no procesado, continuando...");
+  const email = sessionCheckout.customer_details.email;
+  const name = sessionCheckout.customer_details.name;
+  const amount = sessionCheckout.amount_total / 100;
+  const lineItems = await stripe.checkout.sessions.listLineItems(
+    sessionCheckout.id
+  );
+  let cantidadT = 0;
+  let descripcionFase = "";
+  lineItems.data.forEach((item) => {
+    descripcionFase = item.description;
+    cantidadT = item.quantity;
+    console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
+  });
+  console.log("checkout_session_stripe", stripeEventId);
+  // Llamada al procedimiento almacenado
+  const { data, error } = await supabase.rpc("guardar_pago_venta", {
+    cantidadt: cantidadT,
+    correov: email,
+    descripcionfase: descripcionFase,
+    idtransstripe: sessionCheckout.payment_intent,
+    monto: amount,
+    nombrev: name,
+    checkout_session_stripe: stripeEventId,
+  });
 
-    if (error) {
-      console.error("Error al ejecutar el procedimiento:", error);
-      return false;
-    } else {
-      console.log("Pago y venta guardados exitosamente:", data);
-      return true;
-    }
+  if (error) {
+    console.error("Error al ejecutar el procedimiento:", error);
+    return false;
+  } else {
+    console.log("Pago y venta guardados exitosamente:", data);
+    return true;
   }
 }
 
-async function eventoYaProcesado(stripeEventId) {
+async function existePago(paymentIntent) {
+  console.log("Verificando si el pago ya existe...", paymentIntent);
   const { data, error } = await supabase
     .from("mPago")
     .select("idTransaccionStripe")
-    .eq("idTransaccionStripe", stripeEventId);
+    .eq("idTransaccionStripe", paymentIntent);
 
-  //console.log("data", data);
+  console.log("data", data);
   return data && data.length > 0; // Devuelve `true` si ya existe
 }
 
@@ -289,5 +273,76 @@ async function agregarVendidosaInventario(faseEvento, idVenta) {
   } else {
     console.log("Tickets vendidos guardados correctamente", data);
     return data;
+  }
+}
+
+async function acreditaPagoYGeneraTickets(paymentIntent) {
+  let { data: acreditaData, error: acreditaError } = await supabase.rpc(
+    "acredita_pago_function",
+    { idpagostripe: paymentIntent }
+  );
+
+  if (acreditaError) {
+    console.error("Error llamando la función:", error);
+    return false;
+  } else {
+    console.log("stp ejectuado correctamente");
+
+    generarCorreoYTicket(
+      acreditaData.tickets,
+      acreditaData.nombreComprador,
+      acreditaData.correoComprador
+    );
+    return true;
+  }
+}
+
+async function insertaVenta(sessionCheckout) {
+  const email = sessionCheckout.customer_details.email;
+  const name = sessionCheckout.customer_details.name;
+  const lineItems = await stripe.checkout.sessions.listLineItems(
+    sessionCheckout.id
+  );
+  let cantidadT = 0;
+  let descripcionFase = "";
+  lineItems.data.forEach((item) => {
+    descripcionFase = item.description;
+    cantidadT = item.quantity;
+  });
+
+  const { data, error } = await supabase.rpc("insertaVenta", {
+    nombrev: name,
+    correov: email,
+    cantidad: cantidadT,
+    idpagostripe: sessionCheckout.payment_intent,
+    descripcionfase: descripcionFase,
+  });
+
+  if (error) {
+    console.error("Error al ejecutar el procedimiento:", error);
+    return false;
+  } else {
+    console.log("Pago y venta guardados exitosamente:", data);
+    return true;
+  }
+}
+
+async function insertaPago(session) {
+  const { data, error } = await supabase.from("mPago").insert([
+    {
+      idFormaPago: 3,
+      cantidad: session.amount / 100,
+      fechaPago: new Date(),
+      acreditado: false,
+      idTransaccionStripe: session.id,
+    },
+  ]);
+
+  if (error) {
+    console.error("Error al insertar el pago:", error);
+    return false;
+  } else {
+    console.log("Pago guardado exitosamente:", data);
+    return true;
   }
 }
