@@ -5,11 +5,13 @@
     import Checkout from "../components/Checkout.svelte";
     import { onMount, tick } from 'svelte';
     export let ticketDataEve;
+    export let eventoPasado = false;
 
     let idStripeSeleccionado = null;
     let cantidad = 0;
 
     onMount(async () => {
+        console.log(eventoPasado);
         await tick();
         tickets.set(ticketDataEve);
         inactivoState.set(ticketDataEve.map((ticket) => !ticket.activo));
@@ -37,7 +39,7 @@
         idEvento={ticket.idEvento} fechaExpira={ticket.fechaExpira} soldout={ticket.soldout}
         {index} on:quantityChange={handleQuantityChange}/>
     {/each}
-    <Checkout idPrecioStripe={idStripeSeleccionado} cantidad={$totalCantidad} totalPrice={totalPrice}/>
+    <Checkout idPrecioStripe={idStripeSeleccionado} cantidad={$totalCantidad} totalPrice={totalPrice} eventoPasado={eventoPasado}/>
 </div>
 
 <style>

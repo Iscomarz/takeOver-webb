@@ -1,6 +1,6 @@
 <script>
   import Title from "../../components/Title.svelte";
-  import Date from "../../components/Date.svelte";
+  import DateComponent from "../../components/Date.svelte";
   import Location from "../../components/Location.svelte";
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
@@ -158,7 +158,7 @@
 
     <section class="info-event">
       <div class="components">
-        <Date fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
+        <DateComponent fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
         <Location
           nombreLugar={mEvento.venue}
           direccion={mEvento.direccion}
@@ -166,7 +166,7 @@
         />
         <AboutEvent descripcion={mEvento.descripcion} />
         {#if fases.length > 0}
-          <Tickets ticketDataEve={fases} />
+          <Tickets ticketDataEve={fases}  eventoPasado={new Date(mEvento.fechaFin) < new Date() ? true : false}/>
         {/if}
       </div>
     </section>

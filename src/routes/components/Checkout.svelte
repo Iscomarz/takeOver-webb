@@ -6,6 +6,7 @@
   export let totalPrice = 0;
   export let cantidad;
   export let idPrecioStripe;
+  export let eventoPasado = false; // Cambia a true si es un evento pasado
 
   let stripe;
   let acceptedTerms = false;
@@ -71,8 +72,15 @@
   <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
 </label>
 
-<button on:click={handleCheckout}>
-  Checkout <p>Mex${$totalPrice}</p>
+<button
+  on:click={handleCheckout}
+  disabled={eventoPasado}
+  style:cursor={eventoPasado ? 'not-allowed' : 'pointer'}
+>
+  {eventoPasado ? 'El evento ha terminado' : `Checkout`}
+  {#if !eventoPasado}
+    <p>Mex{$totalPrice}</p>
+  {/if}
 </button>
 
 <style>

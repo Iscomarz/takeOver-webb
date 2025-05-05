@@ -2,61 +2,150 @@
   import fondoEvents from "$lib/images/covers/fondo-events.jpg";
   import BotonComunidad from "../components/botonComunidad.svelte";
   import CardEventoPasado from "../components/cardEventoPasado.svelte";
+  import logo from "$lib/images/takeover-logo.png";
+  import { onMount } from "svelte";
+  import { tweened } from "svelte/motion";
+  import { cubicOut } from "svelte/easing";
+  import { fade } from "svelte/transition";
 
   export let data;
-  let eventosPasados = data.eventosPasados;
-  let eventosActivos = data.eventosActivos;
+  let loading = true;
+  let eventosPasados = [];
+  let eventosActivos = [];
+
+  let scale = tweened(1, {
+    duration: 400,
+    easing: cubicOut,
+  });
+
+  onMount(async () => {
+    //Obtener evento activo
+    await loadData();
+    // Animación de pulso
+    const interval = setInterval(() => {
+      if (loading) {
+        scale.set(1.1);
+        setTimeout(() => scale.set(1), 400);
+      } else {
+        clearInterval(interval);
+      }
+    }, 1500);
+  });
+
+  async function loadData() {
+    // Simulación de carga de datos
+    eventosPasados = data?.eventosPasados || [];
+    eventosActivos = data?.eventosActivos || [];
+
+    await waitForImagesToLoad();
+
+    setTimeout(() => {
+      loading = false;
+    }, 1000);
+  }
+
+  function waitForImagesToLoad() {
+    return new Promise((resolve) => {
+      const images = Array.from(document.images);
+      const total = images.length;
+      let loaded = 0;
+
+      if (total === 0) {
+        resolve();
+      }
+
+      images.forEach((img) => {
+        if (img.complete) {
+          loaded++;
+          if (loaded === total) resolve();
+        } else {
+          img.addEventListener("load", () => {
+            loaded++;
+            if (loaded === total) resolve();
+          });
+          img.addEventListener("error", () => {
+            loaded++;
+            if (loaded === total) resolve();
+          });
+        }
+      });
+    });
+  }
 </script>
 
-<div class="banner">
-  <img src={fondoEvents} alt="fondo-events-takeover" />
-  <h1>PRÓXIMOS EVENTOS</h1>
-</div>
+<svelte:head>
+  <title>Eventos Take Over</title>
+  <meta name="description" content="Eventos Take Over" />
+</svelte:head>
 
-<div class="eventos-disponibles">
-  <h2>EVENTOS DISPONIBLES</h2>
-  <div class="eventos-container">
-    {#if eventosActivos.length === 0}
-      <section class="no-eventos">
-        <p class="no-eventos">
-          Estamos trabajando para traerte los mejores eventos.
-        </p>
-        <BotonComunidad />
-      </section>
-    {:else}
-      {#each eventosActivos as evento}
-        <div class="evento-card">
-          <div>
-            <img class="image-eve" src={evento.pathImage} alt="" />
+{#if loading}
+    <div class="loading-container" transition:fade={{ duration: 200 }}>
+      <img src={logo} style="transform: scale({$scale})" alt="loading" />
+    </div>
+{:else}
+  <div class="banner">
+    <img src={fondoEvents} alt="fondo-events-takeover" />
+    <h1>PRÓXIMOS EVENTOS</h1>
+  </div>
+
+  <div class="eventos-disponibles">
+    <h2>EVENTOS DISPONIBLES</h2>
+    <div class="eventos-container">
+      {#if eventosActivos.length === 0}
+        <section class="no-eventos">
+          <p class="no-eventos">
+            Estamos trabajando para traerte los mejores eventos.
+          </p>
+          <BotonComunidad />
+        </section>
+      {:else}
+        {#each eventosActivos as evento}
+          <div class="evento-card">
+            <div>
+              <img class="image-eve" src={evento.pathImage} alt="" />
+            </div>
+            <div>
+              <h3>{evento.nombreEvento}</h3>
+              <p>{evento.venue}</p>
+              <p>{evento.fechaInicio}</p>
+            </div>
           </div>
-          <div>
-            <h3>{evento.nombreEvento}</h3>
-            <p>{evento.venue}</p>
-            <p>{evento.fechaInicio}</p>
-          </div>
-        </div>
+        {/each}
+      {/if}
+    </div>
+  </div>
+  <hr class="divider" />
+  <div class="eventos-pasados">
+    <h2>EVENTOS PASADOS</h2>
+    <div class="eventos-container">
+      {#each eventosPasados as evento}
+        <CardEventoPasado
+          pathImage={evento.pathImage}
+          titulo={evento.nombreEvento}
+          fecha={evento.fechaInicio}
+          diaYHora={evento.diaYHora}
+          lugar={evento.venue}
+          idEvento={evento.idevento}
+        />
       {/each}
-    {/if}
+    </div>
   </div>
-</div>
-<hr class="divider" />
-<div class="eventos-pasados">
-  <h2>EVENTOS PASADOS</h2>
-  <div class="eventos-container">
-    {#each eventosPasados as evento}
-      <CardEventoPasado
-        pathImage={evento.pathImage}
-        titulo={evento.nombreEvento}
-        fecha={evento.fechaInicio}
-        diaYHora={evento.diaYHora}
-        lugar={evento.venue}
-        idEvento={evento.idevento}
-      />
-    {/each}
-  </div>
-</div>
+{/if}
 
 <style>
+  .loading-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .loading-container img {
+    width: 150px;
+    transition: transform 0.75s ease-in-out;
+  }
   .banner {
     position: relative;
     height: 300px;
