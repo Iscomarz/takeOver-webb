@@ -1,17 +1,18 @@
 <script>
-  import Title from "../components/Title.svelte";
-  import Date from "../components/Date.svelte";
-  import Location from "../components/Location.svelte";
-  import AboutEvent from "../components/AboutEvent.svelte";
-  import Tickets from "../components/Tickets.svelte";
-  import supabase from "../../lib/supabase";
+  import Title from "../../components/Title.svelte";
+  import Date from "../../components/Date.svelte";
+  import Location from "../../components/Location.svelte";
+  import AboutEvent from "../../components/AboutEvent.svelte";
+  import Tickets from "../../components/Tickets.svelte";
+  import supabase from "$lib/supabase";
   import { onMount, tick } from "svelte";
   import { invalidateAll, goto } from "$app/navigation";
   import { tweened } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
   import logo from "$lib/images/takeover-logo.png";
   import { fade } from "svelte/transition";
-  import BotonComunidad from "../components/botonComunidad.svelte";
+  import BotonComunidad from "../../components/botonComunidad.svelte";
+  import { eventoId } from "../../../lib/stores/eventoId";
 
   let scale = tweened(1, {
     duration: 400,
@@ -24,12 +25,17 @@
   let fases = [];
   let productosStripe = [];
   let urlImagenPortada;
+  let idEvento;
+
+  const unsubscribe = eventoId.subscribe((value) => {
+    idEvento = value;
+  });
 
   async function loadData() {
     let { data: evento, error } = await supabase
       .from("mEvento")
       .select("*")
-      .eq("activo", 1);
+      .eq("idevento", idEvento);
     if (evento) {
       mEvento = evento[0];
     }
@@ -37,7 +43,7 @@
     if (error) {
       eventoActivo = false;
       console.log("Error al traer el evento activo");
-    }else if (evento.length ==0){
+    } else if (evento.length == 0) {
       eventoActivo = false;
       console.log("No hay eventos activos en este momento");
     } else {
@@ -112,54 +118,60 @@
 </script>
 
 <svelte:head>
-  <title>Next Event</title>
+  <title>{mEvento.nombreEvento}</title>
   <meta
     name="description"
     content="Compra tus accesos para el proximo Take Over"
   />
 </svelte:head>
-
-{#if loading}
-  <div class="loading-container" transition:fade={{ duration: 200 }}>
-    <img src={logo} style="transform: scale({$scale})" alt="loading" />
-  </div>
-{:else if !eventoActivo}
+<section class="contenedor">
+  {#if loading}
+    <div class="loading-container" transition:fade={{ duration: 200 }}>
+      <img src={logo} style="transform: scale({$scale})" alt="loading" />
+    </div>
+  {:else if !eventoActivo}
     <div class="seccion-no-evento">
       <h1>Por el momento no tenemos eventos disponibles</h1>
       <BotonComunidad />
       <button on:click={() => goto("/")}>Volver al inicio</button>
     </div>
-{:else}
-  {#if urlImagenPortada}
-    <div class="img-event">
-      <span>
-        <div class="background-blur" style="background-image: url({urlImagenPortada});"></div>
-        <img src={urlImagenPortada} alt="portada" />
-      </span>
-    </div>
-  {/if}
+  {:else}
+    {#if urlImagenPortada}
+      <div class="img-event">
+        <span>
+          <div
+            class="background-blur"
+            style="background-image: url({urlImagenPortada});"
+          ></div>
+          <img src={urlImagenPortada} alt="portada" />
+        </span>
+      </div>
+    {/if}
 
-  <section class="info-event-short">
-    <Title titulo={mEvento.nombreEvento} 
-    descripcion={mEvento.descripcionCorta}
-    fecha="Domingo, 16 de Marzo 2025" />
-  </section>
-
-  <section class="info-event">
-    <div class="components">
-      <Date fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
-      <Location
-        nombreLugar={mEvento.venue}
-        direccion={mEvento.direccion}
-        linkMaps={mEvento.direccionURL}
+    <section class="info-event-short">
+      <Title
+        titulo={mEvento.nombreEvento}
+        descripcion={mEvento.descripcionCorta}
+        fecha="Domingo, 16 de Marzo 2025"
       />
-      <AboutEvent descripcion={mEvento.descripcion} />
-      {#if fases.length > 0}
-        <Tickets ticketDataEve={fases} />
-      {/if}
-    </div>
-  </section>
-{/if}
+    </section>
+
+    <section class="info-event">
+      <div class="components">
+        <Date fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
+        <Location
+          nombreLugar={mEvento.venue}
+          direccion={mEvento.direccion}
+          linkMaps={mEvento.direccionURL}
+        />
+        <AboutEvent descripcion={mEvento.descripcion} />
+        {#if fases.length > 0}
+          <Tickets ticketDataEve={fases} />
+        {/if}
+      </div>
+    </section>
+  {/if}
+</section>
 
 <style>
   .loading-container {
@@ -176,7 +188,7 @@
     transition: transform 0.75s ease-in-out;
   }
   .img-event {
-    margin-top: 20px;
+    margin-top: 120px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -197,7 +209,9 @@
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(10px); /* Ajusta este valor para cambiar el nivel de desenfoque */
+    filter: blur(
+      10px
+    ); /* Ajusta este valor para cambiar el nivel de desenfoque */
     z-index: -1;
   }
   img {
@@ -229,19 +243,24 @@
     margin-top: 20px;
   }
 
-  .seccion-no-evento{
-    color:whitesmoke
+  .seccion-no-evento {
+    color: whitesmoke;
   }
   @media screen and (max-width: 600px) {
     img {
       border-radius: 0px;
       width: 70%;
     }
-    span{
+    span {
       width: 100%;
     }
-    .img-event{
+    .img-event {
       margin-top: 40px;
     }
+  }
+
+  .contenedor{
+    width: 70%;
+    margin: 0 auto;
   }
 </style>

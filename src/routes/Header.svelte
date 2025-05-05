@@ -1,7 +1,6 @@
 <script>
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
-  import insta from "$lib/images/instagram-logo.svg";
 
   let showHeader = false;
   let showMenuIcon = false;
@@ -15,7 +14,7 @@
   $: titleHeader = currentPath;
 </script>
 
-<header style={backBlack ? "background: var(--color-bg-2)" : ""}>
+<header style={backBlack}>
   <div class="corner">
     <a href="/">
       <img src={logo} alt="TakeOver" />
@@ -26,15 +25,18 @@
     <nav>
       <ul>
         <li
-          aria-current={$page.url.pathname === "/tickets" ? "page" : undefined}
+          aria-current={$page.url.pathname === "/eventos" ? "page" : undefined}
         >
-          <a href="/tickets">TICKETS</a>
+          <a href="/eventos">EVENTS</a>
         </li>
         <li aria-current={$page.url.pathname === "/about" ? "page" : undefined}>
           <a href="/about">ABOUT TAKE OVER</a>
         </li>
         <li aria-current={$page.url.pathname === "/crew" ? "page" : undefined}>
           <a href="/crew">CREW</a>
+        </li>
+        <li aria-current={$page.url.pathname === "/merch" ? "page" : undefined}>
+          <a href="/merch">MERCH</a>
         </li>
         <li
           aria-current={$page.url.pathname === "/contact" ? "page" : undefined}
@@ -45,32 +47,25 @@
     </nav>
   {/if}
   <div class="title-header">
-    <h3>{titleHeader.slice(1).toUpperCase() == "TICKETS" ? "Next Event": titleHeader.slice(1).toUpperCase()}</h3>
-  </div>
-
-  <div class="corner">
-    <a
-      class="instagram-icon"
-      target="_blank"
-      href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5"
-    >
-      <img src={insta} alt="Instagram" />
-    </a>
-    {#if showMenuIcon}
-      <a class="menu-icon" href="https://www.instagram.com/_takeeover?igsh=YjloNXNndmJ4c2g5">
-        <img src={insta} alt="menu" />
-      </a>
-    {/if}
+    <h3>
+      {titleHeader.slice(1).toUpperCase() == "TICKETS"
+        ? "Next Event"
+        : titleHeader.slice(1).toUpperCase()}
+    </h3>
   </div>
 </header>
 
 <style>
   header {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     position: fixed;
     width: 100%;
     z-index: 1000;
+    padding-left: 40px;
+    padding-right: 40px;
+    height: 6em;
+    align-items: center;
   }
 
   .corner {
@@ -88,26 +83,25 @@
   }
 
   .corner img {
-    width: 3em;
-    height: 3em;
+    width: 4em;
+    height: 4em;
     object-fit: contain;
   }
 
   nav {
     display: flex;
-    justify-content: center;
+    justify-content: end;
     --background: rgba(255, 255, 255, 0);
-    width: 70%;
+    width: 100%;
   }
 
   ul {
     position: relative;
     padding: 0;
     margin: 0;
-    width: 80%;
     height: 4em;
     display: flex;
-    justify-content: space-evenly;
+    gap: 20px;
     align-items: center;
     list-style: none;
     background: var(--background);
@@ -121,15 +115,28 @@
   }
 
   li[aria-current="page"]::before {
-    --size: 6px;
     content: "";
-    width: 0;
-    height: 0;
     position: absolute;
-    top: 0;
-    left: calc(50% - var(--size));
-    border: var(--size) solid transparent;
-    border-top: var(--size) solid var(--color-theme-1);
+    bottom: 0;
+    left: 0;
+    height: 3%;
+    width: 100%;
+    background: var(--color-theme-1);
+  }
+  li::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background-color: var(--color-theme-1);
+    transition: width 0.3s ease;
+  }
+
+  li[aria-current="page"]::after,
+  li:hover::after {
+    width: 100%;
   }
 
   nav a {
@@ -137,9 +144,9 @@
     height: 100%;
     align-items: center;
     padding: 0 0.5rem;
-    color: var(--color-text-white);
-    font-weight: 700;
-    font-size: 0.8rem;
+    color: rgb(255, 255, 255);
+    font-weight: 500;
+    font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-decoration: none;
@@ -167,10 +174,6 @@
 
   /* Mostrar el icono de menú y ocultar el logo de Instagram en pantallas pequeñas */
   @media screen and (max-width: 600px) {
-    .instagram-icon {
-      display: none !important;
-    }
-
     .menu-icon {
       display: flex !important;
     }
@@ -189,7 +192,7 @@
       display: none;
     }
 
-    .corner{
+    .corner {
       margin-left: 20px;
     }
   }

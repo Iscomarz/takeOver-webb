@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+//import { eventoId } from '../../../lib/stores/eventoId.js';
 
 export async function POST({ request }) {
     //test
@@ -6,14 +7,14 @@ export async function POST({ request }) {
     //live
     //const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
     const { items } = await request.json();
-
+    console.log('Items:', items);
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'payment',
             line_items: items,
             success_url: `${request.headers.get('origin')}/success`,
-            cancel_url: `${request.headers.get('origin')}/tickets`,
+            cancel_url: `${request.headers.get('origin')}/eventos/`,
         });
 
         //console.log('Session creada:', session);

@@ -1,3 +1,6 @@
+<script>
+  import coverAbout from "$lib/images/covers/cover-about.jpg";
+</script>
 <svelte:head>
   <title>About</title>
   <meta name="description" content="About this app" />
@@ -8,7 +11,7 @@
 
   <div class="about-content">
     <span class="img-con">
-      <img src="src/lib/images/covers/cover-about.jpg" alt="" />
+      <img src="{coverAbout}" alt="" />
     </span>
     <div class="text-con">
       <h2>

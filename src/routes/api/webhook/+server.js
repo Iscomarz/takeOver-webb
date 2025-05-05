@@ -67,7 +67,7 @@ export async function POST(event) {
   switch (tipoEventoStripe) {
     case "checkout.session.completed":
       if (await existePago(session.payment_intent)) {
-
+        console.log("existe pago");
         await insertaVenta(session);
 
         if (await acreditaPagoYGeneraTickets(session.payment_intent)) {
@@ -310,7 +310,7 @@ async function insertaVenta(sessionCheckout) {
     cantidadT = item.quantity;
   });
 
-  const { data, error } = await supabase.rpc("insertaVenta", {
+  const { data, error } = await supabase.rpc("insertaventa", {
     nombrev: name,
     correov: email,
     cantidad: cantidadT,

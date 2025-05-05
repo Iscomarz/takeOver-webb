@@ -44,12 +44,9 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding-bottom: 1rem;
     width: 100%;
-    max-width: 64rem;
-    margin: 0 auto;
     box-sizing: border-box;
-    margin-top: 50px;
     position: relative;
     overflow: hidden;
   }
@@ -60,17 +57,17 @@
     justify-content: center;
     align-items: center;
     padding: 20px;
-	color: whitesmoke;
-	font-size: .8em !important;
-	background-color: rgba(18, 18, 18, 0.953);
-	margin-top: 70px;
-	gap: 10px;
+    color: whitesmoke;
+    font-size: 0.8em !important;
+    background-color: rgba(18, 18, 18, 0.953);
+    margin-top: 70px;
+    gap: 10px;
   }
 
   footer a {
     font-weight: bold;
-	font-size: .8em !important;
-	text-decoration: underline;
+    font-size: 0.8em !important;
+    text-decoration: underline;
   }
 
   @media (min-width: 480px) {
