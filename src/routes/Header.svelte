@@ -24,10 +24,10 @@
     <div class="side-menu-content" on:click|stopPropagation>
       <ul>
         <li><a href="/eventos">_EVENTS</a></li>
-        <li><a href="/about">_ABOUT TAKE OVER</a></li>
-        <li><a href="/crew">_CREW</a></li>
-        <li><a href="/merch">_MERCH</a></li>
-        <li><a href="/contact">_CONTACT</a></li>
+        <li><a href="about">_ABOUT TAKE OVER</a></li>
+        <li><a href="crew">_CREW</a></li>
+        <li><a href="merch">_MERCH</a></li>
+        <li><a href="contact">_CONTACT</a></li>
       </ul>
     </div>
   </div>
