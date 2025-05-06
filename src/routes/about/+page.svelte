@@ -2,6 +2,7 @@
   import coverAbout from "$lib/images/covers/cover-about.jpg";
   import takeoverfoto from "$lib/images/takeover/takeover.jpg";
 </script>
+
 <svelte:head>
   <title>About</title>
   <meta name="description" content="About this app" />
@@ -12,22 +13,28 @@
 
   <div class="about-content">
     <span class="img-con">
-      <img src="{takeoverfoto}" alt="" />
+      <div class="overlay-title">_about</div>
+      <img src={takeoverfoto} alt="" />
     </span>
     <div class="text-con">
-      <h2>
-        ¿Qué es Take Over?
-      </h2>
+      <h2>¿Qué es Take Over?</h2>
       <p>
-        Take Over es más que una fiesta, es una experiencia. Organizamos eventos en Chihuahua, llevando el mejor house, techno, indie dance y melodic house a lugares donde normalmente no se escucha este sonido. Como su nombre lo dice, tomamos el control por un día para transformar el espacio con música, energía y buena vibra.
+        Take Over es más que una fiesta, es una experiencia. Organizamos eventos
+        en Chihuahua, llevando el mejor house, techno, indie dance y melodic
+        house a lugares donde normalmente no se escucha este sonido. Como su
+        nombre lo dice, tomamos el control por un día para transformar el
+        espacio con música, energía y buena vibra.
       </p>
       <br />
       <p>
-        Cada evento es una fusión de coctelería, talento emergente y sets de DJs que harán vibrar el lugar. Creemos en impulsar la escena local y conectar a las personas a través de la música.
+        Cada evento es una fusión de coctelería, talento emergente y sets de DJs
+        que harán vibrar el lugar. Creemos en impulsar la escena local y
+        conectar a las personas a través de la música.
       </p>
       <br />
       <p>
-        Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser parte?
+        Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser
+        parte?
       </p>
       <br />
       <button style="width: 100%; text-align: center;">
@@ -44,7 +51,7 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    margin-top: 20px;
+    margin-top: -5px;
   }
   h1 {
     font-family: "JockeyOne";
@@ -53,8 +60,10 @@
   }
   h2 {
     font-family: "JockeyOne";
-    color: whitesmoke;
+    color: rgb(0, 0, 0);
     font-size: 1.5em;
+    background-color: white;
+    padding: 5px 10px;
   }
   p {
     font-family: "JostRegular";
@@ -67,12 +76,30 @@
   }
   .img-con {
     width: 50%;
+    position: relative;
   }
   .text-con {
     width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: start;
   }
   button {
     color: var(--color-theme-1);
+  }
+
+  .overlay-title {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 70px;
+    left: 70px;
+    font-family: "JockeyOne";
+    font-size: 2.5em;
+    color: white;
+    text-transform: uppercase;
+    z-index: 2;
   }
 
   @media screen and (max-width: 600px) {
@@ -80,12 +107,23 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      width: 100% !important;
     }
     .img-con {
-      width: 80%;
+      width: 100%;
+    }
+    .overlay-title {
+      display: block;
     }
     .text-con {
       width: 90%;
+    }
+
+    h2 {
+      margin-left: -20px; /* Pegado al borde izquierdo */
+      width: calc(100vw - 150px); /* Deja 20px de espacio al lado derecho */
+      padding: 5px 15px;
+      box-sizing: border-box;
     }
   }
 </style>

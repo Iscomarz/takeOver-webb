@@ -1,6 +1,7 @@
 <script>
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
+  import { goto } from "$app/navigation";
 
   let showHeader = false;
   let showMenuIcon = false;
@@ -17,21 +18,65 @@
 </script>
 
 <header style={backBlack ? "background-color: black;" : ""}>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="side-menu {menuOpen ? 'open' : ''}"
     on:click={() => (menuOpen = false)}
   >
     <div class="side-menu-content" on:click|stopPropagation>
       <ul>
-        <li on:click={() => menuOpen = false}><a href="/eventos">_EVENTS</a></li>
-        <li on:click={() => menuOpen = false}><a href="/about">_ABOUT TAKE OVER</a></li>
-        <li on:click={() => menuOpen = false}><a href="/crew">_CREW</a></li>
-        <li on:click={() => menuOpen = false}><a href="/merch">_MERCH</a></li>
-        <li on:click={() => menuOpen = false}><a href="/contact">_CONTACT</a></li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/eventos");
+          }}
+        >
+          _EVENTS
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/about");
+          }}
+        >
+          _ABOUT TAKE OVER
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/crew");
+          }}
+        >
+          _CREW
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/merch");
+          }}
+        >
+          _MERCH
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/contact");
+          }}
+        >
+          _CONTACT
+        </li>
       </ul>
     </div>
   </div>
 
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
     <div class="menu-button {menuOpen ? 'open' : ''}">
       <div class="line top"></div>
@@ -82,8 +127,8 @@
     position: fixed;
     width: 100%;
     z-index: 1000;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
     height: 6em;
     align-items: center;
   }
@@ -254,7 +299,7 @@
     margin: 20px 0;
   }
 
-  .side-menu-content a {
+  .side-menu-content li {
     color: white;
     font-size: 1rem;
     text-decoration: none;
@@ -262,7 +307,7 @@
     font-weight: 500;
   }
 
-  .side-menu-content a:hover {
+  .side-menu-content li:hover {
     color: var(
       --color-theme-1
     ); /* asegúrate de tener esta variable en tu CSS */
@@ -283,11 +328,10 @@
     }
 
     .corner {
-      margin-left: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
     }
 
     .corner img {

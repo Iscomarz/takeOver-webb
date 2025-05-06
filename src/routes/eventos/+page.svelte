@@ -85,7 +85,7 @@
 {:else}
   <div class="banner">
     <img src={fondoEvents} alt="fondo-events-takeover" />
-    <h1>PRÓXIMOS EVENTOS</h1>
+    <h1>_EVENTS</h1>
   </div>
 
   <div class="eventos-disponibles">
@@ -168,7 +168,7 @@
   .banner h1 {
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 40%;
     transform: translate(-50%, -50%);
     color: white;
     font-size: 3rem;
