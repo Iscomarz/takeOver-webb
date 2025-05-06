@@ -7,6 +7,8 @@
   let titleHeader = "titulo";
   let backBlack = false;
 
+  let menuOpen = false;
+
   $: currentPath = $page.url.pathname;
   $: showHeader = currentPath !== "/";
   $: showMenuIcon = currentPath !== "/";
@@ -14,7 +16,29 @@
   $: titleHeader = currentPath;
 </script>
 
-<header style={backBlack}>
+<header style={backBlack ? "background-color: black;" : ""}>
+  <div
+    class="side-menu {menuOpen ? 'open' : ''}"
+    on:click={() => (menuOpen = false)}
+  >
+    <div class="side-menu-content" on:click|stopPropagation>
+      <ul>
+        <li><a href="/eventos">_EVENTS</a></li>
+        <li><a href="/about">_ABOUT TAKE OVER</a></li>
+        <li><a href="/crew">_CREW</a></li>
+        <li><a href="/merch">_MERCH</a></li>
+        <li><a href="/contact">_CONTACT</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
+    <div class="menu-button {menuOpen ? 'open' : ''}">
+      <div class="line top"></div>
+      <div class="line bottom"></div>
+    </div>
+  </div>
+
   <div class="corner">
     <a href="/">
       <img src={logo} alt="TakeOver" />
@@ -46,16 +70,12 @@
       </ul>
     </nav>
   {/if}
-  <div class="title-header">
-    <h3>
-      {titleHeader.slice(1).toUpperCase() == "TICKETS"
-        ? "Next Event"
-        : titleHeader.slice(1).toUpperCase()}
-    </h3>
-  </div>
 </header>
 
 <style>
+  * {
+    box-sizing: border-box;
+  }
   header {
     display: flex;
     justify-content: space-between;
@@ -162,30 +182,100 @@
     display: none !important;
   }
 
-  .menu-icon img {
-    width: 2.2em;
-    height: 2.2em;
-    object-fit: contain;
+  .menu-button {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
-  .title-header {
-    display: none !important;
+  .line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 2px;
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  .line.top {
+    top: 10px;
+  }
+
+  .line.bottom {
+    bottom: 10px;
+  }
+
+  .menu-button.open .top {
+    transform: rotate(45deg) translateY(6px);
+  }
+
+  .menu-button.open .bottom {
+    transform: rotate(-45deg) translateY(-6px);
+  }
+
+  .side-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    max-width: 300px;
+    height: 100vh;
+    background-color: black;
+    color: white;
+    z-index: 2000;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    padding: 60px 20px 20px;
+    margin-top: 50px;
+  }
+
+  .side-menu.open {
+    left: 0;
+  }
+
+  .side-menu-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+    gap: 5px;
+    align-items: start;
+  }
+
+  .side-menu-content li {
+    margin: 20px 0;
+  }
+
+  .side-menu-content a {
+    color: white;
+    font-size: 1rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .side-menu-content a:hover {
+    color: var(
+      --color-theme-1
+    ); /* asegúrate de tener esta variable en tu CSS */
   }
 
   /* Mostrar el icono de menú y ocultar el logo de Instagram en pantallas pequeñas */
   @media screen and (max-width: 600px) {
+    header {
+      background-color: black;
+      height: 60px;
+    }
     .menu-icon {
       display: flex !important;
-    }
-
-    .title-header {
-      display: flex !important;
-      justify-content: center;
-      align-items: center;
-      width: 70%;
-      color: whitesmoke;
-      font-family: "JockeyOne";
-      font-size: 1.6em;
     }
 
     nav {
@@ -194,6 +284,15 @@
 
     .corner {
       margin-left: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .corner img {
+      width: 3em;
+      height: 3em;
     }
   }
 </style>

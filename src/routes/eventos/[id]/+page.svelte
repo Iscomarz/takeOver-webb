@@ -257,6 +257,16 @@
     .img-event {
       margin-top: 40px;
     }
+    .contenedor {
+      width: 100% !important;
+      margin-top: 50px !important;
+    }
+  }
+
+  @media screen and (max-width: 700px){
+    .contenedor{
+      width: 90% !important;
+    }
   }
 
   .contenedor{

@@ -1,5 +1,6 @@
 <script>
   import coverAbout from "$lib/images/covers/cover-about.jpg";
+  import takeoverfoto from "$lib/images/takeover/takeover.jpg";
 </script>
 <svelte:head>
   <title>About</title>
@@ -11,7 +12,7 @@
 
   <div class="about-content">
     <span class="img-con">
-      <img src="{coverAbout}" alt="" />
+      <img src="{takeoverfoto}" alt="" />
     </span>
     <div class="text-con">
       <h2>
