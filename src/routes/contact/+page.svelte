@@ -28,17 +28,6 @@
       });
       return false;
     }
-    // Validar el DJ Set link
-    // if(djSetLink !== ''){
-    //     if (!urlRegex.test(djSetLink)) {
-    //     toast.error('Por favor, ingresa un link válido para el DJ Set.',
-    //         {
-    //             style: styleToast
-    //         }
-    //     );
-    //     return false;
-    // }
-    // }
 
     if (message === "") {
       toast.error("Por favor, ingresa un mensaje.", {
@@ -53,7 +42,6 @@
   // Función para enviar el email
   async function sendMessage() {
     // Primero validar el formulario
-    console.log("Botón presionado");
     if (!validarFormulario()) {
       return; // Si la validación falla, no continúa
     }
@@ -104,8 +92,8 @@
 <Toaster />
 
 <svelte:head>
-  <title>Crew</title>
-  <meta name="description" content="About this app" />
+  <title>Contact</title>
+  <meta name="description" content="Ponte en contacto con nosotros" />
 </svelte:head>
 
 <div class="text-column">
@@ -195,6 +183,7 @@
 <style>
   .text-column {
     padding: 15px;
+    margin-top: 50px;
   }
   button {
     color: var(--color-theme-1);
