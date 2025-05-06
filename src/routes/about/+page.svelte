@@ -1,6 +1,8 @@
 <script>
   import coverAbout from "$lib/images/covers/cover-about.jpg";
   import takeoverfoto from "$lib/images/takeover/takeover.jpg";
+  import about2 from "$lib/images/takeover/about_2.webp";
+  import insta from "$lib/images/instagram-logo.svg";
 </script>
 
 <svelte:head>
@@ -25,21 +27,36 @@
         nombre lo dice, tomamos el control por un día para transformar el
         espacio con música, energía y buena vibra.
       </p>
-      <br />
-      <p>
-        Cada evento es una fusión de coctelería, talento emergente y sets de DJs
-        que harán vibrar el lugar. Creemos en impulsar la escena local y
-        conectar a las personas a través de la música.
-      </p>
-      <br />
-      <p>
-        Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser
-        parte?
-      </p>
-      <br />
-      <button style="width: 100%; text-align: center;">
-        <a href="/contact">CONTACT</a>
-      </button>
+
+      <div class="about-2">
+        <span>
+          <img src={about2} alt="" />
+        </span>
+        <div class="text-con2">
+          <h3>¿Por qué Take Over?</h3>
+          <p>
+            Cada evento es una fusión de coctelería, talento emergente y sets de
+            DJs que harán vibrar el lugar. Creemos en impulsar la escena local y
+            conectar a las personas a través de la música.
+          </p>
+          <br>
+          <p>
+            Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser
+            parte?
+          </p>
+          <br>
+          <button>
+            <a href="/contact">CONTACT</a>
+          </button>
+        </div>
+      </div>
+
+      <div class="redes">
+        <p>FOLLOW US:</p>
+        <a href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9" target="_blank">
+          <img src={insta} alt="Instagram" />
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -87,8 +104,27 @@
     align-items: start;
   }
   button {
-    color: var(--color-theme-1);
+    position: relative;
+    overflow: hidden;
+    color: black;
+    width: 40%; 
+    text-align: center;
+    background-color: var(--color-theme-1);
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
   }
+
+  button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 15px; /* Grosor de la franja */
+  height: 100%;
+  background-color: white;
+}
 
   .overlay-title {
     display: none; /* Oculto por defecto */
@@ -100,6 +136,38 @@
     color: white;
     text-transform: uppercase;
     z-index: 2;
+  }
+
+  h3 {
+    font-family: "JockeyOne";
+    color: rgb(255, 255, 255);
+    font-size: 1.5em;
+    padding: 5px 0px;
+  }
+
+  .text-con2 {
+    background-color: black;
+    padding: 20px;
+  }
+
+  .about-2 img {
+    width: 100%;
+    height: 180px; /* ajusta según cuánto quieras mostrar */
+    object-fit: cover;
+    object-position: center 60%; /* 20% recorta un poco de arriba. Baja este valor para mostrar más de arriba */
+    display: block;
+  }
+
+  .redes{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    font-family: "JostRegular";
+    padding: 5px 10px;
+    width: 100%;
+
   }
 
   @media screen and (max-width: 600px) {

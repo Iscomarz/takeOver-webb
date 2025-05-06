@@ -297,6 +297,7 @@
 
   .side-menu-content li {
     margin: 20px 0;
+    cursor: pointer;
   }
 
   .side-menu-content li {
