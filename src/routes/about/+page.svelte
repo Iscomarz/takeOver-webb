@@ -20,7 +20,7 @@
     </span>
     <div class="text-con">
       <h2>¿Qué es Take Over?</h2>
-      <p>
+      <p style="padding: 10px;">
         Take Over es más que una fiesta, es una experiencia. Organizamos eventos
         en Chihuahua, llevando el mejor house, techno, indie dance y melodic
         house a lugares donde normalmente no se escucha este sonido. Como su
