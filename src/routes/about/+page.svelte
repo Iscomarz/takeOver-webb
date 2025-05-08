@@ -3,6 +3,7 @@
   import takeoverfoto from "$lib/images/takeover/takeover.jpg";
   import about2 from "$lib/images/takeover/about_2.webp";
   import insta from "$lib/images/instagram-logo.svg";
+  import ButtonStyle from "../components/buttonStyle.svelte";
 </script>
 
 <svelte:head>
@@ -39,21 +40,22 @@
             DJs que harán vibrar el lugar. Creemos en impulsar la escena local y
             conectar a las personas a través de la música.
           </p>
-          <br>
+          <br />
           <p>
-            Take Over no es solo un evento, es un movimiento. ¿Estás listo para ser
-            parte?
+            Take Over no es solo un evento, es un movimiento. ¿Estás listo para
+            ser parte?
           </p>
-          <br>
-          <button>
-            <a href="/contact">CONTACT</a>
-          </button>
+          <br />
+          <ButtonStyle texto="CONTACT" href="contact"/>
         </div>
       </div>
 
       <div class="redes">
         <p>FOLLOW US:</p>
-        <a href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9" target="_blank">
+        <a
+          href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9"
+          target="_blank"
+        >
           <img src={insta} alt="Instagram" />
         </a>
       </div>
@@ -103,28 +105,6 @@
     justify-content: center;
     align-items: start;
   }
-  button {
-    position: relative;
-    overflow: hidden;
-    color: black;
-    width: 40%; 
-    text-align: center;
-    background-color: var(--color-theme-1);
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
-  }
-
-  button::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 15px; /* Grosor de la franja */
-  height: 100%;
-  background-color: white;
-}
 
   .overlay-title {
     display: none; /* Oculto por defecto */
@@ -158,7 +138,7 @@
     display: block;
   }
 
-  .redes{
+  .redes {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -167,7 +147,6 @@
     font-family: "JostRegular";
     padding: 5px 10px;
     width: 100%;
-
   }
 
   @media screen and (max-width: 600px) {

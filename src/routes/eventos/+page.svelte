@@ -93,7 +93,7 @@
     <div class="eventos-container">
       {#if eventosActivos.length === 0}
         <section class="no-eventos">
-          <p class="no-eventos">
+          <p>
             Estamos trabajando para traerte los mejores eventos.
           </p>
           <BotonComunidad />
@@ -194,6 +194,7 @@
     justify-content: center;
     gap: 1rem;
     width: 100%;
+    padding: .8rem;
   }
 
   h2 {
@@ -212,5 +213,6 @@
     height: 100%;
     color: white;
     gap: 1rem;
+    text-align: center;
   }
 </style>

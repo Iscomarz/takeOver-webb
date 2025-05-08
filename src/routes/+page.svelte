@@ -1,17 +1,18 @@
+<script>
+  import insta from "$lib/images/instagram-logo.svg";
+</script>
+
 <svelte:head>
   <title>Take Over HOME</title>
   <meta name="description" content="Take Over Show Official Website" />
 </svelte:head>
 
-<script>
-    import insta from "$lib/images/instagram-logo.svg";
-</script>
-
 <div class="centro">
   <div>
     <section id="welcome">
       <div class="wel-container">
-        <h3 class="welcome">WELCOME  </h3><h3>  TO</h3>
+        <h3 class="welcome">WELCOME</h3>
+        <h3>TO</h3>
       </div>
       <h1>TAKE OVER</h1>
     </section>
@@ -29,18 +30,20 @@
 </div>
 
 <section class="redes">
-  <a href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9" target="_blank">
+  <a
+    href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9"
+    target="_blank"
+  >
     <img src={insta} alt="Instagram" />
   </a>
 </section>
 
 <style>
-
-  .wel-container{
+  .wel-container {
     display: flex;
     gap: 2px;
   }
-  .welcome{
+  .welcome {
     color: var(--color-theme-1);
   }
   .centro {
@@ -82,7 +85,7 @@
 
   .link {
     color: whitesmoke;
-	font-family: "JostRegular";
+    font-family: "JostRegular";
   }
 
   .redes {
@@ -90,17 +93,17 @@
   }
 
   @media screen and (max-width: 600px) {
-	ul{
-		display: flex;
-		flex-direction: column;
-		text-align: center;
-		gap: 20px;
-	}
-  .redes {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding-top: 100px;
-  }
+    ul {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      gap: 20px;
+    }
+    .redes {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding-top: 100px;
+    }
   }
 </style>
