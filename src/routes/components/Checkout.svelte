@@ -36,7 +36,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: [{ price: 'price_1Qr5FB2KnoE6M9dvVDNDYn5E', quantity: cantidad }],
+          items: [{ price: idPrecioStripe, quantity: cantidad }],
         }),
       });
 
