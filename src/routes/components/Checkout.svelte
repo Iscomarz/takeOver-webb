@@ -13,9 +13,9 @@
 
   onMount(async () => {
     //live
-    //stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY_LIVE);
+    stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY_LIVE);
     //test
-    stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
+    //stripe = await loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_KEY);
   });
 
   async function handleCheckout() {

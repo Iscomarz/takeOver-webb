@@ -30,9 +30,9 @@ let idSupabase = "";
 let tickets = [];
 let tipoEventoStripe = "";
 //test
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 export async function POST(event) {
   const sig = event.request.headers.get("stripe-signature");
@@ -40,11 +40,11 @@ export async function POST(event) {
   const rawBody = Buffer.from(body);
 
   //CLI
-  const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
+  //const endpointSecret = "whsec_2aaca38b6e9b930fd85683bdee5b8c148096a3107852aa1f3e2d156f99d056aa";
   //test
   //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_TEST;
   //live
-  //const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
+  const endpointSecret = import.meta.env.VITE_STRIPE_WEBHOOK_SECRET;
 
   let eventStripe;
   try {

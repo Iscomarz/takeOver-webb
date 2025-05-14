@@ -2,9 +2,9 @@ import { json } from "@sveltejs/kit";
 import Stripe from "stripe";
 
 //test
-const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
+//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
-//const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
+const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
