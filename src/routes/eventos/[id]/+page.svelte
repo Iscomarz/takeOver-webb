@@ -115,6 +115,56 @@
       return null;
     }
   }
+
+  function formatearFechaLarga(fechaStr) {
+  const fecha = new Date(fechaStr);
+  return fecha.toLocaleDateString("es-MX", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function formatearHora(fechaStr) {
+  const fecha = new Date(fechaStr);
+  return fecha.toLocaleTimeString("es-MX", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone:"UTC"
+  });
+}
+
+function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
+  const inicio = new Date(fechaInicioStr);
+  const fin = new Date(fechaFinStr);
+
+  const opcionesFecha = {
+    timeZone: "America/Mexico_City",
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  };
+
+  const opcionesHora = {
+    timeZone: "America/Mexico_City",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+  };
+
+  const fecha = inicio.toLocaleDateString("es-MX", opcionesFecha);
+  const horaInicio = inicio.toLocaleTimeString("es-MX", opcionesHora);
+  const horaFin = fin.toLocaleTimeString("es-MX", opcionesHora);
+
+  // Eliminar el año para hacerlo más corto
+  const [diaSemana, dia, mes, _anio] = fecha.split(" ");
+
+  return `${diaSemana}, ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
+}
 </script>
 
 <svelte:head>
@@ -152,13 +202,13 @@
       <Title
         titulo={mEvento.nombreEvento}
         descripcion={mEvento.descripcionCorta}
-        fecha="Domingo, 16 de Marzo 2025"
+        fecha={`${formatearFechaLarga(mEvento.fechaInicio)} / ${formatearHora(mEvento.fechaInicio)}`}
       />
     </section>
 
     <section class="info-event">
       <div class="components">
-        <DateComponent fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
+        <DateComponent fecha={formatearRangoFechas(mEvento.fechaInicio, mEvento.fechaFin)}/>
         <Location
           nombreLugar={mEvento.venue}
           direccion={mEvento.direccion}
