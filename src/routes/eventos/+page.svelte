@@ -79,9 +79,9 @@
 </svelte:head>
 
 {#if loading}
-    <div class="loading-container" transition:fade={{ duration: 200 }}>
-      <img src={logo} style="transform: scale({$scale})" alt="loading" />
-    </div>
+  <div class="loading-container" transition:fade={{ duration: 200 }}>
+    <img src={logo} style="transform: scale({$scale})" alt="loading" />
+  </div>
 {:else}
   <div class="banner">
     <img src={fondoEvents} alt="fondo-events-takeover" />
@@ -93,23 +93,19 @@
     <div class="eventos-container">
       {#if eventosActivos.length === 0}
         <section class="no-eventos">
-          <p>
-            Estamos trabajando para traerte los mejores eventos.
-          </p>
+          <p>Estamos trabajando para traerte los mejores eventos.</p>
           <BotonComunidad />
         </section>
       {:else}
         {#each eventosActivos as evento}
-          <div class="evento-card">
-            <div>
-              <img class="image-eve" src={evento.pathImage} alt="" />
-            </div>
-            <div>
-              <h3>{evento.nombreEvento}</h3>
-              <p>{evento.venue}</p>
-              <p>{evento.fechaInicio}</p>
-            </div>
-          </div>
+          <CardEventoPasado
+            pathImage={evento.pathImage}
+            titulo={evento.nombreEvento}
+            fecha={evento.fechaInicio}
+            diaYHora={evento.diaYHora}
+            lugar={evento.venue}
+            idEvento={evento.idevento}
+          />
         {/each}
       {/if}
     </div>
@@ -194,7 +190,7 @@
     justify-content: center;
     gap: 1rem;
     width: 100%;
-    padding: .8rem;
+    padding: 0.8rem;
   }
 
   h2 {
