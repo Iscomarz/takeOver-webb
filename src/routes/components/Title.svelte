@@ -41,4 +41,10 @@
   p {
     font-size: clamp(0.8em, 3vw, 1em);
   }
+
+    @media screen and (max-width: 600px) {
+    .info-content {
+      width: 100%;
+    }
+  }
 </style>

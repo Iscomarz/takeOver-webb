@@ -163,7 +163,8 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
   // Eliminar el año para hacerlo más corto
   const [diaSemana, dia, mes, _anio] = fecha.split(" ");
 
-  return `${diaSemana}, ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
+  console.log(`${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`);
+  return `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
 }
 </script>
 
@@ -310,6 +311,9 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
     .contenedor {
       width: 100% !important;
       margin-top: 50px !important;
+    }
+    .components{
+      width: 100%;
     }
   }
 
