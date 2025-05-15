@@ -6,7 +6,8 @@ export async function enviarCorreoConTicket(pdfBuffer, nombre, correo) {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
-      secure: false, // true for 465, false for other ports
+      secure: false,// true for 465, false for other ports
+      service:'gmail', 
       auth: {
         user: process.env.GMAIL_ADDRESS,    // Tu correo
         pass: process.env.GMAIL_APP_PASSWORD  // Tu contraseña de aplicación
