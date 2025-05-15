@@ -26,6 +26,10 @@
     
     - Dentro de la plataforma solo se aceptan pagos procesados a través de Stripe.
     - No emitimos facturas.
+
+    5. Comisiones por procesamiento de pago
+
+    - Al realizar una compra en nuestro sitio, el usuario acepta que los precios mostrados no incluyen los cargos por procesamiento de pago realizados por terceros (Stripe). Dichos cargos serán calculados y añadidos en el momento del pago, y corren a cargo del comprador. El monto total final será visible antes de confirmar la compra en la pasarela de pago.
     
     Cualquier duda o consulta sobre estos términos y condiciones puede dirigirse a take.oover.show@gmail.com.</p>
 </section>
