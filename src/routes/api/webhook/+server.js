@@ -76,10 +76,10 @@ export async function POST(event) {
       } else {
         if (await capturarCheckOut(session, stripeEventId)) {
           // Enviar correo de confirmacion y proceso de pago
-          enviarCorreoProcesoPago(
-            session.customer_details.name,
-            session.customer_details.email
-          );
+          // enviarCorreoProcesoPago(
+          //   session.customer_details.name,
+          //   session.customer_details.email
+          // );
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         } else {
           return json({ message: "Error guardando el pago" }, { status: 400 });
