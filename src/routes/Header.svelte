@@ -2,6 +2,7 @@
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
   import { goto } from "$app/navigation";
+  import AnimatedText from "./components/AnimatedText.svelte";
 
   let showHeader = false;
   let showMenuIcon = false;
@@ -89,6 +90,8 @@
       <img src={logo} alt="TakeOver" />
     </a>
   </div>
+
+  <AnimatedText />
 
   {#if showHeader}
     <nav>
