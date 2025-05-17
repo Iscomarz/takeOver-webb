@@ -2,9 +2,8 @@ import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
-import { enviarCorreoConTicket } from "../enviarCorreo/enviarTicket.js";
-import { enviarCorreoProcesoPago } from "../enviarCorreo/correoProcesandoPago.js";
 import QRCode from "qrcode";
+import { enviarTicketAlServidor } from "$lib/utils/enviarTicket.js";
 
 let pago = {
   idFormaPago: 3, //id forma de pago stripe/tarjeta
@@ -70,7 +69,7 @@ export async function POST(event) {
         console.log("existe pago");
         await insertaVenta(session);
 
-        if (await acreditaPagoYGeneraTickets(session.payment_intent)) {
+        if (await acreditaPagoYGeneraTickets(event,session.payment_intent)) {
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         }
       } else {
@@ -90,7 +89,7 @@ export async function POST(event) {
       if (await existePago(session.id)) {
         console.log("existe pago");
         //Este prodecediemiento acredita el pago en mPago y genera los tickets en la tabla ticket
-        if (await acreditaPagoYGeneraTickets(session.id)) {
+        if (await acreditaPagoYGeneraTickets(event,session.id)) {
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
       } else {
@@ -229,54 +228,33 @@ async function subirQRASupabase(base64Image, referencia) {
   }
 }
 
-async function generarCorreoYTicket(tickets, nombreComprador, correoComprador) {
+async function generarCorreoYTicket(event,tickets, nombreComprador, correoComprador) {
   console.log("🔹 Iniciando...");
 
-  for (let i = 0; i < tickets.length; i++) {
-    let base64QR = await generarQRCode(tickets[i].codigoQR);
-    await subirQRASupabase(base64QR, tickets[i].referencia);
-
-    tickets[i].pathStorage = base64QR;
-  }
+    await Promise.all(
+    tickets.map(async (ticket) => {
+      try {
+        const base64QR = await generarQRCode(ticket.codigoQR);
+        await subirQRASupabase(base64QR, ticket.referencia);
+        ticket.pathStorage = base64QR;
+      } catch (err) {
+        console.error(`❌ Error con el ticket ${ticket.referencia}:`, err);
+        // Podrías marcar un estado de error o registrar algo en la base
+      }
+    })
+  );
 
   const evento = await obtenerEventoActivo();
   //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
   const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
   console.log(venta);
-  await enviarCorreoConTicket(pdfBuffer, nombreComprador, correoComprador);
+  await enviarTicketAlServidor(event,pdfBuffer, nombreComprador, correoComprador);
   console.log("correo enviado");
 
   await cerrarSesion();
 }
 
-async function agregarVendidosaInventario(faseEvento, idVenta) {
-  // Obtener la cantidad actual vendida
-  const nuevaCantidadVendida =
-    faseEvento.cantidadVendida + idVenta.cantidadTickets;
-
-  // Verificar si se alcanzó o superó el límite
-  const activo = nuevaCantidadVendida >= faseEvento.limite ? false : true;
-
-  // Actualizar la cantidadVendida y el estado activo en la tabla
-  const { data, error } = await supabase
-    .from("cFaseEvento")
-    .update({
-      cantidadVendida: nuevaCantidadVendida,
-      activo: activo,
-    })
-    .eq("idFase", faseEvento.idFase)
-    .select();
-
-  if (error) {
-    console.error("No se pudo guardar los tickets vendidos ", error.message);
-    return null;
-  } else {
-    console.log("Tickets vendidos guardados correctamente", data);
-    return data;
-  }
-}
-
-async function acreditaPagoYGeneraTickets(paymentIntent) {
+async function acreditaPagoYGeneraTickets(event,paymentIntent) {
   let { data: acreditaData, error: acreditaError } = await supabase.rpc(
     "acredita_pago_function",
     { idpagostripe: paymentIntent }
@@ -288,7 +266,7 @@ async function acreditaPagoYGeneraTickets(paymentIntent) {
   } else {
     console.log("stp ejectuado correctamente");
 
-    generarCorreoYTicket(
+    generarCorreoYTicket(event,
       acreditaData.tickets,
       acreditaData.nombreComprador,
       acreditaData.correoComprador
