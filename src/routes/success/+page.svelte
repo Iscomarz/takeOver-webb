@@ -21,11 +21,11 @@
   </span><br>
   <div class="parrafo">
     <p>
-      Felicidades completaste la compra con exito!, enviaremos los tickets al
-      correo electronico proporcionado, por mientras te puedes sumar a la
+      Felicidades, completaste la compra con éxito!, enviaremos los tickets al
+      correo electrónico proporcionado, por mientras te puedes sumar a la
       comunidad Take Over en el siguiente enlace, nos vemos en la rave!, Gracias.
     </p><br>
-    <p>*Si no vez el correo en tu bandeja de entrada, revisa en las secciones de promocion y spam.</p>
+    <p>*Si no vez el correo en tu bandeja de entrada, revisa en las secciones de promoción y spam.</p>
     <br>
     <BotonComunidad />
   </div>
