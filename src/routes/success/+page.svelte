@@ -25,6 +25,8 @@
       correo electronico proporcionado, por mientras te puedes sumar a la
       comunidad Take Over en el siguiente enlace, nos vemos en la rave!, Gracias.
     </p><br>
+    <p>*Si no vez el correo en tu bandeja de entrada, revisa en las secciones de promocion y spam.</p>
+    <br>
     <BotonComunidad />
   </div>
 </section>
