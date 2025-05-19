@@ -38,16 +38,17 @@ export async function enviarCorreoConTicket(pdfBuffer, nombre, correo) {
   }
 }
 
-	export async function enviarTicketAlServidor(pdfBufferCorreo, nombreComprador, correoComprador) {
-		const response = await fetch('/api/enviarCorreo', {
+	export async function enviarTicketAlServidor(event,pdfBufferCorreo, nombreComprador, correoComprador) {
+		const response = await event.fetch('/api/resend', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
 				pdfBuffer: Array.from(new Uint8Array(pdfBufferCorreo)),
-				nombre: nombreComprador,
-        correo: correoComprador
+        to: correoComprador,
+        subject: 'Tickets Take Over',
+        html: '<p>Hola '+nombreComprador+', adjunto encontrarás tus tickets para el evento.</p>'
 			})
 		});
 
