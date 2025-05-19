@@ -115,9 +115,8 @@ export async function generarTicket(nombre, evento, tickets) {
   console.log("generando pdf");
   // Generar el PDF como un array buffer
   const pdfArrayBuffer = doc.output("arraybuffer");
-  const pdfBuffer = Buffer.from(pdfArrayBuffer); // Convertir a Buffer para enviar por correo
   console.log("pdf generado");
-  return pdfBuffer; // Devolver el PDF en formato ArrayBuffer
+  return pdfArrayBuffer; // Devolver el PDF en formato ArrayBuffer
 }
 
 async function obtenerImagenEvento(path) {
