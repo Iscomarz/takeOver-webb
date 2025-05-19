@@ -4,6 +4,7 @@
     import { derived } from 'svelte/store';
     import Checkout from "../components/Checkout.svelte";
     import { onMount, tick } from 'svelte';
+
     export let ticketDataEve;
     export let eventoPasado = false;
 
@@ -11,10 +12,10 @@
     let cantidad = 0;
 
     onMount(async () => {
-        console.log(eventoPasado);
         await tick();
         tickets.set(ticketDataEve);
         inactivoState.set(ticketDataEve.map((ticket) => !ticket.activo));
+        console.log("Tickets iniciales:", ticketDataEve);
     });
 
     const totalPrice = derived(tickets, $tickets =>
@@ -36,7 +37,7 @@
     {#each ticketDataEve as ticket, index}
         <Ticket nombreFace={ticket.nombreFace} vigencia={ticket.fechaExpira} precio={ticket.precio} 
         activo={ticket.activo} idPrecioStripe={ticket.idPrecioStripe} idFase={ticket.idFase} 
-        idEvento={ticket.idEvento} fechaExpira={ticket.fechaExpira} soldout={ticket.soldout}
+        idEvento={ticket.idEvento} fechaExpira={ticket.fechaExpira} soldout={ticket.soldout} descripcion={ticket.descripcion}
         {index} on:quantityChange={handleQuantityChange}/>
     {/each}
     <Checkout idPrecioStripe={idStripeSeleccionado} cantidad={$totalCantidad} totalPrice={totalPrice} eventoPasado={eventoPasado}/>

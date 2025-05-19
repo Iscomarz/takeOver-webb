@@ -43,7 +43,7 @@ let visibleTime = 3500; // milisegundos
       top: 50%;
       transform: translateY(-50%);
       color: white;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-family: 'Barett', sans-serif;
     }
   }

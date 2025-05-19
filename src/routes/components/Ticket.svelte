@@ -14,8 +14,10 @@
   export let idFase;
   export let idEvento;
   export let soldout = false;
+  export let descripcion = "";
 
   let cantidad = 0;
+  let mostrarDescripcion = false;
 
   const dispatch = createEventDispatcher();
 
@@ -23,6 +25,10 @@
   $: inactivoState.subscribe((state) => {
     inactivo = state[index];
   });
+
+  function toggleDescripcion() {
+    mostrarDescripcion = !mostrarDescripcion;
+  }
 
   function formatearFechas(dateString) {
     const date = new Date(dateString);
@@ -39,11 +45,11 @@
         precio: precio,
         cantidad: cantidad,
         nombreFace: nombreFace,
-        activo:activo,
+        activo: activo,
         idPrecioStripe: idPrecioStripe,
         idFase: idFase,
         idEvento: idEvento,
-        fechaExpira: vigencia
+        fechaExpira: vigencia,
       };
       return updatedTickets;
     });
@@ -74,7 +80,7 @@
 
   onMount(() => {
     //updateTickets(0);
-    //console.log(index, nombreFace, precio, vigencia);
+    //console.log(descripcion);
   });
 </script>
 
@@ -90,15 +96,25 @@
       <p>{formatearFechas(vigencia)}</p>
     </div>
     <div class="contador">
-      {#if (soldout)}
-      <p class="soldout">Sold Out</p>
+      {#if soldout}
+        <p class="soldout">Sold Out</p>
       {:else}
-      <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
+        <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
       {/if}
-      
     </div>
   </div>
 </div>
+    {#if descripcion}
+    <div class="descripcion-toggle" on:click={toggleDescripcion}>
+      <span>{mostrarDescripcion ? "▲" : "▼"} Descripción Early Access</span>
+    </div>
+
+    {#if mostrarDescripcion}
+      <div class="descripcion-box">
+        <p>{descripcion}</p>
+      </div>
+    {/if}
+  {/if}
 
 <style>
   .rounded {
@@ -110,6 +126,26 @@
     justify-content: center;
     align-items: start;
     width: 100%;
+  }
+
+    .descripcion-toggle {
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #ccc;
+  }
+
+  .descripcion-toggle:hover {
+    color: rgb(255, 0, 0);
+  }
+
+  .descripcion-box {
+    margin-top: 8px;
+    padding: 10px;
+    border-top: 1px solid #666;
+    font-size: 0.85em;
+    color: #ddd;
   }
 
   .soldout {
