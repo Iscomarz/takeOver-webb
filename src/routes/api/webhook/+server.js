@@ -3,7 +3,6 @@ import { json } from "@sveltejs/kit";
 import supabase from "$lib/supabase";
 import { generarTicket } from "$lib/utils/generarTicket";
 import QRCode from "qrcode";
-import { enviarTicketAlServidor } from "$lib/utils/enviarTicket.js";
 
 let pago = {
   idFormaPago: 3, //id forma de pago stripe/tarjeta
@@ -322,5 +321,34 @@ async function insertaPago(session) {
   } else {
     console.log("Pago guardado exitosamente:", data);
     return true;
+  }
+}
+
+async function enviarTicketAlServidor(event,
+  pdfBufferCorreo,
+  nombreComprador,
+  correoComprador
+) {
+  const response = await event.fetch(`${window.location.origin}/api/resend`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      pdfBuffer: Array.from(new Uint8Array(pdfBufferCorreo)),
+      to: correoComprador,
+      subject: "Tickets Take Over",
+      html:
+        "<p>Hola " +
+        nombreComprador +
+        ", adjunto encontrarás tus tickets para el evento. take.oover.show@gmail.com</p>",
+    }),
+  });
+
+  const data = await response.json();
+  if (response.ok) {
+    console.log("Correo enviado con éxito:", data);
+  } else {
+    console.error("Error al enviar el correo:", data);
   }
 }

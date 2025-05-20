@@ -5,6 +5,7 @@ const resend = new Resend(process.env.VITE_RESESND_KEY);
 
 export async function POST({ request }) {
 	const { pdfBuffer,to,subject,html } = await request.json();
+    console.log("✅ Endpoint de correo ejecutado");
 
 	try {
 		const data = await resend.emails.send({
