@@ -219,32 +219,38 @@ async function generarCorreoYTicket(
   correoComprador
 ) {
   console.log("🔹 Iniciando...");
+  try {
+    await Promise.all(
+      tickets.map(async (ticket) => {
+        try {
+          const base64QR = await generarQRCode(ticket.codigoQR);
+          await subirQRASupabase(base64QR, ticket.referencia);
+          ticket.pathStorage = base64QR;
+        } catch (err) {
+          console.error(`❌ Error con el ticket ${ticket.referencia}:`, err);
+          // Podrías marcar un estado de error o registrar algo en la base
+        }
+      })
+    );
 
-  await Promise.all(
-    tickets.map(async (ticket) => {
-      try {
-        const base64QR = await generarQRCode(ticket.codigoQR);
-        await subirQRASupabase(base64QR, ticket.referencia);
-        ticket.pathStorage = base64QR;
-      } catch (err) {
-        console.error(`❌ Error con el ticket ${ticket.referencia}:`, err);
-        // Podrías marcar un estado de error o registrar algo en la base
-      }
-    })
-  );
+    const evento = await obtenerEventoActivo();
+    //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
+    console.log("generando ticket");
+    const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
+    console.log("ticket generado");
+    await enviarTicketAlServidor(
+      event,
+      pdfBuffer,
+      nombreComprador,
+      correoComprador
+    );
+    console.log("correo enviado");
 
-  const evento = await obtenerEventoActivo();
-  //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
-  const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
-  await enviarTicketAlServidor(
-    event,
-    pdfBuffer,
-    nombreComprador,
-    correoComprador
-  );
-  console.log("correo enviado");
-
-  await cerrarSesion();
+    await cerrarSesion();
+  } catch (err) {
+    console.error("Error al generar el ticket:", err);
+    // Manejar el error según sea necesario
+  }
 }
 
 async function acreditaPagoYGeneraTickets(event, paymentIntent) {
@@ -259,7 +265,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
   } else {
     console.log("stp ejectuado correctamente");
 
-    generarCorreoYTicket(
+  await generarCorreoYTicket(
       event,
       acreditaData.tickets,
       acreditaData.nombreComprador,
@@ -326,7 +332,7 @@ async function enviarTicketAlServidor(
   correoComprador
 ) {
   console.log("Enviando ticket al servidor...");
-  const response = await event.fetch('/api/resend', {
+  const response = await event.fetch("/api/resend", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
