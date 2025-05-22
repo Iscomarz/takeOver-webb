@@ -1,32 +1,16 @@
 import Stripe from "stripe";
 import { json } from "@sveltejs/kit";
-import supabase from "$lib/supabase";
+//import supabase from "$lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import { generarTicket } from "$lib/utils/generarTicket";
 import QRCode from "qrcode";
 
-let pago = {
-  idFormaPago: 3, //id forma de pago stripe/tarjeta
-  cantidad: 0,
-  fechaPago: new Date(),
-  acreditado: false,
-  fechaAcreditacion: null,
-  idTransaccionStripe: "",
-};
+const supabase = createClient(
+  process.env.SUPABASE_PROJECT_URL,
+  process.env.SUPABASE_API_KEY
+);
 
-let venta = {
-  idEvento: 0,
-  idUsuario: 0,
-  nombre: "",
-  correo: "",
-  fechaVenta: new Date(),
-  cantidadTickets: 0,
-  idPago: 0,
-  idFaseEvento: 0,
-};
-
-let idSupabase = "";
 let tickets = [];
-let tipoEventoStripe = "";
 //test
 //const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY);
 //live
@@ -58,17 +42,16 @@ export async function POST(event) {
   // **Obtener el ID del evento**
   const stripeEventId = eventStripe.id;
 
-  tipoEventoStripe = eventStripe.type;
   const session = eventStripe.data.object;
-  idSupabase = await login();
+  await login();
 
-  switch (tipoEventoStripe) {
+  switch (eventStripe.type) {
     case "checkout.session.completed":
       if (await existePago(session.payment_intent)) {
         console.log("existe pago");
         await insertaVenta(session);
 
-        if (await acreditaPagoYGeneraTickets(event,session.payment_intent)) {
+        if (await acreditaPagoYGeneraTickets(event, session.payment_intent)) {
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         }
       } else {
@@ -88,7 +71,7 @@ export async function POST(event) {
       if (await existePago(session.id)) {
         console.log("existe pago");
         //Este prodecediemiento acredita el pago en mPago y genera los tickets en la tabla ticket
-        if (await acreditaPagoYGeneraTickets(event,session.id)) {
+        if (await acreditaPagoYGeneraTickets(event, session.id)) {
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
       } else {
@@ -218,7 +201,9 @@ async function subirQRASupabase(base64Image, referencia) {
   // Subir el archivo a Supabase Storage
   const { error } = await supabase.storage
     .from("codigosQR")
-    .upload(`qr_${referencia}.png`, blob);
+    .upload(`qr_${referencia}.png`, blob, {
+      upsert: true, // Reemplaza el archivo si ya existe
+    });
 
   if (error) {
     console.log("Error subiendo el QR a Supabase:", error);
@@ -227,10 +212,15 @@ async function subirQRASupabase(base64Image, referencia) {
   }
 }
 
-async function generarCorreoYTicket(event,tickets, nombreComprador, correoComprador) {
+async function generarCorreoYTicket(
+  event,
+  tickets,
+  nombreComprador,
+  correoComprador
+) {
   console.log("🔹 Iniciando...");
 
-    await Promise.all(
+  await Promise.all(
     tickets.map(async (ticket) => {
       try {
         const base64QR = await generarQRCode(ticket.codigoQR);
@@ -246,14 +236,18 @@ async function generarCorreoYTicket(event,tickets, nombreComprador, correoCompra
   const evento = await obtenerEventoActivo();
   //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
   const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
-  console.log(venta);
-  await enviarTicketAlServidor(event,pdfBuffer, nombreComprador, correoComprador);
+  await enviarTicketAlServidor(
+    event,
+    pdfBuffer,
+    nombreComprador,
+    correoComprador
+  );
   console.log("correo enviado");
 
   await cerrarSesion();
 }
 
-async function acreditaPagoYGeneraTickets(event,paymentIntent) {
+async function acreditaPagoYGeneraTickets(event, paymentIntent) {
   let { data: acreditaData, error: acreditaError } = await supabase.rpc(
     "acredita_pago_function",
     { idpagostripe: paymentIntent }
@@ -265,7 +259,8 @@ async function acreditaPagoYGeneraTickets(event,paymentIntent) {
   } else {
     console.log("stp ejectuado correctamente");
 
-    generarCorreoYTicket(event,
+    generarCorreoYTicket(
+      event,
       acreditaData.tickets,
       acreditaData.nombreComprador,
       acreditaData.correoComprador
@@ -324,12 +319,14 @@ async function insertaPago(session) {
   }
 }
 
-async function enviarTicketAlServidor(event,
+async function enviarTicketAlServidor(
+  event,
   pdfBufferCorreo,
   nombreComprador,
   correoComprador
 ) {
-  const response = await event.fetch(`${window.location.origin}/api/resend`, {
+  console.log("Enviando ticket al servidor...");
+  const response = await event.fetch('/api/resend', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

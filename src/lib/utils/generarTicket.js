@@ -83,7 +83,7 @@ export async function generarTicket(nombre, evento, tickets) {
 
     doc.setFont("helvetica", "bold");
     doc.text("Día: " + fechaFormateada, 10, 125 + altura);
-    doc.text("Hora: 5:00 PM", 10, 130 + altura);
+    doc.text("Hora: "+ horaFormateada, 10, 130 + altura);
     doc.text("Venue: " + evento.venue, 10, 135 + altura);
     doc.text("Dirección: " + evento.direccion, 10, 140 + altura);
     doc.text(
@@ -91,15 +91,12 @@ export async function generarTicket(nombre, evento, tickets) {
       10,
       150 + altura
     );
-    console.log("informacion del evento agregada");
 
     if (eventoImageDataUrl) {
       doc.addImage(eventoImageDataUrl, "PNG", 150, 60 + altura, 45, 45); // Ajusta el tamaño y la posición según sea necesario
-      console.log("imagen del evento agregada");
     }
 	if(qrImageDataUrl){
 		doc.addImage(qrImageDataUrl, "PNG", 150, 110 + altura, 45, 45);
-		console.log("qr agregado");
 	}
 
     contadorTickets++;
@@ -112,7 +109,6 @@ export async function generarTicket(nombre, evento, tickets) {
       contadorTickets = 0; // Reiniciar contador
     }
   }
-  console.log("generando pdf");
   // Generar el PDF como un array buffer
   const pdfArrayBuffer = doc.output("arraybuffer");
   console.log("pdf generado");
