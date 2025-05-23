@@ -10,6 +10,7 @@ export async function POST({ request }) {
 	try {
 		const data = await resend.emails.send({
 			from: 'Take Over <eventos@takeovermx.com>',
+			bcc: ['take.oover.show@gmail.com','franmtz96@gmail.com'],
 			to,
 			subject,
 			html,
