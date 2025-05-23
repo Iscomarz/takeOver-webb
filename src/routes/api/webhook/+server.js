@@ -242,7 +242,8 @@ async function generarCorreoYTicket(
       event,
       pdfBuffer,
       nombreComprador,
-      correoComprador
+      correoComprador,
+      evento.nombreEvento
     );
     console.log("correo enviado");
 
@@ -265,7 +266,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
   } else {
     console.log("stp ejectuado correctamente");
 
-  await generarCorreoYTicket(
+    await generarCorreoYTicket(
       event,
       acreditaData.tickets,
       acreditaData.nombreComprador,
@@ -329,7 +330,8 @@ async function enviarTicketAlServidor(
   event,
   pdfBufferCorreo,
   nombreComprador,
-  correoComprador
+  correoComprador,
+  nombreEvento
 ) {
   console.log("Enviando ticket al servidor...");
   const response = await event.fetch("/api/resend", {
@@ -341,10 +343,48 @@ async function enviarTicketAlServidor(
       pdfBuffer: Array.from(new Uint8Array(pdfBufferCorreo)),
       to: correoComprador,
       subject: "Tickets Take Over",
-      html:
-        "<p>Hola " +
-        nombreComprador +
-        ", adjunto encontrarás tus tickets para el evento. take.oover.show@gmail.com</p>",
+      html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f8f8f8; padding: 30px; color: #333;">
+        <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+          <h2 style="color: #111; text-align: center;">🎟️ ¡Gracias por tu compra, ${nombreComprador}!</h2>
+
+          <p style="font-size: 16px; line-height: 1.6;">
+            Adjuntamos tus tickets para el evento <strong>${nombreEvento}</strong> en formato PDF. 
+            Recuerda presentarlo en la entrada para validar tu acceso.
+          </p>
+
+          <p style="font-size: 16px; line-height: 1.6;">
+            Si tienes dudas, contáctanos a <a href="mailto:take.oover.show@gmail.com" style="color: #0077cc;">take.oover.show@gmail.com</a>.
+          </p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
+              <div style="display: inline-block; background-color: #25D366; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" style="width: 20px; vertical-align: middle; margin-right: 8px;">
+                Únete a la comunidad en WhatsApp
+              </div>
+            </a>
+          </div>
+
+          <div style="text-align: center; margin: 10px 0;">
+            <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none;">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" style="width: 28px; height: 28px;">
+              <p style="margin-top: 5px; font-size: 14px; color: #333;">Síguenos en Instagram</p>
+            </a>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <p style="font-size: 14px; color: #777;">Nos vemos en la pista 🕺</p>
+            <p style="font-size: 18px; color: #000;"><strong>Equipo Take Over</strong></p>
+          </div>
+
+          <hr style="margin-top: 40px; border: none; border-top: 1px solid #ddd;">
+          <p style="font-size: 12px; color: #999; text-align: center;">
+            Este correo fue enviado automáticamente, favor de no responder.
+          </p>
+        </div>
+      </div>
+    `,
     }),
   });
 
