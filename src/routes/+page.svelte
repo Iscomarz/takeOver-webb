@@ -21,8 +21,8 @@
       <ul>
         <li><a class="link" href="/eventos">EVENTS</a></li>
         <li><a class="link" href="about">ABOUT TAKE OVER</a></li>
-        <li><a class="link" href="crew">CREW</a></li>
-        <li><a class="link" href="merch">MERCH</a></li>
+        <!-- <li><a class="link" href="crew">CREW</a></li>
+        <li><a class="link" href="merch">MERCH</a></li> -->
         <li><a class="link" href="contact">CONTACT</a></li>
       </ul>
     </section>
