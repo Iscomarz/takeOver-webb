@@ -56,7 +56,8 @@ export async function getEventosPasados() {
       .from("mEvento")
       .select("*")
       .eq("visibleProd", 1) // eventos activos
-      .lt("fechaFin", fechaActual); // eventos cuya fechaFin es anterior a ahora
+      .lt("fechaFin", fechaActual)
+      .order("fechaInicio", {ascending: false}); // eventos cuya fechaFin es anterior a ahora
   
     if (error) {
       console.error("Error fetching past events:", error);
