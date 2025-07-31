@@ -70,20 +70,20 @@ export async function generarTicket(nombre, evento, tickets) {
     const fechaEvento = new Date(evento.fechaInicio);
     const optionsFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
     const optionsHora = {
-      hour: "2-digit",
+      hour: "numeric",
       minute: "2-digit",
-      hour12: false,
-      timeZone: "America/Mexico_City",
+      hour12: true,
+      timeZone: "UTC",
     };
     const fechaFormateada = fechaEvento.toLocaleDateString(
       "es-ES",
       optionsFecha
     );
-    const horaFormateada = fechaEvento.toLocaleTimeString("es-ES", optionsHora); // Formato 24 horas
+    const horaFormateada = fechaEvento.toLocaleTimeString("es-MX", optionsHora); // Formato 24 horas
 
     doc.setFont("helvetica", "bold");
     doc.text("Día: " + fechaFormateada, 10, 125 + altura);
-    doc.text("Hora: "+ horaFormateada, 10, 130 + altura);
+    doc.text("Hora: " + horaFormateada, 10, 130 + altura);
     doc.text("Venue: " + evento.venue, 10, 135 + altura);
     doc.text("Dirección: " + evento.direccion, 10, 140 + altura);
     doc.text(
@@ -95,9 +95,9 @@ export async function generarTicket(nombre, evento, tickets) {
     if (eventoImageDataUrl) {
       doc.addImage(eventoImageDataUrl, "PNG", 150, 60 + altura, 45, 45); // Ajusta el tamaño y la posición según sea necesario
     }
-	if(qrImageDataUrl){
-		doc.addImage(qrImageDataUrl, "PNG", 150, 110 + altura, 45, 45);
-	}
+    if (qrImageDataUrl) {
+      doc.addImage(qrImageDataUrl, "PNG", 150, 110 + altura, 45, 45);
+    }
 
     contadorTickets++;
     altura += 120;
