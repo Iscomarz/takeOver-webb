@@ -29,7 +29,7 @@
     // Se asegura de que totalPrice esté correctamente suscrito
     const finalPrice = $totalPrice;
     console.log('boton checkout',idPrecioStripe, cantidad);
-    if (finalPrice !== 0) {
+    if (finalPrice !== 0 || idPrecioStripe != null) {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
