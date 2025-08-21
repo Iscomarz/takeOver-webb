@@ -223,7 +223,7 @@ async function generarCorreoYTicket(
   nombreComprador,
   correoComprador
 ) {
-  console.log("🔹 Iniciando...",event,tickets,nombreComprador,correoComprador);
+  console.log("🔹 Iniciando...");
   try {
     await Promise.all(
       tickets.map(async (ticket) => {
