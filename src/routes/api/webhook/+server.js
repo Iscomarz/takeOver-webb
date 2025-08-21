@@ -124,7 +124,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
 
   if(amount == 0 && cantidadT != 0){
     console.log("Entro a acreditar y generar tickets")
-    acreditaPagoYGeneraTickets(event, paymentIntent);
+    acreditaPagoYGeneraTickets(event, stripeEventId);
   }
 
   if (error) {
