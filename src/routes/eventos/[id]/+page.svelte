@@ -174,11 +174,10 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento}</title>
+  <title>{mEvento.nombreEvento || "Rito Sonoro"}</title>
   <meta
-    title="{mEvento.nombreEvento}"
     name="description"
-    content="Compra tus accesos para el proximo Take Over"
+    content="Adquiere tus accesos para el proximo Take Over"
   />
 </svelte:head>
 <section class="contenedor">
