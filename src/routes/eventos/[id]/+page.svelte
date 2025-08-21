@@ -176,6 +176,7 @@
 <svelte:head>
   <title>{mEvento.nombreEvento}</title>
   <meta
+    title="{mEvento.nombreEvento}"
     name="description"
     content="Compra tus accesos para el proximo Take Over"
   />
