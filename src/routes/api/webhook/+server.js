@@ -55,7 +55,7 @@ export async function POST(event) {
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         }
       } else {
-        if (await capturarCheckOut(session, stripeEventId)) {
+        if (await capturarCheckOut(session, stripeEventId, event, session.payment_intent)) {
           // Enviar correo de confirmacion y proceso de pago
           // enviarCorreoProcesoPago(
           //   session.customer_details.name,
@@ -95,7 +95,7 @@ export async function POST(event) {
   }
 }
 
-async function capturarCheckOut(sessionCheckout, stripeEventId) {
+async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIntent) {
   console.log("Evento no procesado, continuando...");
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
@@ -118,9 +118,13 @@ async function capturarCheckOut(sessionCheckout, stripeEventId) {
     descripcionfase: descripcionFase,
     idtransstripe: sessionCheckout.payment_intent,
     monto: amount,
-    nombrev: name,
+    nombrev: name == null ? 'Cortesia':name,
     checkout_session_stripe: stripeEventId,
   });
+
+  if(amount == 0 && cantidadT != 0){
+    acreditaPagoYGeneraTickets(event, paymentIntent);
+  }
 
   if (error) {
     console.error("Error al ejecutar el procedimiento:", error);
