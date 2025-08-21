@@ -123,6 +123,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   });
 
   if(amount == 0 && cantidadT != 0){
+    console.log("Entro a acreditar y generar tickets")
     acreditaPagoYGeneraTickets(event, paymentIntent);
   }
 
@@ -222,7 +223,7 @@ async function generarCorreoYTicket(
   nombreComprador,
   correoComprador
 ) {
-  console.log("🔹 Iniciando...");
+  console.log("🔹 Iniciando...",event,tickets,nombreComprador,correoComprador);
   try {
     await Promise.all(
       tickets.map(async (ticket) => {
