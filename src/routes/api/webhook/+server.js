@@ -118,7 +118,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
     descripcionfase: descripcionFase,
     idtransstripe: sessionCheckout.payment_intent,
     monto: amount,
-    nombrev: name == null ? email:name,
+    nombrev: name == null ? email : name,
     checkout_session_stripe: stripeEventId,
   });
 
