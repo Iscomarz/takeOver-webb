@@ -2,16 +2,17 @@
   export let titulo = "Nombre del evento";
   export let fecha = "Dia del evento";
   export let descripcion = "Breve descripcion";
+
 </script>
 
 <div class="info-content">
   <div>
     <h2>{titulo}</h2>
-    <h4>{fecha}</h4>
+    <h4>{fecha.toLowerCase()}</h4>
   </div>
-  <p>
+  <!-- <p>
     {descripcion}
-  </p>
+  </p> -->
 </div>
 
 <style>
@@ -34,7 +35,7 @@
     font-family: "JostRegular";
   }
   h4 {
-    font-size: clamp(0.8em, 3vw, 1.2em);
+    font-size: clamp(0.8em, 3vw, 1em);
     margin-top: -10px;
   }
 
