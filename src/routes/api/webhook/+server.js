@@ -269,7 +269,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
     console.error("Error llamando la función:", error);
     return false;
   } else {
-    console.log("stp ejectuado correctamente");
+    console.log("stp ejectuado correctamente", acreditaData);
 
     await generarCorreoYTicket(
       event,
