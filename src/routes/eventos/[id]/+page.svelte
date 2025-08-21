@@ -117,55 +117,60 @@
   }
 
   function formatearFechaLarga(fechaStr) {
-  const fecha = new Date(fechaStr);
-  return fecha.toLocaleDateString("es-MX", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+    const fecha = new Date(fechaStr);
+    const str = fecha.toLocaleDateString("es-MX", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
-function formatearHora(fechaStr) {
-  const fecha = new Date(fechaStr);
-  return fecha.toLocaleTimeString("es-MX", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone:"UTC"
-  });
-}
+    // Pone en mayúscula solo la primera letra
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
-function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
-  const inicio = new Date(fechaInicioStr);
-  const fin = new Date(fechaFinStr);
+  function formatearHora(fechaStr) {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleTimeString("es-MX", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "UTC",
+    });
+  }
 
-  const opcionesFecha = {
-    timeZone: "America/Mexico_City",
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  };
+  function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
+    const inicio = new Date(fechaInicioStr);
+    const fin = new Date(fechaFinStr);
 
-  const opcionesHora = {
-    timeZone: "America/Mexico_City",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  };
+    const opcionesFecha = {
+      timeZone: "America/Mexico_City",
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    };
 
-  const fecha = inicio.toLocaleDateString("es-MX", opcionesFecha);
-  const horaInicio = inicio.toLocaleTimeString("es-MX", opcionesHora);
-  const horaFin = fin.toLocaleTimeString("es-MX", opcionesHora);
+    const opcionesHora = {
+      timeZone: "America/Mexico_City",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "UTC",
+    };
 
-  // Eliminar el año para hacerlo más corto
-  const [diaSemana, dia, mes, _anio] = fecha.split(" ");
+    const fecha = inicio.toLocaleDateString("es-MX", opcionesFecha);
+    const horaInicio = inicio.toLocaleTimeString("es-MX", opcionesHora);
+    const horaFin = fin.toLocaleTimeString("es-MX", opcionesHora);
 
-  console.log(`${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`);
-  return `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
-}
+    // Eliminar el año para hacerlo más corto
+    const [diaSemana, dia, mes, _anio] = fecha.split(" ");
+
+    console.log(
+      `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`
+    );
+    return `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
+  }
 </script>
 
 <svelte:head>
@@ -189,42 +194,51 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
   {:else}
     {#if urlImagenPortada}
       <div class="img-event">
-        <span>
-          <div
-            class="background-blur"
-            style="background-image: url({urlImagenPortada});"
-          ></div>
-          <img src={urlImagenPortada} alt="portada" />
-        </span>
+        <img src={urlImagenPortada} alt="portada" />
       </div>
     {/if}
 
-    <section class="info-event-short">
-      <Title
-        titulo={mEvento.nombreEvento}
-        descripcion={mEvento.descripcionCorta}
-        fecha={`${formatearFechaLarga(mEvento.fechaInicio)} / ${formatearHora(mEvento.fechaInicio)}`}
-      />
-    </section>
+    <div class="info-event-container">
+      <section class="info-event">
+        <div class="components">
+          {#if fases.length > 0}
+            <Tickets
+              ticketDataEve={fases}
+              eventoPasado={new Date(mEvento.fechaFin) < new Date()
+                ? true
+                : false}
+            />
+          {/if}
+          <div class="border-info">
+            <Title
+            titulo={mEvento.nombreEvento}
+            fecha={`${formatearFechaLarga(mEvento.fechaInicio)} / ${formatearHora(mEvento.fechaInicio)}`}
+          />
+            <AboutEvent descripcion={mEvento.descripcion} />
 
-    <section class="info-event">
-      <div class="components">
-        <DateComponent fecha={formatearRangoFechas(mEvento.fechaInicio, mEvento.fechaFin)}/>
-        <Location
-          nombreLugar={mEvento.venue}
-          direccion={mEvento.direccion}
-          linkMaps={mEvento.direccionURL}
-        />
-        <AboutEvent descripcion={mEvento.descripcion} />
-        {#if fases.length > 0}
-          <Tickets ticketDataEve={fases}  eventoPasado={new Date(mEvento.fechaFin) < new Date() ? true : false}/>
-        {/if}
-      </div>
-    </section>
+            <DateComponent
+              fecha={formatearRangoFechas(
+                mEvento.fechaInicio,
+                mEvento.fechaFin
+              )}
+            />
+
+            <Location
+              nombreLugar={mEvento.venue}
+              direccion={mEvento.direccion}
+              linkMaps={mEvento.direccionURL}
+            />
+          </div>
+        </div>
+      </section>
+    </div>
   {/if}
 </section>
 
 <style>
+  .info-event-container {
+    width: 48%;
+  }
   .loading-container {
     position: fixed;
     top: 50%;
@@ -239,15 +253,11 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
     transition: transform 0.75s ease-in-out;
   }
   .img-event {
-    margin-top: 120px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 52%;
   }
   span {
     position: relative;
-    width: 70%;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -266,16 +276,16 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
     z-index: -1;
   }
   img {
-    border-radius: 40px;
-    width: 70%;
+    border-radius: 20px;
+    width: 100%;
     z-index: 1;
+    border: 3px solid #4b4b4b;
   }
   .info-event-short {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
   }
 
   .info-event {
@@ -291,40 +301,58 @@ function formatearRangoFechas(fechaInicioStr, fechaFinStr) {
     display: flex;
     flex-direction: column;
     gap: 30px;
-    margin-top: 20px;
   }
 
   .seccion-no-evento {
     color: whitesmoke;
   }
+
+  .border-info{
+    border: 3px solid #4b4b4b;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
   @media screen and (max-width: 600px) {
+    .info-event-container {
+    width: 100%;
+  }
     img {
-      border-radius: 0px;
-      width: 70%;
+      width: 100%;
     }
     span {
       width: 100%;
     }
     .img-event {
       margin-top: 40px;
+      width: 100%;
     }
     .contenedor {
       width: 100% !important;
       margin-top: 50px !important;
+      flex-direction: column !important;
+      align-items: center;
     }
-    .components{
+    .components {
       width: 100%;
+      margin-top: 20px;
     }
   }
 
-  @media screen and (max-width: 700px){
-    .contenedor{
+  @media screen and (max-width: 700px) {
+    .contenedor {
       width: 90% !important;
     }
   }
 
-  .contenedor{
-    width: 70%;
+  .contenedor {
+    width: 60%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: row-reverse;
+    margin-top: 120px;
   }
 </style>

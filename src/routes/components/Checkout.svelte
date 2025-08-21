@@ -93,10 +93,12 @@
     cursor: pointer;
     border-radius: 5px;
     font-family: "JostRegular";
-    width: 250px;
+    width: 100%;
     display: flex;
     justify-content: space-around;
-    margin-top: 20px;
+    margin-top: 15px;
+    height: 40px;
+    align-items: center;
   }
 
   button:hover {
@@ -106,7 +108,7 @@
   label {
     display: flex;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 15px;
   }
 
   input[type="checkbox"] {
