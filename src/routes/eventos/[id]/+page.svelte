@@ -174,7 +174,7 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento || "Rito Sonoro"}</title>
+  <title>{mEvento.nombreEvento || "Take Over presenta: Imanol Igoa | Vivran"}</title>
   <meta
     name="description"
     content="Adquiere tus accesos para el proximo Take Over"
