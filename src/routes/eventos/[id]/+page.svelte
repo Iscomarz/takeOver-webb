@@ -4,6 +4,7 @@
   import Location from "../../components/Location.svelte";
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
+  import Footer from "../../components/footer.svelte";
   import supabase from "$lib/supabase";
   import { onMount, tick } from "svelte";
   import { invalidateAll, goto } from "$app/navigation";
@@ -229,11 +230,14 @@
               linkMaps={mEvento.direccionURL}
             />
           </div>
+
+          <Footer />
         </div>
       </section>
     </div>
   {/if}
 </section>
+
 
 <style>
   .info-event-container {

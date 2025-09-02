@@ -12,7 +12,10 @@
   </main>
 
   <footer>
-    <p>Send a message to take.oover.show@gmail.com to contact me</p>
+    <div><a href="eventos">Events</a>
+    <a href="about">About</a>
+    <a href="contant">Contact</a></div>
+    <p>"DANCE MUSIC, EXPLORE FLAVORS, FEEL THE BEAT"</p>
     <a href="/politica">Politicas de privacidad</a>
   </footer>
 </div>
