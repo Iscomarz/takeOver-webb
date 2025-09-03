@@ -47,6 +47,9 @@ export async function POST(event) {
 
   switch (eventStripe.type) {
     case "checkout.session.completed":
+      //Esperamos a que se complete el pago antes de preguntar por el estado
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
       if (await existePago(session.payment_intent)) {
         console.log("existe pago");
         await insertaVenta(session);
