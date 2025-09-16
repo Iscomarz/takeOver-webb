@@ -150,11 +150,11 @@ async function existePago(paymentIntent) {
   return data && data.length > 0; // Devuelve `true` si ya existe
 }
 
-async function obtenerEventoActivo() {
+async function obtenerEvento(idEvento) {
   let { data: mEvento, error } = await supabase
     .from("mEvento")
     .select("*")
-    .eq("activo", true);
+    .eq("idevento", idEvento);
 
   if (error) {
     console.error("Error obteniendo los eventos activos:", error.message);
@@ -224,7 +224,8 @@ async function generarCorreoYTicket(
   event,
   tickets,
   nombreComprador,
-  correoComprador
+  correoComprador,
+  idEvento
 ) {
   console.log("🔹 Iniciando...");
   try {
@@ -241,7 +242,7 @@ async function generarCorreoYTicket(
       })
     );
 
-    const evento = await obtenerEventoActivo();
+    const evento = await obtenerEvento(idEvento);
     //await agregarVendidosaInventario(faseEvento, venta); //hacer esto en el procedimiento almacenado
     console.log("generando ticket");
     const pdfBuffer = await generarTicket(nombreComprador, evento, tickets);
@@ -278,7 +279,8 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
       event,
       acreditaData.tickets,
       acreditaData.nombreComprador,
-      acreditaData.correoComprador
+      acreditaData.correoComprador,
+      acreditaData.idEvento
     );
     return true;
   }
