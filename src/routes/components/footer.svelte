@@ -16,7 +16,7 @@
     <img src={americanIcon} alt="American Express" />
     <img src={appleIcon} alt="Apple Pay" />
     <img src={googleIcon} alt="Google Pay" />
-        <img src={samsungPay} alt="Samsung Pay" />
+    <img src={samsungPay} alt="Samsung Pay" />
   </div>
 </div>
 
