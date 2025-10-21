@@ -175,7 +175,7 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento || "Take Over presenta: Imanol Igoa | Vivran"}</title>
+  <title>{mEvento.nombreEvento || "Take Over presenta: Noche de Muertos"}</title>
   <meta
     name="description"
     content="Adquiere tus accesos para el proximo Take Over"
