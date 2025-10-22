@@ -7,16 +7,27 @@ export async function POST({ request }) {
     //live
     const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
-    const { items } = await request.json();
+    const { items, metadata } = await request.json();
     console.log('Items:', items);
+    console.log('Metadata:', metadata);
+    
     try {
-        const session = await stripe.checkout.sessions.create({
+        const sessionConfig = {
             payment_method_types: ['card'],
             mode: 'payment',
             line_items: items,
             success_url: `${request.headers.get('origin')}/success`,
             cancel_url: `${request.headers.get('origin')}/eventos/`,
-        });
+        };
+
+        // Agregar metadata si existe código de descuento
+        if (metadata?.codigoDescuento) {
+            sessionConfig.metadata = {
+                codigoDescuento: metadata.codigoDescuento
+            };
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionConfig);
 
         //console.log('Session creada:', session);
         // Devuelve una respuesta adecuada

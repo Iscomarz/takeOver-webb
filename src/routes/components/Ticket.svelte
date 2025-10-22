@@ -106,7 +106,7 @@
 </div>
     {#if descripcion}
     <div class="descripcion-toggle" on:click={toggleDescripcion}>
-      <span>{mostrarDescripcion ? "▲" : "▼"} Descripción Early Access</span>
+      <span>{mostrarDescripcion ? "▲" : "▼"} Descripción</span>
     </div>
 
     {#if mostrarDescripcion}

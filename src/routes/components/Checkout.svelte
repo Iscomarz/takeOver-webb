@@ -7,6 +7,8 @@
   export let cantidad;
   export let idPrecioStripe;
   export let eventoPasado = false; // Cambia a true si es un evento pasado
+  export let descuentoAplicado = false;
+  export let codigoDescuentoUsado = null;
 
   let stripe;
   let acceptedTerms = false;
@@ -37,6 +39,9 @@
         },
         body: JSON.stringify({
           items: [{ price: idPrecioStripe, quantity: cantidad }],
+          metadata: {
+            codigoDescuento: codigoDescuentoUsado
+          }
         }),
       });
 

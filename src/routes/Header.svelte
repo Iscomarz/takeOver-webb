@@ -21,6 +21,21 @@
 <header style={backBlack ? "background-color: black;" : ""}>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
+    <div class="menu-button {menuOpen ? 'open' : ''}">
+      <div class="line top"></div>
+      <div class="line bottom"></div>
+    </div>
+  </div>
+  <div class="corner">
+    <a href="/">
+      <p style="color: white;">_TAKE OVER</p>
+    </a>
+  </div>
+
+  <!-- Menú lateral -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="side-menu {menuOpen ? 'open' : ''}"
     on:click={() => (menuOpen = false)}
@@ -75,21 +90,6 @@
     </div>
   </div>
 
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
-    <div class="menu-button {menuOpen ? 'open' : ''}">
-      <div class="line top"></div>
-      <div class="line bottom"></div>
-    </div>
-  </div>
-
-  <div class="corner">
-    <a href="/">
-      <img src={logo} alt="TakeOver" />
-    </a>
-  </div>
-
   <AnimatedText />
 
   {#if showHeader}
@@ -124,19 +124,20 @@
     box-sizing: border-box;
   }
   header {
-    display: flex;
-    justify-content: space-between;
     position: fixed;
-    width: 100%;
     z-index: 1000;
     padding-left: 20px;
     padding-right: 20px;
     height: 6em;
     align-items: center;
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
   }
 
   .corner {
-    width: 4em;
+    width: auto;
+    padding: 15px;
     height: 4em;
     margin-right: 20px;
   }
@@ -325,21 +326,18 @@
     .menu-icon {
       display: flex !important;
     }
-
     nav {
       display: none;
     }
-
     .corner {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+      position: static;
+      left: auto;
+      transform: none;
       margin: 0;
     }
-
     .corner img {
-      width: 3em;
-      height: 3em;
+      width: 100%;
+      height: auto;
     }
   }
 </style>

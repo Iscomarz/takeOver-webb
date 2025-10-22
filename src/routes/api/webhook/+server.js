@@ -55,10 +55,14 @@ export async function POST(event) {
         await insertaVenta(session);
 
         if (await acreditaPagoYGeneraTickets(event, session.payment_intent)) {
+          // Acreditar código de descuento si existe
+          await acreditarCodigoDescuento(session);
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         }
       } else {
         if (await capturarCheckOut(session, stripeEventId, event, session.payment_intent)) {
+          // Acreditar código de descuento si existe
+          await acreditarCodigoDescuento(session);
           // Enviar correo de confirmacion y proceso de pago
           // enviarCorreoProcesoPago(
           //   session.customer_details.name,
@@ -75,6 +79,18 @@ export async function POST(event) {
         console.log("existe pago");
         //Este prodecediemiento acredita el pago en mPago y genera los tickets en la tabla ticket
         if (await acreditaPagoYGeneraTickets(event, session.id)) {
+          // Para payment_intent.succeeded, necesitamos buscar la sesión original para obtener metadata
+          try {
+            const checkoutSessions = await stripe.checkout.sessions.list({
+              payment_intent: session.id,
+              limit: 1
+            });
+            if (checkoutSessions.data.length > 0) {
+              await acreditarCodigoDescuento(checkoutSessions.data[0]);
+            }
+          } catch (error) {
+            console.error("Error al buscar sesión de checkout:", error);
+          }
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
       } else {
@@ -403,5 +419,37 @@ async function enviarTicketAlServidor(
     console.log("Correo enviado con éxito:", data);
   } else {
     console.error("Error al enviar el correo:", data);
+  }
+}
+
+// Función para acreditar código de descuento
+async function acreditarCodigoDescuento(session) {
+  try {
+    const codigoDescuento = session.metadata?.codigoDescuento;
+    
+    if (codigoDescuento) {
+      console.log(`Acreditando código de descuento: ${codigoDescuento}`);
+      
+      const { data, error } = await supabase
+        .from("codigosDescuento")
+        .update({ 
+          acreditado: true, 
+          fecha_acreditado: new Date().toISOString(),
+          session_id: session.id 
+        })
+        .eq("codigo", codigoDescuento);
+
+      if (error) {
+        console.error("Error al acreditar código de descuento:", error);
+        return false;
+      } else {
+        console.log("Código de descuento acreditado exitosamente:", codigoDescuento);
+        return true;
+      }
+    }
+    return true; // No hay código para acreditar
+  } catch (error) {
+    console.error("Error en acreditarCodigoDescuento:", error);
+    return false;
   }
 }
