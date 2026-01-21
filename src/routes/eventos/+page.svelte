@@ -2,6 +2,7 @@
   import fondoEvents from "$lib/images/covers/fondo-events.jpg";
   import BotonComunidad from "../components/botonComunidad.svelte";
   import CardEventoPasado from "../components/cardEventoPasado.svelte";
+  import CardEventoActivo from "../components/cardEventoActivo.svelte";
   import logo from "$lib/images/takeover-logo.png";
   import { onMount } from "svelte";
   import { tweened } from "svelte/motion";
@@ -98,7 +99,7 @@
         </section>
       {:else}
         {#each eventosActivos as evento}
-          <CardEventoPasado
+          <CardEventoActivo
             pathImage={evento.pathImage}
             titulo={evento.nombreEvento}
             fecha={evento.fechaInicio}

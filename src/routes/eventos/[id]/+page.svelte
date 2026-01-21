@@ -4,7 +4,7 @@
   import Location from "../../components/Location.svelte";
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
-  import Footer from "../../components/footer.svelte";
+  import Cards from "../../components/cards.svelte";
   import supabase from "$lib/supabase";
   import { onMount, tick } from "svelte";
   import { invalidateAll, goto } from "$app/navigation";
@@ -13,7 +13,7 @@
   import logo from "$lib/images/takeover-logo.png";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
-  import { eventoId } from "../../../lib/stores/eventoId";
+  import { eventoId }  from "../../../lib/stores/eventoId";
 
   let scale = tweened(1, {
     duration: 400,
@@ -181,277 +181,97 @@
     content="Adquiere tus accesos para el proximo Take Over"
   />
 </svelte:head>
-<section class="contenedor">
+<section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[1500px] mx-auto flex flex-col mt-[50px] md:mt-[80px] lg:mt-[100px] xl:mt-[120px] gap-4">
   {#if loading}
-    <div class="loading-container" transition:fade={{ duration: 200 }}>
-      <img src={logo} style="transform: scale({$scale})" alt="loading" />
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center" transition:fade={{ duration: 200 }}>
+      <img src={logo} style="transform: scale({$scale})" alt="loading" class="w-[150px] transition-transform duration-[750ms] ease-in-out" />
     </div>
   {:else if !eventoActivo}
-    <div class="seccion-no-evento">
+    <div class="text-gray-100">
       <h1>Por el momento no tenemos eventos disponibles</h1>
       <BotonComunidad />
       <button on:click={() => goto("/")}>Volver al inicio</button>
     </div>
   {:else}
-    {#if urlImagenPortada}
-      <div class="img-event">
-        <img src={urlImagenPortada} alt="portada" />
-      </div>
-    {/if}
-
-    <div class="info-event-container">
-      <section class="info-event">
-        <div class="components">
-          {#if fases.length > 0}
-            <Tickets
-              ticketDataEve={fases}
-              eventoPasado={new Date(mEvento.fechaFin) < new Date()
-                ? true
-                : false}
-            />
-          {/if}
-          <div class="border-info">
-            <Title
-            titulo={mEvento.nombreEvento}
-            fecha={`${formatearFechaLarga(mEvento.fechaInicio)} / ${formatearHora(mEvento.fechaInicio)}`}
+    <!-- Grid de 2 columnas: Tickets + Cards a la izquierda, Imagen a la derecha -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Imagen (aparece primero en móvil, segundo en desktop) -->
+      {#if urlImagenPortada}
+        <div class="relative w-full h-full min-h-[300px] lg:min-h-[600px] group/image order-1 lg:order-2">
+          <div class="absolute inset-0 bg-gradient-to-t from-neutral-900/60 via-transparent to-transparent z-10 pointer-events-none rounded-[20px]"></div>
+          <img 
+            src={urlImagenPortada} 
+            alt="portada" 
+            class="w-full h-full object-cover rounded-[20px] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-700 group-hover/image:scale-105 group-hover/image:brightness-110" 
           />
-            <AboutEvent descripcion={mEvento.descripcion} />
-
-            <DateComponent
-              fecha={formatearRangoFechas(
-                mEvento.fechaInicio,
-                mEvento.fechaFin
-              )}
-            />
-
-            <Location
-              nombreLugar={mEvento.venue}
-              direccion={mEvento.direccion}
-              linkMaps={mEvento.direccionURL}
-            />
-          </div>
-
-          <Footer />
         </div>
-      </section>
+      {/if}
+
+      <!-- Tickets y Cards (aparecen segundo en móvil, primero en desktop) -->
+      <div class="flex flex-col gap-4 order-2 lg:order-1">
+        {#if fases.length > 0}
+          <div class="glass-card p-7 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
+            <div class="relative z-10">
+              <Tickets
+                ticketDataEve={fases}
+                eventoPasado={new Date(mEvento.fechaFin) < new Date()
+                  ? true
+                  : false}
+              />
+            </div>
+          </div>
+        {/if}
+        
+        <div class="glass-card p-7 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
+          <div class="relative z-10">
+            <Cards />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info del evento abajo ocupando todo el ancho -->
+    <div class="glass-card p-8 lg:p-10 flex flex-col gap-5 relative overflow-hidden mb-4">
+      <!-- Efecto de brillo sutil -->
+      <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
+      
+      <!-- Textura de ruido sutil -->
+      <div class="absolute inset-0 opacity-[0.015] pointer-events-none rounded-[20px]" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulance type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+      
+      <div class="relative z-10">
+        <Title
+          titulo={mEvento.nombreEvento}
+          fecha={`${formatearFechaLarga(mEvento.fechaInicio)} / ${formatearHora(mEvento.fechaInicio)}`}
+        />
+        <AboutEvent descripcion={mEvento.descripcion} />
+
+        <DateComponent
+          fecha={formatearRangoFechas(
+            mEvento.fechaInicio,
+            mEvento.fechaFin
+          )}
+        />
+
+        <Location
+          nombreLugar={mEvento.venue}
+          direccion={mEvento.direccion}
+          linkMaps={mEvento.direccionURL}
+        />
+      </div>
     </div>
   {/if}
 </section>
 
 
 <style>
-  .info-event-container {
-    width: 48%;
-  }
-  .loading-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .loading-container img {
-    width: 150px;
-    transition: transform 0.75s ease-in-out;
-  }
-  .img-event {
-    width: 52%;
-  }
-
-  .background-blur {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    filter: blur(
-      10px
-    ); /* Ajusta este valor para cambiar el nivel de desenfoque */
-    z-index: -1;
-  }
-  img {
+  /* Clase para el efecto glass cristalizado */
+  .glass-card {
+    background: linear-gradient(to bottom right, rgba(23, 23, 23, 0.95), rgba(38, 38, 38, 0.95), rgba(23, 23, 23, 0.95));
+    backdrop-filter: blur(24px);
     border-radius: 20px;
-    width: 100%;
-    z-index: 1;
-    border: 3px solid #4b4b4b;
-  }
-  .info-event-short {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .info-event {
-    width: 100%;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .components {
-    width: 85%;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .seccion-no-evento {
-    color: whitesmoke;
-  }
-
-  .border-info{
-    border: 3px solid #4b4b4b;
-    padding: 20px;
-    border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .contenedor {
-    width: 60%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: row-reverse;
-    margin-top: 120px;
-    gap: 20px;
-  }
-
-  /* Tablets y laptops pequeñas (768px - 1024px) */
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .contenedor {
-      width: 85% !important;
-      margin-top: 80px !important;
-      gap: 15px;
-    }
-    .components {
-      width: 90%;
-      gap: 25px;
-    }
-    .border-info {
-      padding: 18px;
-    }
-  }
-
-  /* Laptops de 13 pulgadas y similares (1025px - 1366px) */
-  @media screen and (min-width: 1025px) and (max-width: 1366px) {
-    .contenedor {
-      width: 75% !important;
-      margin-top: 100px !important;
-      gap: 25px;
-    }
-    .components {
-      width: 88%;
-      gap: 28px;
-    }
-    .info-event-container {
-      width: 50%;
-    }
-    .img-event {
-      width: 50%;
-    }
-    .border-info {
-      padding: 22px;
-    }
-  }
-
-  /* Pantallas medianas (768px - 900px) - Tablets horizontales */
-  @media screen and (min-width: 768px) and (max-width: 900px) {
-    .contenedor {
-      width: 90% !important;
-      flex-direction: column !important;
-      align-items: center;
-      margin-top: 70px !important;
-    }
-    .info-event-container {
-      width: 100%;
-      margin-top: 30px;
-    }
-    .img-event {
-      width: 70%;
-      margin: 0 auto;
-    }
-    .components {
-      width: 85%;
-    }
-  }
-
-  /* Móviles grandes y tablets pequeñas (601px - 767px) */
-  @media screen and (min-width: 601px) and (max-width: 767px) {
-    .contenedor {
-      width: 85% !important;
-      flex-direction: column !important;
-      align-items: center;
-      margin-top: 60px !important;
-    }
-    .info-event-container {
-      width: 100%;
-      margin-top: 25px;
-    }
-    .img-event {
-      width: 80%;
-      margin: 0 auto;
-    }
-    .components {
-      width: 90%;
-      gap: 25px;
-    }
-  }
-
-  /* Móviles (hasta 600px) */
-  @media screen and (max-width: 600px) {
-    .info-event-container {
-      width: 100%;
-    }
-    img {
-      width: 100%;
-    }
-    .img-event {
-      margin-top: 40px;
-      width: 100%;
-    }
-    .contenedor {
-      width: 100% !important;
-      margin-top: 50px !important;
-      flex-direction: column !important;
-      align-items: center;
-      gap: 15px;
-    }
-    .components {
-      width: 100%;
-      margin-top: 20px;
-      gap: 20px;
-    }
-    .border-info {
-      padding: 15px;
-    }
-  }
-
-  /* Ajuste para móviles muy pequeños */
-  @media screen and (max-width: 480px) {
-    .contenedor {
-      width: 95% !important;
-    }
-    .components {
-      width: 95%;
-    }
-    .border-info {
-      padding: 12px;
-    }
-  }
-
-  /* Pantallas muy grandes (> 1366px) */
-  @media screen and (min-width: 1367px) {
-    .contenedor {
-      width: 65%;
-      max-width: 1400px;
-    }
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   }
 </style>

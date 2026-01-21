@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import ButtonStyle from "./buttonStyle.svelte";
+  import { formatDiaYHora, formatDate } from '$lib/utils/formatFechas.js';
 
   export let pathImage;
   export let titulo;
@@ -16,22 +17,6 @@
     diaYHora = formatDiaYHora(fecha);
   });
 
-  function formatDate(dateString) {
-    const options = { day: "numeric", month: "long", year: "numeric" };
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", options);
-  }
-
-  function formatDiaYHora(dateString) {
-    const diaYHora = new Date(dateString).toLocaleString("es-ES", {
-      weekday: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "UTC",
-      hour12: true,
-    });
-    return diaYHora.replace(",", " / ").toUpperCase();
-  }
 </script>
 
 <div class="evento-card">

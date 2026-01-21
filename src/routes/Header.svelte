@@ -29,7 +29,8 @@
   </div>
   <div class="corner">
     <a href="/">
-      <p style="color: white;">_TAKE OVER</p>
+      <img src={logo} alt="Take Over Logo" />
+      <!-- <p style="color: white;">_TAKE OVER</p> -->
     </a>
   </div>
 
