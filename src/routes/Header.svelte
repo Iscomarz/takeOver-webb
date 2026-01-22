@@ -230,6 +230,9 @@
   .menu-icon {
     display: none !important;
   }
+  .corner{
+    display: flex;
+  }
 
   .menu-button {
     width: 32px;
@@ -326,6 +329,10 @@
     }
     .menu-icon {
       display: flex !important;
+    }
+
+    .corner{
+      display: none !important;
     }
     nav {
       display: none;
