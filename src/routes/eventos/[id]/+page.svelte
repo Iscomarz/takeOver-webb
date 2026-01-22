@@ -226,7 +226,7 @@
     </div>
 
     <!-- Grid de 2 columnas: Tickets + Cards a la izquierda, Imagen a la derecha -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4">
       <!-- Imagen (aparece primero en móvil, segundo en desktop) -->
       {#if urlImagenPortada}
         <div class="relative w-full h-full min-h-[300px] lg:min-h-[600px] group/image order-1 lg:order-2">
