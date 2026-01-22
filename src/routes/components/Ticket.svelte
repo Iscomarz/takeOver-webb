@@ -67,7 +67,7 @@
       if (allZero) {
         const updatedTickets = [...currentTickets];
         inactivoState.update(() =>
-          updatedTickets.map((ticket) => !ticket.activo)
+          updatedTickets.map((ticket) => !ticket.activo),
         );
         return state;
       } else {
@@ -85,26 +85,28 @@
 </script>
 
 <div class="rounded" class:inactivo>
-  <div class="grid-container">
-    <div class="nombre">
-      <h4>{nombreFace}</h4>
-    </div>
-    <div class="precio">
-      <p>Mex${precio}</p>
-    </div>
-    <div class="vigencia">
-      <p>{formatearFechas(vigencia)}</p>
-    </div>
-    <div class="contador">
-      {#if soldout}
-        <p class="soldout">Sold Out</p>
-      {:else}
-        <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
-      {/if}
+  <div style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 10px;">
+    <div class="grid-container">
+      <div class="nombre">
+        <h4>{nombreFace}</h4>
+      </div>
+      <div class="precio">
+        <p>Mex${precio}</p>
+      </div>
+      <div class="vigencia">
+        <p>{formatearFechas(vigencia)}</p>
+      </div>
+      <div class="contador">
+        {#if soldout}
+          <p class="soldout">Sold Out</p>
+        {:else}
+          <Counter {cantidad} on:countChange={(e) => updateTickets(e.detail)} />
+        {/if}
+      </div>
     </div>
   </div>
-</div>
-    {#if descripcion}
+
+  {#if descripcion}
     <div class="descripcion-toggle" on:click={toggleDescripcion}>
       <span>{mostrarDescripcion ? "▲" : "▼"} Descripción</span>
     </div>
@@ -115,6 +117,7 @@
       </div>
     {/if}
   {/if}
+</div>
 
 <style>
   .rounded {
@@ -123,17 +126,19 @@
     color: whitesmoke;
     padding: 10px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: start;
     width: 100%;
   }
 
-    .descripcion-toggle {
+  .descripcion-toggle {
     cursor: pointer;
     margin-top: 10px;
     text-align: center;
     font-size: 0.9em;
     color: #ccc;
+    width: 100%;
   }
 
   .descripcion-toggle:hover {
@@ -146,6 +151,8 @@
     border-top: 1px solid #666;
     font-size: 0.85em;
     color: #ddd;
+    text-align: center;
+    width: 100%;
   }
 
   .soldout {

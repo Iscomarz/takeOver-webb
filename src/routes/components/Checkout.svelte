@@ -77,6 +77,8 @@
   <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
 </label>
 
+<p class="nota">*Pueden aplicar cargos por servicio y procesamiento</p>
+
 <button
   on:click={handleCheckout}
   disabled={eventoPasado}
@@ -104,6 +106,13 @@
     margin-top: 15px;
     height: 40px;
     align-items: center;
+  }
+
+  .nota{
+    font-family: "JostRegular";
+    color: whitesmoke;
+    font-size: 0.8em;
+    margin-top: 10px;
   }
 
   button:hover {
