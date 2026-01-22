@@ -85,7 +85,6 @@
   }
 </script>
 
-<div class="border">
   <h3>TICKETS</h3>
   <div class="tickets-container">
     {#each ticketDataEve as ticket, index}
@@ -146,7 +145,6 @@
       codigoDescuentoUsado={descuentoAplicado ? codigoDescuento : null}
     />
   </div>
-</div>
 
 <style>
   .border {

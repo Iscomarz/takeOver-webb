@@ -36,10 +36,10 @@
             House 
           </span>
           <span class="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md text-gray-300 px-4 py-2 rounded-full text-sm font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
-            Disco 
+            Indie Dance 
           </span>
           <span class="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md text-gray-300 px-4 py-2 rounded-full text-sm font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
-            Indi House 
+            Techno 
           </span>
         </div>
 

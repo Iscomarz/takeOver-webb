@@ -175,7 +175,7 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento || "Take Over presenta: Noche de Muertos"}</title>
+  <title>{mEvento.nombreEvento || "Take Over presenta: Disco Freaks"}</title>
   <meta
     name="description"
     content="Adquiere tus accesos para el proximo Take Over"
@@ -193,6 +193,38 @@
       <button on:click={() => goto("/")}>Volver al inicio</button>
     </div>
   {:else}
+    <!-- Header del evento -->
+    <div class="text-center mb-2 mt-4" style="font-family: 'JostRegular', sans-serif;">
+      <h2 class="text-3xl md:text-4xl text-white uppercase tracking-wide mb-2 font-semibold">
+        {mEvento.nombreEvento}
+      </h2>
+      <p class="text-gray-300 text-sm md:text-base mb-3 max-w-2xl mx-auto leading-relaxed">
+        {mEvento.descripcionCorta}
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs md:text-sm text-gray-400">
+        <!-- Fecha -->
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>{formatearFechaLarga(mEvento.fechaInicio)}</span>
+        </div>
+        <!-- Separador -->
+        <span class="hidden sm:inline text-gray-600">•</span>
+        <!-- Venue -->
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>{mEvento.venue}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Grid de 2 columnas: Tickets + Cards a la izquierda, Imagen a la derecha -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Imagen (aparece primero en móvil, segundo en desktop) -->
