@@ -167,9 +167,9 @@
     // Eliminar el año para hacerlo más corto
     const [diaSemana, dia, mes, _anio] = fecha.split(" ");
 
-    console.log(
-      `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`
-    );
+    // console.log(
+    //   `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`
+    // );
     return `${diaSemana} ${dia} ${mes} ${inicio.getFullYear()} ${horaInicio} - ${horaFin}`;
   }
 </script>

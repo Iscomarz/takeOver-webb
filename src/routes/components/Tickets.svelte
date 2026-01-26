@@ -23,7 +23,7 @@
     await tick();
     tickets.set(ticketDataEve);
     inactivoState.set(ticketDataEve.map((ticket) => !ticket.activo));
-    console.log("Tickets iniciales:", ticketDataEve);
+    //console.log("Tickets iniciales:", ticketDataEve);
   });
 
   const totalPrice = derived(tickets, ($tickets) =>
