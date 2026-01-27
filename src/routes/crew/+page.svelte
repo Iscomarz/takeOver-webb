@@ -239,13 +239,16 @@
 
 						<!-- Links de acción -->
 						<div class="flex flex-wrap gap-4 mt-auto">
+							{#if selectedMember.socials.presskitPdfPath}
 							<a
-								href="#preskit"
+								href="{selectedMember.socials.presskitPdfPath}"
 								class="px-6 py-3 bg-white/5 backdrop-blur-sm border border-white/20 text-white rounded-lg font-jost text-sm uppercase tracking-wider transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-lg no-underline"
 							>
 								Preskit
 							</a>
+							{/if}
 
+							{#if selectedMember.socials.instagram}
 							<a
 								href={selectedMember.socials.instagram}
 								target="_blank"
@@ -276,7 +279,10 @@
 									<line x1="17.5" y1="6.5" x2="17.51" y2="6.5"
 									></line>
 								</svg>
-							</a>
+							</a>	
+							{/if}
+							
+							{#if selectedMember.socials.soundcloud}
 							<a
 								href={selectedMember.socials.soundcloud}
 								target="_blank"
@@ -296,6 +302,7 @@
 									/>
 								</svg>
 							</a>
+							{/if}
 						</div>
 					</div>
 				</div>
