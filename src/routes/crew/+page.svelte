@@ -240,7 +240,7 @@
 						<!-- Links de acción -->
 						<div class="flex flex-wrap gap-4 mt-auto">
 							{#if selectedMember.socials.presskitPdfPath}
-							<a
+							<a target="_blank"
 								href="{selectedMember.socials.presskitPdfPath}"
 								class="px-6 py-3 bg-white/5 backdrop-blur-sm border border-white/20 text-white rounded-lg font-jost text-sm uppercase tracking-wider transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-lg no-underline"
 							>
