@@ -240,21 +240,12 @@
 						<!-- Links de acción -->
 						<div class="flex flex-wrap gap-4 mt-auto">
 							<a
-								href="#booking"
-								class="px-6 py-3 bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-400 rounded-lg font-jost text-sm uppercase tracking-wider transition-all duration-300 hover:bg-emerald-500/30 hover:border-emerald-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/20 no-underline"
-							>
-								Booking
-							</a>
-							<a
 								href="#preskit"
 								class="px-6 py-3 bg-white/5 backdrop-blur-sm border border-white/20 text-white rounded-lg font-jost text-sm uppercase tracking-wider transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-lg no-underline"
 							>
 								Preskit
 							</a>
-						</div>
 
-						<!-- Redes sociales -->
-						<div class="flex gap-4 pt-4 border-t border-white/10">
 							<a
 								href={selectedMember.socials.instagram}
 								target="_blank"
