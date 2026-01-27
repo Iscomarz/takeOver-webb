@@ -3,31 +3,9 @@
   export let href = "#";
 </script>
 
-<button>
-  <a href="/{href}">{texto}</a>
-</button>
-
-<style>
-  button {
-    position: relative;
-    overflow: hidden;
-    color: black;
-    width: 40%;
-    text-align: center;
-    background-color: var(--color-theme-1);
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
-  }
-
-  button::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 15px; /* Grosor de la franja */
-    height: 100%;
-    background-color: white;
-  }
-</style>
+<a 
+  href="/{href}"
+  class="inline-flex items-center justify-center px-8 py-3 bg-white text-gray-900 rounded-xl text-base font-semibold font-jost cursor-pointer transition-all duration-300 hover:bg-white/90 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-95 uppercase tracking-wider no-underline"
+>
+  {texto}
+</a>

@@ -96,126 +96,108 @@
   <meta name="description" content="Ponte en contacto con nosotros" />
 </svelte:head>
 
-<div class="text-column">
-  <h1>Send me a message... or a DJ set</h1>
-  <br />
-  <!-- Campo Name -->
-  <div class="relative z-0">
-    <input
-      maxlength="15"
-      type="text"
-      id="floating_name"
-      bind:value={name}
-      class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-      placeholder=" "
-    />
-    <label
-      for="floating_name"
-      class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-      >Name</label
-    >
-  </div>
-  <br />
+<!-- Contenedor principal con glassmorphism -->
+<section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[900px] mx-auto flex flex-col mt-[50px] md:mt-[80px] lg:mt-[100px] mb-12 gap-6">
+  <!-- Título principal -->
+  <h1 class="font-jockey text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 text-center uppercase tracking-wide">
+    Send me a message... or a DJ set
+  </h1>
 
-  <!-- Campo Email -->
-  <div class="relative z-0">
-    <input
-      type="email"
-      maxlength="100"
-      id="floating_email"
-      bind:value={email}
-      class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-      placeholder=" "
-    />
-    <label
-      for="floating_email"
-      class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-      >Email</label
-    >
-  </div>
-  <br />
+  <!-- Card del formulario con glass effect -->
+  <div class="glass-card p-8 md:p-10 relative overflow-hidden">
+    <!-- Efecto de brillo sutil -->
+    <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none"></div>
+    
+    <!-- Textura de ruido sutil -->
+    <div class="absolute inset-0 opacity-[0.015] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
 
-  <!-- Campo DJ Set link -->
-  <div class="relative z-0">
-    <input
-      type="text"
-      maxlength="100"
-      id="floating_link"
-      bind:value={djSetLink}
-      class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-      placeholder=" "
-    />
-    <label
-      for="floating_link"
-      class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-      >DJ Set link</label
-    >
-  </div>
-  <br />
+    <div class="relative z-10 flex flex-col gap-6">
+      <!-- Campo Name -->
+      <div class="relative z-0">
+        <input
+          maxlength="15"
+          type="text"
+          id="floating_name"
+          bind:value={name}
+          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
+          placeholder=" "
+        />
+        <label
+          for="floating_name"
+          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
+          >Name</label
+        >
+      </div>
 
-  <!-- Campo Message -->
-  <div class="relative z-0">
-    <textarea
-      maxlength="300"
-      id="floating_message"
-      bind:value={message}
-      class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer fixed-textarea"
-      placeholder=" "
-    ></textarea>
-    <label
-      for="floating_message"
-      class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-      >Message</label
-    >
+      <!-- Campo Email -->
+      <div class="relative z-0">
+        <input
+          type="email"
+          maxlength="100"
+          id="floating_email"
+          bind:value={email}
+          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
+          placeholder=" "
+        />
+        <label
+          for="floating_email"
+          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
+          >Email</label
+        >
+      </div>
+
+      <!-- Campo DJ Set link -->
+      <div class="relative z-0">
+        <input
+          type="text"
+          maxlength="100"
+          id="floating_link"
+          bind:value={djSetLink}
+          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
+          placeholder=" "
+        />
+        <label
+          for="floating_link"
+          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
+          >DJ Set link</label
+        >
+      </div>
+
+      <!-- Campo Message -->
+      <div class="relative z-0">
+        <textarea
+          maxlength="300"
+          id="floating_message"
+          bind:value={message}
+          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer resize-none h-[150px] transition-colors duration-300"
+          placeholder=" "
+        ></textarea>
+        <label
+          for="floating_message"
+          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
+          >Message</label
+        >
+      </div>
+
+      <!-- Botón de envío con estilo glassmorphism -->
+      <div class="flex justify-center mt-4">
+        <button
+          on:click={sendMessage}
+          class="px-10 py-4 bg-white/10 backdrop-blur-md text-white border-2 border-white/30 rounded-xl text-base font-semibold font-jost cursor-pointer transition-all duration-300 hover:bg-white hover:text-gray-900 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-95 uppercase tracking-wider w-full md:w-auto"
+        >
+          Send
+        </button>
+      </div>
+    </div>
   </div>
-  <br /><br />
-  <div class="div-button">
-    <!-- Botón de envío -->
-    <button
-      
-      on:click={sendMessage}
-    >
-      SEND
-    </button>
-  </div>
-</div>
+</section>
 
 <style>
-  .text-column {
-    padding: 15px;
-    margin-top: 50px;
-  }
-  button {
-    color: var(--color-theme-1);
-    font-family: "JostRegular";
-    justify-content: center;
-    align-items: center;
-    width: 50%; 
-    text-align: center; 
-    border-radius: 20px; 
-    border: 2px solid var(--color-theme-1);
-  }
-
-    button:hover {
-        background-color: var(--color-theme-1);
-        color: black;
-    }
-  .fixed-textarea {
-    resize: none;
-    width: 100%;
-    height: 150px;
-  }
-
-  h1 {
-    font-family: "JockeyOne";
-    color: var(--color-text-white);
-  }
-  label {
-    font-family: "JostRegular";
-  }
-  .div-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .glass-card {
+    background: linear-gradient(to bottom right, rgba(23, 23, 23, 0.95), rgba(38, 38, 38, 0.95), rgba(23, 23, 23, 0.95));
+    backdrop-filter: blur(24px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   }
 </style>

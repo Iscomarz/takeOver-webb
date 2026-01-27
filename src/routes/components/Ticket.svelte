@@ -15,6 +15,7 @@
   export let idEvento;
   export let soldout = false;
   export let descripcion = "";
+  export let oculto = false;
 
   let cantidad = 0;
   let mostrarDescripcion = false;
@@ -83,7 +84,7 @@
     //console.log(descripcion);
   });
 </script>
-
+{#if !oculto}
 <div class="rounded" class:inactivo>
   <div style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 10px;">
     <div class="grid-container">
@@ -118,6 +119,7 @@
     {/if}
   {/if}
 </div>
+{/if}
 
 <style>
   .rounded {
