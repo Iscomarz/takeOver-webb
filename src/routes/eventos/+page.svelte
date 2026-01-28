@@ -85,12 +85,10 @@
   </div>
 {:else}
   <div class="banner">
-    <img src={fondoEvents} alt="fondo-events-takeover" />
     <h1>_EVENTS</h1>
   </div>
 
   <div class="eventos-disponibles">
-    <h2>EVENTOS DISPONIBLES</h2>
     <div class="eventos-container">
       {#if eventosActivos.length === 0}
         <section class="no-eventos">
@@ -145,10 +143,11 @@
   }
   .banner {
     position: relative;
-    height: 300px;
+    height: 100px;
     width: 100%;
     overflow: hidden;
     z-index: 0;
+    margin-top: 80px;
   }
 
   .banner img {

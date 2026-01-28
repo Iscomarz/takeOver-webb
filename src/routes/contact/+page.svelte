@@ -97,16 +97,16 @@
 </svelte:head>
 
 <!-- Contenedor principal con glassmorphism -->
-<section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[900px] mx-auto flex flex-col mt-[50px] md:mt-[80px] lg:mt-[100px] mb-12 gap-6">
+<section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[900px] mx-auto flex flex-col mt-[70px] md:mt-[80px] lg:mt-[100px] mb-12">
   <!-- Título principal -->
-  <h1 class="font-jockey text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 text-center uppercase tracking-wide">
+  <h1 class="px-14 font-jockey text-xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 text-center uppercase tracking-wide">
     Send me a message... or a DJ set
   </h1>
 
   <!-- Card del formulario con glass effect -->
-  <div class="glass-card p-8 md:p-10 relative overflow-hidden">
+  <div class=" p-8 md:p-10 relative overflow-hidden">
     <!-- Efecto de brillo sutil -->
-    <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-black/[0.03] to-black/20 pointer-events-none"></div>
     
     <!-- Textura de ruido sutil -->
     <div class="absolute inset-0 opacity-[0.015] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
@@ -194,7 +194,7 @@
 
 <style>
   .glass-card {
-    background: linear-gradient(to bottom right, rgba(23, 23, 23, 0.95), rgba(38, 38, 38, 0.95), rgba(23, 23, 23, 0.95));
+    /* background: linear-gradient(to bottom right, rgba(23, 23, 23, 0.95), rgba(38, 38, 38, 0.95), rgba(23, 23, 23, 0.95)); */
     backdrop-filter: blur(24px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);

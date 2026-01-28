@@ -1,6 +1,7 @@
 <script>
 	import { fade, fly, blur } from "svelte/transition";
 	import { quintOut } from "svelte/easing";
+	import logoTakeOver from "../../lib/images/takeover-logo.png";
 	import alanImg from "../../lib/images/crew/alan.jpg";
 	import cobosImg from "../../lib/images/crew/cobos.jpeg";
 	import iscoImg from "../../lib/images/crew/isco.jpg";
@@ -12,27 +13,11 @@
 
 	let selectedMember = null;
 	let detailsSection;
-	let isMobile = false;
 	let crewMembers = [];
 
 	onMount(async () => {
-	// 	
-	// Detectar si es móvil o desktop
-	await loadCrewMembers();
-
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 1023px)'); // ajustar según breakpoint
-    const onChange = e => isMobile = e.matches;
-    isMobile = mq.matches;
-    mq.addEventListener ? mq.addEventListener('change', onChange) : mq.addListener(onChange);
-
-	//Seleccionar el primer miembro si es desktop
-	if (!isMobile) {
-	  selectedMember = crewMembers[0];
-	}
-	
-    return () => mq.removeEventListener ? mq.removeEventListener('change', onChange) : mq.removeListener(onChange);
-  });
+		await loadCrewMembers();
+	});
 
   async function loadCrewMembers() {
 	// Cargar los miembros del equipo desde data o servicio
@@ -51,12 +36,12 @@
 
 <svelte:head>
 	<title>Crew - Take Over</title>
-	<meta name="description" content="Conoce al equipo detrás de Take Over" />
+	<meta name="description" content="Equipo detrás de Take Over" />
 </svelte:head>
 
 <!-- Header artístico -->
 <section
-	class="lg:hidden mt-14 relative w-full h-[8vh] min-h-[150px] flex items-center justify-center overflow-hidden"
+	class="mt-20 relative w-full h-[4vh] min-h-[80px] flex items-center justify-center overflow-hidden"
 >
 	<!-- Fondo con efecto de onda -->
 	<div
@@ -64,21 +49,18 @@
 	></div>
 
 	<!-- Contenido del header -->
-	<div class="relative z-10 text-center px-4">
+	<div class="relative z-10 text-center px-10">
 		<h1
-			class="font-jockey text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-white mb-4 uppercase tracking-wider"
+			class="font-jockey text-xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-white uppercase tracking-wider"
 		>
-			The Crew
+			The Crew and Resident DJs
 		</h1>
-		<p class="font-jost text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
-			Los creadores y visionarios detrás de Take Over
-		</p>
 	</div>
 </section>
 
 <!-- Grid de cards del equipo -->
 <section
-	class="lg:hidden w-[95%] sm:w-[90%] md:w-[85%] max-w-[1400px] mx-auto py-4 md:py-20"
+	class="w-[95%] sm:w-[90%] md:w-[85%] max-w-[1400px] mx-auto py-4 md:py-20"
 >
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 		{#each crewMembers as member (member.team_id)}
@@ -89,27 +71,25 @@
 			/>
 		{/each}
 
-		<div>
+		<!-- <div class="px-6">
+			<img src={logoTakeOver} alt="Take Over Logo" class="w-28 mx-auto mb-4" />
 			<p class="font-jockey md:text-3xl text-white uppercase tracking-wider mb-4 text-center">"Sinergia que suena"</p>
-			<p class="font-jost text-gray-300 text-base md:text-lg max-w-3xl mx-auto mt-6 text-left">
-			El equipo de Take Over está comprometido con la realización de eventos de la más alta calidad y con el apoyo permanente a la escena underground local. Actuamos con profesionalismo, respeto y pasión para crear experiencias seguras, inclusivas y memorables que impulsen el talento emergente.
-		</p>
-		</div>
+		</div> -->
 		
 		
 	</div>
 </section>
 <!-- Layout principal con split view -->
-<section
+<!-- <section
 	bind:this={detailsSection}
 	class="mt-14 hidden lg:flex min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 items-center justify-center p-4 md:p-8 scroll-mt-20"
 >
 	<div
 		class="w-full max-w-[1400px] h-[90vh] min-h-[600px] flex flex-col md:flex-row gap-8"
 	>
-		<!-- Panel izquierdo - Lista de crew -->
+		 Panel izquierdo - Lista de crew 
 		<div class="w-full md:w-[400px] flex flex-col gap-6">
-			<!-- Título -->
+			 Título 
 			<div class="mb-4">
 				<h1
 					class="font-jockey text-4xl md:text-5xl text-white uppercase tracking-wider mb-2"
@@ -121,7 +101,7 @@
 				></div>
 			</div>
 
-			<!-- Lista de miembros -->
+			 Lista de miembros 
 			<div
 				class="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
 			>
@@ -133,7 +113,7 @@
 							: ''}"
 						on:click={() => selectMember(member)}
 					>
-						<!-- Nombre -->
+						 Nombre 
 						<span
 							class="font-jost text-lg text-white uppercase tracking-wider {selectedMember?.id ===
 							member.id
@@ -143,7 +123,7 @@
 							{member.name}
 						</span>
 
-						<!-- Icono + -->
+						 Icono +
 						<div
 							class="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white/30 transition-all duration-300 group-hover:border-emerald-500 group-hover:rotate-90 {selectedMember?.id ===
 							member.id
@@ -168,7 +148,7 @@
 							</svg>
 						</div>
 
-						<!-- Indicador seleccionado -->
+						 Indicador seleccionado 
 						{#if selectedMember?.id === member.id}
 							<div
 								class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-l-xl"
@@ -180,13 +160,13 @@
 			</div>
 		</div>
 
-		<!-- Panel derecho - Detalles del miembro -->
+		 Panel derecho - Detalles del miembro 
 		{#if selectedMember}
 			<div
 				class="flex-1 relative overflow-hidden rounded-[32px] bg-gradient-to-br from-neutral-900/95 via-neutral-900/95 to-neutral-950/95 backdrop-blur-xl border border-white/10 shadow-2xl"
 				in:fly={{ x: 50, duration: 500, easing: quintOut }}
 			>
-				<!-- Efectos de fondo -->
+				 Efectos de fondo 
 				<div
 					class="absolute inset-0 bg-gradient-to-br {selectedMember.color} opacity-20 mix-blend-overlay"
 				></div>
@@ -196,7 +176,7 @@
 				></div>
 
 				<div class="relative z-10 h-full flex flex-col">
-					<!-- Imagen del miembro -->
+					 Imagen del miembro 
 					<div class="relative h-[50%] overflow-hidden">
 						<img
 							src={selectedMember.image}
@@ -212,11 +192,11 @@
 						></div>
 					</div>
 
-					<!-- Información del miembro -->
+					 Información del miembro 
 					<div
 						class="flex-1 p-8 md:p-10 flex flex-col gap-6 overflow-y-auto"
 					>
-						<!-- Header -->
+						 Header 
 						<div>
 							<h2
 								class="font-jockey text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 mb-2 uppercase tracking-wide"
@@ -230,14 +210,14 @@
 							</p>
 						</div>
 
-						<!-- Descripción -->
+						 Descripción 
 						<p
 							class="font-jost text-gray-300 text-base leading-relaxed"
 						>
 							{selectedMember.description}
 						</p>
 
-						<!-- Links de acción -->
+						 Links de acción 
 						<div class="flex flex-wrap gap-4 mt-auto">
 							{#if selectedMember.socials.presskitPdfPath}
 							<a target="_blank"
@@ -309,7 +289,7 @@
 			</div>
 		{/if}
 	</div>
-</section>
+</section> -->
 
 <style>
 	.social-link {

@@ -18,7 +18,7 @@
 >
     <!-- Card container con efecto hover y blur cuando está seleccionado -->
     <div
-        class="relative h-[400px] overflow-hidden rounded-[24px] transition-all duration-500 {isSelected
+        class="relative h-[200px] overflow-hidden rounded-[24px] transition-all duration-500 {isSelected
             ? 'scale-95 ring-4 ring-emerald-500/50'
             : 'hover:scale-105'}"
     >
@@ -26,9 +26,10 @@
         <img
             src={member.image}
             alt={member.name}
-            class="absolute inset-0 w-full h-full object-cover transition-all duration-700 {isSelected
+            class="absolute inset-0 w-full h-full object-cover object-[center_25%] transition-all duration-700 {isSelected
                 ? 'blur-sm scale-110 brightness-50'
                 : 'group-hover:scale-110'}"
+            style="object-position: center 25%;"
         />
 
         <!-- Overlay gradient más oscuro cuando está seleccionado -->
@@ -52,22 +53,22 @@
                 : ''}"
         >
             <h3
-                class="font-jockey text-3xl text-white mb-2 uppercase tracking-wide transition-all duration-500 {isSelected
+                class="font-jockey text-3xl text-white uppercase tracking-wide transition-all duration-500 {isSelected
                     ? 'md:-translate-y-2'
                     : 'group-hover:-translate-y-2'}"
             >
                 {member.name}
             </h3>
-            <p
+            <!-- <p
                 class="font-jost text-gray-300 text-sm uppercase tracking-wider mb-2"
             >
                 {member.role}
-            </p>
+            </p> -->
 
-            <!-- Información expandida para móvil -->
+            <!-- Información expandida -->
             {#if isSelected}
                 <div
-                    class="md:hidden flex flex-col gap-4 mt-4"
+                    class="flex flex-col gap-4 mt-4"
                     in:fly={{
                         y: 20,
                         duration: 600,
@@ -76,9 +77,12 @@
                     }}
                     out:fade={{ duration: 300 }}
                 >
+                {#if member.description & member.description !== ""}
                     <p class="font-jost text-gray-300 text-sm leading-relaxed">
                         {member.description}
                     </p>
+                {/if}
+                    
 
                     <!-- Redes sociales -->
                     <div class="flex gap-3">
@@ -159,26 +163,6 @@
                             </a>
                         {/if}
                     </div>
-                </div>
-
-                <!-- Indicador de selección para desktop -->
-                <div
-                    class="hidden md:flex items-center gap-2 text-emerald-400 text-sm font-jost uppercase tracking-wider"
-                    in:fade={{ duration: 400, easing: quintOut, delay: 150 }}
-                    out:fade={{ duration: 250 }}
-                >
-                    <span>Seleccionado</span>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
                 </div>
             {:else}
                 <div

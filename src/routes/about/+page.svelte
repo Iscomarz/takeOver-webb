@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <div class="redes">
+      <!-- <div class="redes">
         <p>FOLLOW US:</p>
         <a
           href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9"
@@ -58,7 +58,7 @@
         >
           <img src={insta} alt="Instagram" />
         </a>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>

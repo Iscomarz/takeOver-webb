@@ -243,7 +243,7 @@
       <!-- Tickets y Cards (aparecen segundo en móvil, primero en desktop) -->
       <div class="flex flex-col gap-4 order-2 lg:order-1">
         {#if fases.length > 0}
-          <div class="glass-card p-7 relative overflow-hidden">
+          <div class=" p-7 relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
             <div class="relative z-10">
               <Tickets
@@ -256,7 +256,7 @@
           </div>
         {/if}
         
-        <div class="glass-card p-7 relative overflow-hidden">
+        <div class=" p-7 relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
           <div class="relative z-10">
             <Cards />
@@ -266,7 +266,7 @@
     </div>
 
     <!-- Info del evento abajo ocupando todo el ancho -->
-    <div class="glass-card p-8 lg:p-10 flex flex-col gap-5 relative overflow-hidden mb-4">
+    <div class=" p-8 lg:p-10 flex flex-col gap-5 relative overflow-hidden mb-4">
       <!-- Efecto de brillo sutil -->
       <div class="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none rounded-[20px]"></div>
       

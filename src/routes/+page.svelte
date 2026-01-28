@@ -29,15 +29,6 @@
   </div>
 </div>
 
-<section class="redes">
-  <a
-    href="https://www.instagram.com/_takeeover?igshid=yjlo5sgvbxsh9"
-    target="_blank"
-  >
-    <img src={insta} alt="Instagram" />
-  </a>
-</section>
-
 <style>
   .wel-container {
     display: flex;

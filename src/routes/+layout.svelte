@@ -1,23 +1,17 @@
 <script>
   import Header from "./Header.svelte";
-  import logo from "$lib/images/takeover-logo.png";
+  import Footer from "./Footer.svelte";
   import "../app.css";
 </script>
 
-<div class="app" style="--background-image: url({logo});">
+<div class="app">
   <Header />
 
   <main>
     <slot />
   </main>
 
-  <footer>
-    <div><a href="eventos">Events</a>
-    <a href="about">About</a>
-    <a href="contant">Contact</a></div>
-    <p>"DANCE MUSIC, EXPLORE FLAVORS, FEEL THE BEAT"</p>
-    <a href="/politica">Politicas de privacidad</a>
-  </footer>
+  <Footer />
 </div>
 
 <style>
@@ -35,12 +29,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: var(--background-image);
     background-size: 260%;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.06; /* Ajusta este valor para cambiar la transparencia */
+    /* opacity: 0.06; Ajusta este valor para cambiar la transparencia */
     z-index: -1;
+    /* Removido background-color para permitir que el gradiente del body sea visible */
   }
 
   main {
@@ -54,30 +48,18 @@
     overflow: hidden;
   }
 
-  footer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    color: whitesmoke;
-    font-size: 0.8em !important;
-    background-color: rgba(18, 18, 18, 0.953);
-    margin-top: 70px;
-    gap: 10px;
+  main::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%, #000000 100%);
+    pointer-events: none;
+    z-index: -10;
   }
 
-  footer a {
-    font-weight: bold;
-    font-size: 0.8em !important;
-    text-decoration: underline;
-  }
-
-  @media (min-width: 480px) {
-    footer {
-      padding: 12px 0;
-    }
-  }
 
   @media screen and (max-width: 600px) {
     main {
