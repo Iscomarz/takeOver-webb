@@ -2,12 +2,13 @@
   import { inactivoState, tickets } from "./ticketStore.js";
   import Ticket from "./Ticket.svelte";
   import { derived } from "svelte/store";
-  import Checkout from "../components/Checkout.svelte";
+  import CheckoutEmbedded from "../components/CheckoutEmbedded.svelte";
   import { onMount, tick } from "svelte";
   import supabase from "../../lib/supabase.js";
 
   export let ticketDataEve;
   export let eventoPasado = false;
+  export let nombreEvento = "";
 
   let idStripeSeleccionado = null;
   let cantidad = 0;
@@ -137,13 +138,15 @@
       {/if}
     </div>
 
-    <Checkout
-      idPrecioStripe={descuentoAplicado ? idPrecioDescuento : idStripeSeleccionado}
-      cantidad={descuentoAplicado ? 1 : $totalCantidad}
+    <CheckoutEmbedded
       {totalPrice}
+      cantidad={$totalCantidad}
       {eventoPasado}
       descuentoAplicado={descuentoAplicado}
       codigoDescuentoUsado={descuentoAplicado ? codigoDescuento : null}
+      nombreEvento={nombreEvento}
+      nombreFase={$tickets.filter(t => t.cantidad > 0)[0]?.nombreFace || ""}
+      tickets={$tickets}
     />
   </div>
 

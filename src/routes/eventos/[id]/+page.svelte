@@ -251,6 +251,7 @@
                 eventoPasado={new Date(mEvento.fechaFin) < new Date()
                   ? true
                   : false}
+                nombreEvento={mEvento.nombreEvento || ""}
               />
             </div>
           </div>

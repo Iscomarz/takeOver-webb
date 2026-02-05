@@ -77,27 +77,27 @@ export async function POST(event) {
       console.log("Pago exitoso, procesando...");
       if (await existePago(session.id)) {
         console.log("existe pago");
-        //Este prodecediemiento acredita el pago en mPago y genera los tickets en la tabla ticket
+        //Este procedimiento acredita el pago en mPago y genera los tickets en la tabla ticket
         if (await acreditaPagoYGeneraTickets(event, session.id)) {
-          // Para payment_intent.succeeded, necesitamos buscar la sesión original para obtener metadata
-          try {
-            const checkoutSessions = await stripe.checkout.sessions.list({
-              payment_intent: session.id,
-              limit: 1
-            });
-            if (checkoutSessions.data.length > 0) {
-              await acreditarCodigoDescuento(checkoutSessions.data[0]);
-            }
-          } catch (error) {
-            console.error("Error al buscar sesión de checkout:", error);
+          // Acreditar código de descuento desde metadata del Payment Intent
+          if (session.metadata?.codigoDescuento) {
+            await acreditarCodigoDescuentoDesdeMetadata(session.metadata);
           }
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
       } else {
         console.log("no existe pago");
-        await insertaPago(session);
+        // Guardar pago desde Payment Intent (nuevo checkout embebido)
+        await insertaPagoDesdePaymentIntent(session);
         return json({ message: "Pago guardado exitoso" }, { status: 200 });
       }
+    case "payment_intent.created":
+      console.log("Payment Intent creado, guardando información inicial...");
+      // Cuando se crea un Payment Intent desde el nuevo checkout
+      if (session.metadata?.nombre && session.metadata?.correo) {
+        await guardarPaymentIntentInicial(session);
+      }
+      return json({ message: "Payment Intent registrado" }, { status: 200 });
     case "checkout.session.async_payment_succeeded":
       console.log("Pago exitoso, procesando...");
 
@@ -450,6 +450,103 @@ async function acreditarCodigoDescuento(session) {
     return true; // No hay código para acreditar
   } catch (error) {
     console.error("Error en acreditarCodigoDescuento:", error);
+    return false;
+  }
+}
+
+// Función para acreditar código de descuento desde metadata
+async function acreditarCodigoDescuentoDesdeMetadata(metadata) {
+  try {
+    const codigoDescuento = metadata?.codigoDescuento;
+    
+    if (codigoDescuento) {
+      console.log(`Acreditando código de descuento desde metadata: ${codigoDescuento}`);
+      
+      const { data, error } = await supabase
+        .from("codigosDescuento")
+        .update({ 
+          acreditado: true, 
+          fecha_acreditado: new Date().toISOString()
+        })
+        .eq("codigo", codigoDescuento);
+
+      if (error) {
+        console.error("Error al acreditar código de descuento:", error);
+        return false;
+      } else {
+        console.log("Código de descuento acreditado exitosamente:", codigoDescuento);
+        return true;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error("Error en acreditarCodigoDescuentoDesdeMetadata:", error);
+    return false;
+  }
+}
+
+// Función para guardar Payment Intent inicial (del checkout embebido)
+async function guardarPaymentIntentInicial(paymentIntent) {
+  try {
+    console.log("Guardando Payment Intent inicial:", paymentIntent.id);
+    const metadata = paymentIntent.metadata || {};
+    
+    const { data, error } = await supabase.from("mPago").insert([
+      {
+        idFormaPago: 3,
+        cantidad: paymentIntent.amount / 100,
+        fechaPago: new Date(),
+        acreditado: false,
+        idTransaccionStripe: paymentIntent.id,
+      },
+    ]);
+
+    if (error) {
+      console.error("Error al guardar Payment Intent inicial:", error);
+      return false;
+    } else {
+      console.log("Payment Intent inicial guardado exitosamente");
+      return true;
+    }
+  } catch (error) {
+    console.error("Error en guardarPaymentIntentInicial:", error);
+    return false;
+  }
+}
+
+// Función para insertar pago desde Payment Intent (checkout embebido)
+async function insertaPagoDesdePaymentIntent(paymentIntent) {
+  try {
+    console.log("Insertando pago desde Payment Intent:", paymentIntent.id);
+    const metadata = paymentIntent.metadata || {};
+    const nombre = metadata.nombre || paymentIntent.charges?.data[0]?.billing_details?.name || "Cliente";
+    const correo = metadata.correo || paymentIntent.charges?.data[0]?.billing_details?.email || "";
+    const cantidad = parseInt(metadata.cantidad) || 1;
+    const descripcionFase = metadata.ticketsDescripcion || metadata.nombreFase || "Tickets";
+    const amount = paymentIntent.amount / 100;
+
+    console.log("Datos extraídos del Payment Intent:", { nombre, correo, cantidad, descripcionFase, amount });
+
+    // Llamada al procedimiento almacenado
+    const { data, error } = await supabase.rpc("guardar_pago_venta", {
+      cantidadt: cantidad,
+      correov: correo,
+      descripcionfase: descripcionFase,
+      idtransstripe: paymentIntent.id,
+      monto: amount,
+      nombrev: nombre,
+      checkout_session_stripe: paymentIntent.id, // Usamos el payment intent ID
+    });
+
+    if (error) {
+      console.error("Error al ejecutar el procedimiento:", error);
+      return false;
+    } else {
+      console.log("Pago desde Payment Intent guardado exitosamente:", data);
+      return true;
+    }
+  } catch (error) {
+    console.error("Error en insertaPagoDesdePaymentIntent:", error);
     return false;
   }
 }
