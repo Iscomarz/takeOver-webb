@@ -1,7 +1,7 @@
 <script>
     import logoTakeOver from "$lib/images/takeover-logo.png";
 </script>
-<footer class="bg-black text-whitesmoke">
+<footer class="text-whitesmoke">
   <div class="ft-content container mx-auto px-6 py-6 flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
 
     <!-- Izquierda: redes y políticas -->
@@ -36,7 +36,7 @@
 <style>
   footer {
     color: whitesmoke;
-    background-color: rgb(0, 0, 0);
+    background-color: transparent;
   }
 
   footer a {

@@ -1,10 +1,12 @@
 <script>
   import Header from "./Header.svelte";
   import Footer from "./Footer.svelte";
+  import AnimatedBackground from "./components/AnimatedBackground.svelte";
   import "../app.css";
 </script>
 
 <div class="app">
+  <AnimatedBackground />
   <Header />
 
   <main>
