@@ -80,6 +80,15 @@
         <li
           on:click={() => {
             menuOpen = false;
+            goto("/");
+          }}
+        >
+          _HOME
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
             goto("/eventos");
           }}
         >
@@ -129,6 +138,11 @@
   {#if showHeader}
     <nav>
       <ul>
+        <li
+          aria-current={$page.url.pathname === "/" ? "page" : undefined}
+        >
+          <a href="/">HOME</a>
+        </li>
         <li
           aria-current={$page.url.pathname === "/eventos" ? "page" : undefined}
         >
