@@ -7,16 +7,9 @@
   import supabase from "../../lib/supabase";
   import { onMount, tick } from "svelte";
   import { invalidateAll, goto } from "$app/navigation";
-  import { tweened } from "svelte/motion";
-  import { cubicOut } from "svelte/easing";
-  import logo from "$lib/images/takeover-logo.png";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../components/botonComunidad.svelte";
 
-  let scale = tweened(1, {
-    duration: 400,
-    easing: cubicOut,
-  });
   let loading = true;
   let eventoActivo = true;
 
@@ -74,18 +67,7 @@
   }
 
   onMount(async () => {
-    //Obtener evento activo
     await loadData();
-    let interval = setInterval(() => {
-      if (loading) {
-        scale.set(1.1);
-        setTimeout(() => {
-          scale.set(1);
-        }, 400);
-      } else {
-        clearInterval(interval);
-      }
-    }, 1500);
   });
 
   async function getProducts() {
@@ -121,7 +103,7 @@
 
 {#if loading}
   <div class="loading-container" transition:fade={{ duration: 200 }}>
-    <img src={logo} style="transform: scale({$scale})" alt="loading" />
+    <p class="loading-message">Cargando tickets...</p>
   </div>
 {:else if !eventoActivo}
     <div class="seccion-no-evento">
@@ -171,9 +153,22 @@
     justify-content: center;
     align-items: center;
   }
-  .loading-container img {
-    width: 150px;
-    transition: transform 0.75s ease-in-out;
+
+  .loading-message {
+    font-family: "JostRegular", sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.7);
+    animation: pulse-text 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-text {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
   }
   .img-event {
     margin-top: 20px;

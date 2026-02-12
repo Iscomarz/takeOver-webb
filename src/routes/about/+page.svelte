@@ -12,7 +12,6 @@
 </svelte:head>
 
 <div class="general">
-  <h1>About Take Over</h1>
 
   <div class="about-content">
     <span class="img-con">
@@ -92,6 +91,7 @@
     width: 85%;
     display: flex;
     gap: 20px;
+    margin-top: 70px;
   }
   .img-con {
     width: 50%;

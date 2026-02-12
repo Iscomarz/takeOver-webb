@@ -8,17 +8,10 @@
   import supabase from "$lib/supabase";
   import { onMount, tick } from "svelte";
   import { invalidateAll, goto } from "$app/navigation";
-  import { tweened } from "svelte/motion";
-  import { cubicOut } from "svelte/easing";
-  import logo from "$lib/images/takeover-logo.png";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
   import { eventoId }  from "../../../lib/stores/eventoId";
 
-  let scale = tweened(1, {
-    duration: 400,
-    easing: cubicOut,
-  });
   let loading = true;
   let eventoActivo = true;
 
@@ -82,18 +75,7 @@
   }
 
   onMount(async () => {
-    //Obtener evento activo
     await loadData();
-    let interval = setInterval(() => {
-      if (loading) {
-        scale.set(1.1);
-        setTimeout(() => {
-          scale.set(1);
-        }, 400);
-      } else {
-        clearInterval(interval);
-      }
-    }, 1500);
   });
 
   async function getProducts() {
@@ -185,7 +167,7 @@
 <section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[1500px] mx-auto flex flex-col mt-[50px] md:mt-[80px] lg:mt-[100px] xl:mt-[120px] gap-4">
   {#if loading}
     <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center" transition:fade={{ duration: 200 }}>
-      <img src={logo} style="transform: scale({$scale})" alt="loading" class="w-[150px] transition-transform duration-[750ms] ease-in-out" />
+      <p class="text-white/70 text-xl tracking-wider animate-pulse">Cargando evento...</p>
     </div>
   {:else if !eventoActivo}
     <div class="text-gray-100">

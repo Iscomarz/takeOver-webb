@@ -1,6 +1,11 @@
 <script>
     import logoTakeOver from "$lib/images/takeover-logo.png";
+    import {page} from "$app/stores";
+
+    $: currentPath = $page.url.pathname;
+
 </script>
+
 <footer class="text-whitesmoke">
   <div class="ft-content container mx-auto px-6 py-6 flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
 
@@ -18,10 +23,12 @@
       <a style="font-size: .5rem;" href="/politica" class="mt-3 underline font-bold">Políticas de privacidad</a>
     </div>
 
+    {#if currentPath !== "/"}
     <!-- Centro: logo -->
     <div class="md:flex-1 flex justify-center order-1 md:order-2">
       <img src={logoTakeOver} alt="TakeOver Logo" class="w-24 md:w-28" />
     </div>
+      {/if}
 
     <!-- Derecha: slogan -->
     <div id="slogan" class="flex flex-col items-center md:items-end md:flex-1 text-center md:text-right md:text-2xl font-jockey uppercase tracking-wider order-2 md:order-3">

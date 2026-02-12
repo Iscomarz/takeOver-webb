@@ -101,6 +101,8 @@
         descripcion={ticket.descripcion}
         oculto={ticket.oculto}
         {index}
+        isFirst={index === 0}
+        isLast={index === ticketDataEve.length - 1}
         on:quantityChange={handleQuantityChange}
       />
     {/each}
@@ -164,7 +166,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 0;
   }
 
   /* Estilos para código de descuento */

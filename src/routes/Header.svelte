@@ -60,12 +60,16 @@
       <div class="line bottom"></div>
     </div>
   </div>
-  <div class="corner">
+
+  {#if currentPath !== "/"}
+    <div class="corner">
     <a href="/">
       <img src={logo} alt="Take Over Logo" />
       <!-- <p style="color: white;">_TAKE OVER</p> -->
     </a>
   </div>
+  {/if}
+  
 
   <!-- Menú lateral -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -329,7 +333,7 @@
     padding: 0 0.5rem;
     color: rgb(255, 255, 255);
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-decoration: none;
