@@ -468,13 +468,13 @@ async function getOrCreateCliente(nombre, correo, telefono) {
   // 1. Intentar buscar el cliente por correo
   const { data: cliente, error: searchError } = await supabase
     .from("mCliente")
-    .select("id")
+    .select("cliente_id")
     .eq("correo", correo)
     .maybeSingle();
 
   if (cliente) {
-    console.log("Cliente encontrado con ID:", cliente.id);
-    return cliente.id;
+    console.log("Cliente encontrado con ID:", cliente.cliente_id);
+    return cliente.cliente_id;
   }
 
   // 2. Si no existe, crearlo
@@ -486,7 +486,7 @@ async function getOrCreateCliente(nombre, correo, telefono) {
       correo: correo, 
       telefono: telefono || null 
     }])
-    .select("id")
+    .select("cliente_id")
     .single();
 
   if (insertError) {
@@ -495,6 +495,6 @@ async function getOrCreateCliente(nombre, correo, telefono) {
     throw new Error(`No se pudo crear o recuperar el cliente: ${insertError.message}`);
   }
 
-  console.log("Nuevo cliente creado con ID:", nuevoCliente.id);
-  return nuevoCliente.id;
+  console.log("Nuevo cliente creado con ID:", nuevoCliente.cliente_id);
+  return nuevoCliente.cliente_id;
 }
