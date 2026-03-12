@@ -118,6 +118,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   console.log("Evento no procesado, continuando...");
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
+  const phone = sessionCheckout.customer_details.phone;
   const amount = sessionCheckout.amount_total / 100;
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
@@ -129,15 +130,18 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
     cantidadT = item.quantity;
     console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
   });
+
+  // Buscar o crear cliente
+  const clienteId = await getOrCreateCliente(name || email, email, phone);
+
   console.log("checkout_session_stripe", stripeEventId);
   // Llamada al procedimiento almacenado
   const { data, error } = await supabase.rpc("guardar_pago_venta", {
     cantidadt: cantidadT,
-    correov: email,
+    cliente_id: clienteId,
     descripcionfase: descripcionFase,
     idtransstripe: sessionCheckout.payment_intent,
     monto: amount,
-    nombrev: name == null ? email : name,
     checkout_session_stripe: stripeEventId,
   });
 
@@ -305,6 +309,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
 async function insertaVenta(sessionCheckout) {
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
+  const phone = sessionCheckout.customer_details.phone;
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
   );
@@ -315,9 +320,11 @@ async function insertaVenta(sessionCheckout) {
     cantidadT = item.quantity;
   });
 
+  // Buscar o crear cliente
+  const clienteId = await getOrCreateCliente(name || email, email, phone);
+
   const { data, error } = await supabase.rpc("insertaventa", {
-    nombrev: name,
-    correov: email,
+    cliente_id: clienteId,
     cantidad: cantidadT,
     idpagostripe: sessionCheckout.payment_intent,
     descripcionfase: descripcionFase,
@@ -452,4 +459,42 @@ async function acreditarCodigoDescuento(session) {
     console.error("Error en acreditarCodigoDescuento:", error);
     return false;
   }
+}
+
+// Función auxiliar para obtener o crear un cliente
+async function getOrCreateCliente(nombre, correo, telefono) {
+  console.log("Buscando o creando cliente:", correo);
+  
+  // 1. Intentar buscar el cliente por correo
+  const { data: cliente, error: searchError } = await supabase
+    .from("mCliente")
+    .select("id")
+    .eq("correo", correo)
+    .maybeSingle();
+
+  if (cliente) {
+    console.log("Cliente encontrado con ID:", cliente.id);
+    return cliente.id;
+  }
+
+  // 2. Si no existe, crearlo
+  console.log("Cliente no encontrado, creando uno nuevo...");
+  const { data: nuevoCliente, error: insertError } = await supabase
+    .from("mCliente")
+    .insert([{ 
+      nombre: nombre || correo, 
+      correo: correo, 
+      telefono: telefono || null 
+    }])
+    .select("id")
+    .single();
+
+  if (insertError) {
+    console.error("Error al crear cliente:", insertError);
+    // En caso de error, podrías lanzar una excepción o manejarlo según tu flujo
+    throw new Error(`No se pudo crear o recuperar el cliente: ${insertError.message}`);
+  }
+
+  console.log("Nuevo cliente creado con ID:", nuevoCliente.id);
+  return nuevoCliente.id;
 }

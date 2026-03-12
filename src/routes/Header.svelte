@@ -51,7 +51,7 @@
   }
 </script>
 
-<header class:scrolled style={backBlack && !scrolled ? "background-color: black;" : ""}>
+<header class:scrolled >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
@@ -247,7 +247,7 @@
   /* Botón CTA */
   .cta-button {
     position: relative;
-    padding: 10px 24px;
+    padding: 6px 20px;
     background: rgba(255, 80, 40, 0.08);
     border: 2px solid #ff5722;
     border-radius: 25px;
@@ -285,7 +285,7 @@
     position: relative;
     color: #e0e0e0;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     z-index: 1;
@@ -298,7 +298,7 @@
 
   li {
     position: relative;
-    height: 100%;
+    height: 70%;
   }
 
   li[aria-current="page"]::before {
@@ -333,7 +333,7 @@
     padding: 0 0.5rem;
     color: rgb(255, 255, 255);
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-decoration: none;
@@ -427,7 +427,7 @@
 
   .side-menu-content li {
     color: white;
-    font-size: 1rem;
+    font-size: 0.75rem;
     text-decoration: none;
     text-transform: uppercase;
     font-weight: 500;
