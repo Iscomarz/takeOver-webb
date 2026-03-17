@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.VITE_RESESND_KEY);
+const resend = new Resend(import.meta.env.VITE_RESEND_KEY || import.meta.env.VITE_RESESND_KEY || process.env.VITE_RESEND_KEY || process.env.VITE_RESESND_KEY);
 
 export async function POST({ request }) {
 	const { pdfBuffer,to,subject,html } = await request.json();

@@ -233,6 +233,7 @@
                 eventoPasado={new Date(mEvento.fechaFin) < new Date()
                   ? true
                   : false}
+                eventoReferidos={mEvento.referidos}
               />
             </div>
           </div>

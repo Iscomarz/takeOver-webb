@@ -120,6 +120,8 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   const name = sessionCheckout.customer_details.name;
   const phone = sessionCheckout.customer_details.phone;
   const amount = sessionCheckout.amount_total / 100;
+  const codigoReferido = sessionCheckout.metadata?.codigoReferido;
+
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
   );
@@ -132,7 +134,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   });
 
   // Buscar o crear cliente
-  const clienteId = await getOrCreateCliente(name || email, email, phone);
+  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
 
   console.log("checkout_session_stripe", stripeEventId);
   // Llamada al procedimiento almacenado
@@ -310,6 +312,8 @@ async function insertaVenta(sessionCheckout) {
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
   const phone = sessionCheckout.customer_details.phone;
+  const codigoReferido = sessionCheckout.metadata?.codigoReferido;
+
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
   );
@@ -321,7 +325,7 @@ async function insertaVenta(sessionCheckout) {
   });
 
   // Buscar o crear cliente
-  const clienteId = await getOrCreateCliente(name || email, email, phone);
+  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
 
   const { data, error } = await supabase.rpc("insertaventa", {
     cliente_id: clienteId,
@@ -462,13 +466,13 @@ async function acreditarCodigoDescuento(session) {
 }
 
 // Función auxiliar para obtener o crear un cliente
-async function getOrCreateCliente(nombre, correo, telefono) {
+async function getOrCreateCliente(nombre, correo, telefono, codigoReferido) {
   console.log("Buscando o creando cliente:", correo);
   
   // 1. Intentar buscar el cliente por correo
   const { data: cliente, error: searchError } = await supabase
     .from("mCliente")
-    .select("cliente_id")
+    .select("cliente_id, codigo")
     .eq("correo", correo)
     .maybeSingle();
 
@@ -477,14 +481,37 @@ async function getOrCreateCliente(nombre, correo, telefono) {
     return cliente.cliente_id;
   }
 
-  // 2. Si no existe, crearlo
+  // 2. Si no existe, averiguar el origen a partir del código referido (si existe)
+  let id_origen = 4; // Por defecto: Venta Directa
+  let id_referidor = null;
+  
+  if (codigoReferido) {
+    const { data: refCliente } = await supabase
+      .from("mCliente")
+      .select("cliente_id")
+      .eq("codigo", codigoReferido)
+      .maybeSingle();
+      
+    if (refCliente) {
+      id_origen = 1; // 1 = Cliente
+      id_referidor = refCliente.cliente_id;
+    } else {
+      // Podrías extender esto buscando en mpromotor, si no halló en mCliente:
+      // const { data: promotor } = await supabase.from("mpromotor").select("id").eq("codigo", codigoReferido).maybeSingle();
+      // if (promotor) { id_origen = 2; id_referidor = promotor.id; }
+    }
+  }
+
+  // 3. Crearlo
   console.log("Cliente no encontrado, creando uno nuevo...");
   const { data: nuevoCliente, error: insertError } = await supabase
     .from("mCliente")
     .insert([{ 
       nombre: nombre || correo, 
       correo: correo, 
-      telefono: telefono || null 
+      telefono: telefono || null,
+      id_origen: id_origen,
+      id_referidor: id_referidor
     }])
     .select("cliente_id")
     .single();

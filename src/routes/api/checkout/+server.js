@@ -16,15 +16,17 @@ export async function POST({ request }) {
             payment_method_types: ['card'],
             mode: 'payment',
             line_items: items,
-            success_url: `${request.headers.get('origin')}/success`,
+            success_url: `${request.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${request.headers.get('origin')}/eventos/`,
         };
 
-        // Agregar metadata si existe código de descuento
+        // Agregar metadata si existe código de descuento o referido
+        sessionConfig.metadata = {};
         if (metadata?.codigoDescuento) {
-            sessionConfig.metadata = {
-                codigoDescuento: metadata.codigoDescuento
-            };
+            sessionConfig.metadata.codigoDescuento = metadata.codigoDescuento;
+        }
+        if (metadata?.codigoReferido) {
+            sessionConfig.metadata.codigoReferido = metadata.codigoReferido;
         }
 
         const session = await stripe.checkout.sessions.create(sessionConfig);
