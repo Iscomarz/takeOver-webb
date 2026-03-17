@@ -233,7 +233,7 @@
             <p class="nota-referido" style="font-size: 13px; color: whitesmoke; margin-bottom: 8px;">
               Ingresa el código proporcionado por tu amigo y tu correo electrónico para obtener un precio especial.
             </p>
-            <div class="discount-input-container">
+            <div class="discount-input-container referido-inputs">
               <input
                 type="text"
                 bind:value={codigoReferido}
@@ -421,5 +421,15 @@
 
   .discount-message.error {
     color: #dc3545;
+  }
+
+  @media (max-width: 480px) {
+    .discount-input-container.referido-inputs {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .discount-input-container.referido-inputs .discount-input {
+      width: 100%;
+    }
   }
 </style>
