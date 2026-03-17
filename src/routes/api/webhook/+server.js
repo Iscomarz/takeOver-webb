@@ -274,7 +274,7 @@ async function generarCorreoYTicket(
       pdfBuffer,
       nombreComprador,
       correoComprador,
-      evento.nombreEvento
+      evento
     );
     console.log("correo enviado");
 
@@ -368,9 +368,16 @@ async function enviarTicketAlServidor(
   pdfBufferCorreo,
   nombreComprador,
   correoComprador,
-  nombreEvento
+  evento
 ) {
   console.log("Enviando ticket al servidor...");
+
+  // Obtener la URL pública del flyer del evento
+  const { data: publicImgData } = supabase.storage
+    .from("imageEventos")
+    .getPublicUrl(evento.pathImage);
+  const flyerUrl = publicImgData.publicUrl;
+
   const response = await event.fetch("/api/resend", {
     method: "POST",
     headers: {
@@ -379,45 +386,56 @@ async function enviarTicketAlServidor(
     body: JSON.stringify({
       pdfBuffer: Array.from(new Uint8Array(pdfBufferCorreo)),
       to: correoComprador,
-      subject: "Tickets Take Over",
+      subject: "🎫 Tus tickets para " + evento.nombreEvento,
       html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f8f8f8; padding: 30px; color: #333;">
-        <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-          <h2 style="color: #111; text-align: center;">🎟️ ¡Gracias por tu compra, ${nombreComprador}!</h2>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0a0a; padding: 40px 10px; color: #e5e5e5; display: flex; justify-content: center;">
+        <div style="max-width: 500px; width: 100%; margin: auto; background: linear-gradient(145deg, #161616 0%, #1e1e1e 100%); padding: 30px; border-radius: 12px; border: 1px solid rgba(86, 253, 184, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #56fdb8; margin: 0; font-size: 32px; letter-spacing: 2px; text-transform: uppercase;">TAKE OVER</h1>
+            <p style="color: #888; margin-top: 5px; font-size: 14px; letter-spacing: 1px;">UNDERGROUND MUSIC EST. 2024</p>
+          </div>
 
-          <p style="font-size: 16px; line-height: 1.6;">
-            Adjuntamos tus tickets para el evento <strong>${nombreEvento}</strong> en formato PDF. 
-            Recuerda presentarlo en la entrada para validar tu acceso.
+          <h2 style="color: #ffffff; text-align: center; margin-bottom: 25px; font-weight: normal;">¡ESTÁS ADENTRO, <strong style="color: #56fdb8;">${nombreComprador.split(' ')[0]}</strong>!</h2>
+
+          <!-- Flyer del evento -->
+          ${flyerUrl ? `<div style="text-align: center; margin-bottom: 25px;">
+            <img src="${flyerUrl}" alt="${evento.nombreEvento}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;" />
+          </div>` : ''}
+
+          <p style="font-size: 16px; line-height: 1.6; text-align: center;">
+            Hemos procesado tu compra para el evento <strong>${evento.nombreEvento}</strong> con éxito. 
           </p>
 
-          <p style="font-size: 16px; line-height: 1.6;">
-            Si tienes dudas, contáctanos a <a href="mailto:take.oover.show@gmail.com" style="color: #0077cc;">take.oover.show@gmail.com</a>.
-          </p>
+          <div style="background-color: rgba(86, 253, 184, 0.05); border-left: 4px solid #56fdb8; padding: 15px; margin: 25px 0;">
+            <p style="margin: 0; font-size: 15px;">
+              🎟️ <strong>Tus accesos están adjuntos</strong> a este correo en formato PDF. Asegúrate de llevarlos en tu celular el día del evento.
+            </p>
+          </div>
 
-          <div style="text-align: center; margin: 30px 0;">
+          <div style="text-align: center; margin: 35px 0 20px 0;">
             <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
-              <div style="display: inline-block; background-color: #25D366; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold;">
-                <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" style="width: 20px; vertical-align: middle; margin-right: 8px;">
-                Únete a la comunidad en WhatsApp
+              <div style="display: inline-block; background-color: transparent; color: #56fdb8; border: 1px solid #56fdb8; padding: 12px 20px; border-radius: 6px; font-size: 15px; font-weight: bold;">
+                📱 Únete a la comunidad en WhatsApp
               </div>
             </a>
           </div>
 
-          <div style="text-align: center; margin: 10px 0;">
-            <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none;">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" style="width: 28px; height: 28px;">
-              <p style="margin-top: 5px; font-size: 14px; color: #333;">Síguenos en Instagram</p>
+          <div style="text-align: center; margin: 20px 0 30px 0;">
+            <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none; color: #aaa; font-size: 14px;">
+              Síguenos en Instagram @_takeeover
             </a>
           </div>
 
-          <div style="text-align: center; margin-top: 30px;">
-            <p style="font-size: 14px; color: #777;">Nos vemos en la pista 🕺</p>
-            <p style="font-size: 18px; color: #000;"><strong>Equipo Take Over</strong></p>
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="font-size: 14px; color: #666; margin: 0;">Nos vemos en la pista 🕺</p>
+            <p style="font-size: 16px; color: #fff; margin-top: 5px;"><strong>Equipo Take Over</strong></p>
           </div>
 
-          <hr style="margin-top: 40px; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999; text-align: center;">
-            Este correo fue enviado automáticamente, favor de no responder.
+          <hr style="margin-top: 30px; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+          <p style="font-size: 11px; color: #555; text-align: center; margin-top: 15px;">
+            Si tienes dudas, contáctanos a <a href="mailto:take.oover.show@gmail.com" style="color: #56fdb8;">take.oover.show@gmail.com</a>.<br/>
+            Este correo fue enviado automáticamente.
           </p>
         </div>
       </div>

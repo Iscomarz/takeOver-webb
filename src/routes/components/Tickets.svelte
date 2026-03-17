@@ -41,7 +41,7 @@
 
     tickets.set(ticketsPublicos);
     inactivoState.set(ticketsPublicos.map((ticket) => !ticket.activo));
-    console.log("Tickets iniciales:", ticketsPublicos);
+    //console.log("Tickets iniciales:", ticketsPublicos);
   });
 
   const totalPrice = derived(tickets, ($tickets) =>

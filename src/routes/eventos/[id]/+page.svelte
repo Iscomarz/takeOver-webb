@@ -55,7 +55,7 @@
 
       if (cFases.length > 0) {
         fases = cFases;
-        console.log("Fases del evento:", fases);
+        //console.log("Fases del evento:", fases);
         // Llama a la función para obtener los productos
         //productosStripe = await getProducts();
         //enlazar identificador de precio con fase (Despues hay que hacerlo directamente al crear la fase en supabase y el producto en stripe)

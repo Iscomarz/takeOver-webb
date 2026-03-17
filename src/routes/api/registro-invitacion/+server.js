@@ -126,6 +126,12 @@ export async function POST({ request, url, fetch }) {
             
             const pdfBuffer = await generarTicket(nombre, mEventoFull, acreditaData.tickets);
             
+            // Obtener URL del Flyer
+            const { data: publicImgData } = supabase.storage
+              .from("imageEventos")
+              .getPublicUrl(mEventoFull.pathImage);
+            const flyerUrl = publicImgData.publicUrl;
+
             // D) Enviar Correo Específico de Cortesía + Código de Referido
             await fetch(url.origin + "/api/resend", {
               method: "POST",
@@ -133,23 +139,56 @@ export async function POST({ request, url, fetch }) {
               body: JSON.stringify({
                 pdfBuffer: Array.from(new Uint8Array(pdfBuffer)),
                 to: correo,
-                subject: "🎫 ¡Tienes tu acceso cortesía! - Take Over",
+                subject: "🎫 ¡Tienes tu acceso cortesía para " + mEventoFull.nombreEvento + "! - Take Over",
                 html: `
-                <div style="font-family: Arial, sans-serif; background-color: #f8f8f8; padding: 30px; color: #333;">
-                  <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                    <h2 style="color: #111; text-align: center;">🎟️ ¡Felicidades, ${nombre}!</h2>
-                    <p style="font-size: 16px; line-height: 1.6;">
-                      Eres de los afortunados en alcanzar un acceso <strong>Cortesía</strong> para <strong>${eventoInfo.nombreEvento}</strong>. 
-                      Adjuntamos tus tickets en formato PDF. Recuerda presentarlo en la entrada para validar tu acceso.
-                    </p>
-                    <div style="background-color: #f0fdf4; border-left: 4px solid #56fdb8; padding: 15px; margin: 20px 0;">
-                      <h3 style="margin-top: 0; color: #111;">💸 Invita a tus amigos y gana beneficios</h3>
-                      <p style="margin-bottom: 5px;">Comparte tu código único de referido con tus amigos para que compren con precio especial:</p>
-                      <p style="font-size: 24px; font-weight: bold; color: #56fdb8; text-align: center; letter-spacing: 2px;">${cliente.codigo}</p>
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0a0a; padding: 40px 10px; color: #e5e5e5; display: flex; justify-content: center;">
+                  <div style="max-width: 500px; width: 100%; margin: auto; background: linear-gradient(145deg, #161616 0%, #1e1e1e 100%); padding: 30px; border-radius: 12px; border: 1px solid rgba(86, 253, 184, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                      <h1 style="color: #56fdb8; margin: 0; font-size: 32px; letter-spacing: 2px; text-transform: uppercase;">TAKE OVER</h1>
+                      <p style="color: #888; margin-top: 5px; font-size: 14px; letter-spacing: 1px;">UNDERGROUND MUSIC EST. 2024</p>
                     </div>
-                    <div style="text-align: center; margin-top: 30px;">
-                      <p style="font-size: 14px; color: #777;">Nos vemos en la pista 🕺</p>
-                      <p style="font-size: 18px; color: #000;"><strong>Equipo Take Over</strong></p>
+
+                    <h2 style="color: #ffffff; text-align: center; margin-bottom: 25px; font-weight: normal;">¡ERES VIP, <strong style="color: #56fdb8;">${nombre.split(' ')[0]}</strong>!</h2>
+
+                    <!-- Flyer del evento -->
+                    ${flyerUrl ? `<div style="text-align: center; margin-bottom: 25px;">
+                      <img src="${flyerUrl}" alt="${mEventoFull.nombreEvento}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;" />
+                    </div>` : ''}
+
+                    <p style="font-size: 16px; line-height: 1.6; text-align: center;">
+                      Tuviste suerte, eres de los afortunados en alcanzar un acceso <strong>Cortesía</strong> para <strong>${mEventoFull.nombreEvento}</strong>. 
+                    </p>
+
+                    <div style="background-color: rgba(86, 253, 184, 0.05); border-left: 4px solid #56fdb8; padding: 15px; margin: 25px 0;">
+                      <p style="margin: 0; font-size: 15px;">
+                        🎟️ <strong>Tus accesos están adjuntos</strong> a este correo en formato PDF. Asegúrate de llevarlos en tu celular el día del evento y llegar temprano.
+                      </p>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(86, 253, 184, 0.5); padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+                      <h3 style="margin-top: 0; color: #56fdb8; font-size: 16px;">💸 Invita a tus amigos</h3>
+                      <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">Comparte tu código único de referido con tus amigos para que compren con precio especial:</p>
+                      <p style="font-size: 26px; font-weight: bold; color: #fff; text-align: center; letter-spacing: 3px; margin: 0;">${cliente.codigo}</p>
+                    </div>
+
+                    <div style="text-align: center; margin: 35px 0 20px 0;">
+                      <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
+                        <div style="display: inline-block; background-color: transparent; color: #56fdb8; border: 1px solid #56fdb8; padding: 12px 20px; border-radius: 6px; font-size: 15px; font-weight: bold;">
+                          📱 Únete a la comunidad en WhatsApp
+                        </div>
+                      </a>
+                    </div>
+
+                    <div style="text-align: center; margin: 20px 0 30px 0;">
+                      <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none; color: #aaa; font-size: 14px;">
+                        Síguenos en Instagram @_takeeover
+                      </a>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                      <p style="font-size: 14px; color: #666; margin: 0;">Nos vemos en la pista 🕺</p>
+                      <p style="font-size: 16px; color: #fff; margin-top: 5px;"><strong>Equipo Take Over</strong></p>
                     </div>
                   </div>
                 </div>
