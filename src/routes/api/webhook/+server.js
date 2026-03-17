@@ -372,6 +372,13 @@ async function enviarTicketAlServidor(
 ) {
   console.log("Enviando ticket al servidor...");
 
+  // Buscar el código de referido del cliente
+  const { data: cliente } = await supabase
+    .from("mCliente")
+    .select("codigo")
+    .eq("correo", correoComprador)
+    .maybeSingle();
+
   // Obtener la URL pública del flyer del evento
   const { data: publicImgData } = supabase.storage
     .from("imageEventos")
@@ -412,6 +419,14 @@ async function enviarTicketAlServidor(
               🎟️ <strong>Tus accesos están adjuntos</strong> a este correo en formato PDF. Asegúrate de llevarlos en tu celular el día del evento.
             </p>
           </div>
+
+          ${cliente && cliente.codigo ? `
+          <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(86, 253, 184, 0.5); padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <h3 style="margin-top: 0; color: #56fdb8; font-size: 16px;">💸 Invita a tus amigos</h3>
+            <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">Comparte tu código único de referido con tus amigos para que compren con precio especial:</p>
+            <p style="font-size: 26px; font-weight: bold; color: #fff; text-align: center; letter-spacing: 3px; margin: 0;">${cliente.codigo}</p>
+          </div>
+          ` : ''}
 
           <div style="text-align: center; margin: 35px 0 20px 0;">
             <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
