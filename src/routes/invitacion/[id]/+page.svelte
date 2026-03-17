@@ -160,9 +160,15 @@
         <h1 class="text-4xl md:text-5xl font-jockey text-white tracking-wider uppercase mb-2">
           {mEvento.nombreEvento}
         </h1>
-        <h2 class="text-xl text-primary font-jost opacity-90">Lista de Invitados Especial</h2>
-        <p class="text-gray-400 mt-4 text-sm font-jost">
-          Regístrate ahora. Los primeros recibirán su acceso gratis directo a su correo. Todos obtendrán su código propio para invitar a sus amigos.
+        <h2 class="text-xl text-primary font-jost opacity-90">Lista de Invitado Especial</h2>
+        <p class="text-gray-300 mt-4 text-base font-jost leading-relaxed text-justify">
+          <strong class="text-white text-lg">{mEvento.nombreEvento} toma la ciudad.</strong><br/>
+          Un espacio para desconectarte de todo y dejar que la música haga lo suyo. Sé de los primeros en registrarte y obtén tu acceso al evento acompañado de un código único para regalarle a tus amigos un precio especial. Comparte tu código, suma a los tuyos y asegura tu lugar.<br/><br/>
+          <span class="text-primary font-bold">Nos vemos en la pista. 🕺</span>
+        </p>
+
+        <p class="text-gray-400 mt-5 text-xs font-jost bg-gray-900/60 p-3 rounded-lg border border-gray-800 text-left">
+          *Tus datos solo son recolectados para la mejora de nuestros eventos. Si te es posible, ayúdanos a compartir el evento en tus redes sociales junto a tu código de referido. ¡Habrá recompensas exclusivas para quienes nos ayuden a llegar a más personas!
         </p>
       </div>
 
@@ -238,6 +244,14 @@
         >
           {enviando ? "PROCESANDO..." : "OBTENER BENEFICIO"}
         </button>
+
+        <div class="mt-6 text-center border-t border-gray-800 pt-6">
+          <p class="text-gray-400 font-jost text-sm mb-3">Síguenos para no perderte de nada</p>
+          <a href="https://www.instagram.com/_takeeover/" target="_blank" rel="noopener noreferrer" class="instagram-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+            @_takeeover
+          </a>
+        </div>
 
       </form>
     </div>
@@ -450,5 +464,27 @@
     color: #56fdb8;
     text-decoration: underline;
     font-family: "JostRegular";
+  }
+
+  .instagram-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: "JostRegular";
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+  }
+
+  .instagram-link:hover {
+    transform: scale(1.05);
+  }
+
+  .instagram-link svg {
+    stroke: #dc2743;
   }
 </style>
