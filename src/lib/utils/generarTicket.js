@@ -39,21 +39,24 @@ export async function generarTicket(nombre, evento, tickets) {
       contadorTickets = 0;
     }
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("TAKE OVER TICKETS", 10, 20 + altura);
+    // Encabezado del recibo (solo en la parte superior de la página)
+    if (contadorTickets === 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("TAKE OVER TICKETS", 10, 20 + altura);
 
-    // Formatear la fecha actual
-    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
-    const fechaActual = new Date().toLocaleDateString("es-ES", options);
+      // Formatear la fecha actual
+      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+      const fechaActual = new Date().toLocaleDateString("es-ES", options);
 
-    doc.setFontSize(10);
-    doc.text(fechaActual.toUpperCase(), 10, 27 + altura);
-    doc.text("Receipt for: " + nombre, 10, 32 + altura);
+      doc.setFontSize(10);
+      doc.text(fechaActual.toUpperCase(), 10, 27 + altura);
+      doc.text("Receipt for: " + nombre, 10, 32 + altura);
 
-    // Línea separadora top
-    doc.setLineWidth(0.5);
-    doc.line(10, 36 + altura, 200, 36 + altura);
+      // Línea separadora top
+      doc.setLineWidth(0.5);
+      doc.line(10, 36 + altura, 200, 36 + altura);
+    }
 
     // Título del evento
     doc.setFontSize(12);
