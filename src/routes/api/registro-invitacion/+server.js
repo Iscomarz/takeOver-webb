@@ -16,16 +16,24 @@ export async function POST({ request, url, fetch }) {
       return json({ error: "Faltan datos requeridos" }, { status: 400 });
     }
 
-    // 1. Verificar si el usuario ya se registró (Origen 3) a este evento
-    const { data: usuarioExistente } = await supabase
+    // 1. Verificar si el usuario ya llenó el formulario para este evento en particular
+    const { data: clienteExistente } = await supabase
       .from("mCliente")
-      .select("cliente_id, codigo")
+      .select("cliente_id")
       .eq("correo", correo)
-      .eq("id_origen", 3)
       .maybeSingle();
 
-    if (usuarioExistente) {
-      return json({ error: "Este correo ya está registrado en la lista de invitados." }, { status: 400 });
+    if (clienteExistente) {
+      const { data: registroPrevio } = await supabase
+        .from("tFormularioInvitacion")
+        .select("id")
+        .eq("cliente_id", clienteExistente.cliente_id)
+        .eq("idEvento", idEvento)
+        .maybeSingle();
+
+      if (registroPrevio) {
+        return json({ error: "Este correo ya está registrado para este evento." }, { status: 400 });
+      }
     }
 
     // 2. Obtener la info del evento (para límite dinámico de cortesías)
