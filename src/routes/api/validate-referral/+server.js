@@ -17,7 +17,7 @@ export async function POST({ request }) {
     // 1. Verificar si el código existe en mCliente (o promotor en el futuro)
     const { data: referidor } = await supabase
       .from("mCliente")
-      .select("id, codigo")
+      .select("cliente_id, codigo")
       .eq("codigo", codigo)
       .maybeSingle();
 
@@ -28,7 +28,7 @@ export async function POST({ request }) {
     // 2. Verificar que no sea un auto-referido
     const { data: comprador } = await supabase
       .from("mCliente")
-      .select("id, codigo")
+      .select("cliente_id, codigo")
       .eq("correo", correo)
       .maybeSingle();
 
@@ -40,7 +40,7 @@ export async function POST({ request }) {
     }
 
     // Todo bien, el código es válido
-    return json({ message: "Código válido", idReferidor: referidor.id });
+    return json({ message: "Código válido", idReferidor: referidor.cliente_id });
   } catch (error) {
     console.error("Error validando referido:", error);
     return json({ error: "Error del servidor" }, { status: 500 });
