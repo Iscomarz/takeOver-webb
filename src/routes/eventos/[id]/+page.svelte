@@ -158,7 +158,7 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento || "Take Over presenta: Disco Freaks"}</title>
+  <title>{mEvento.nombreEvento || "Take Over presenta: NORTHWAVES"}</title>
   <meta
     name="description"
     content="Adquiere tus accesos para el proximo Take Over"
