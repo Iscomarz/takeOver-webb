@@ -5,19 +5,18 @@
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
   import Cards from "../../components/cards.svelte";
-  import supabase from "$lib/supabase";
   import { onMount, tick } from "svelte";
-  import { invalidateAll, goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
-  import { eventoId }  from "../../../lib/stores/eventoId";
+  import { eventoId }  from "$lib/stores/eventoId";
+  import { getEventoById, getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
 
   let loading = true;
   let eventoActivo = true;
 
   let mEvento = {};
   let fases = [];
-  let productosStripe = [];
   let urlImagenPortada;
   let idEvento;
 
@@ -26,48 +25,28 @@
   });
 
   async function loadData() {
-    let { data: evento, error } = await supabase
-      .from("mEvento")
-      .select("*")
-      .eq("idevento", idEvento);
-    if (evento) {
+    let { data: evento, error } = await getEventoById(idEvento);
+    if (evento && evento.length > 0) {
       mEvento = evento[0];
     }
 
     if (error) {
       eventoActivo = false;
       console.log("Error al traer el evento activo");
-    } else if (evento.length == 0) {
+    } else if (!evento || evento.length === 0) {
       eventoActivo = false;
       console.log("No hay eventos activos en este momento");
     } else {
       //Traer portada del evento
-      const { data } = supabase.storage
-        .from("imageEventos")
-        .getPublicUrl(mEvento.pathImage);
+      urlImagenPortada = getImagenPublicUrl(mEvento.pathImage);
 
-      urlImagenPortada = data.publicUrl;
       //Obtener las faces o tickets del evento selecionado
-      let { data: cFases, errorF } = await supabase
-        .from("cFaseEvento")
-        .select("*")
-        .eq("idEvento", mEvento.idevento);
+      let { data: cFases, error: errorF } = await getFasesByEvento(mEvento.idevento);
 
-      if (cFases.length > 0) {
+      if (cFases && cFases.length > 0) {
         fases = cFases;
-        //console.log("Fases del evento:", fases);
-        // Llama a la función para obtener los productos
-        //productosStripe = await getProducts();
-        //enlazar identificador de precio con fase (Despues hay que hacerlo directamente al crear la fase en supabase y el producto en stripe)
-        //for(const producto of productosStripe){
-        //  for(const fase of fases){
-        //    if(producto.name == fase.nombreFace){
-        //      fase.idPrecioStripe = producto.default_price;
-        //    }
-        //  }
-        //}
       } else if (errorF) {
-        console.log("Error al traer las fases");
+        console.log("Error al traer las fases", errorF);
       }
     }
     await tick();

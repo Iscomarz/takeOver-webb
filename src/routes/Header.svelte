@@ -4,7 +4,7 @@
   import { goto } from "$app/navigation";
   import AnimatedText from "./components/AnimatedText.svelte";
   import { onMount } from "svelte";
-  import supabase from "$lib/supabase";
+  import { eventoStore } from "$lib/stores/eventoStore";
 
   let showHeader = false;
   let showMenuIcon = false;
@@ -20,24 +20,20 @@
   $: backBlack = currentPath !== "/";
   $: titleHeader = currentPath;
 
-  onMount(async () => {
+  // Suscribirse al store de evento
+  $: if ($eventoStore.evento) {
+    eventoActivoId = $eventoStore.evento.idevento;
+  }
+
+  onMount(() => {
     const handleScroll = () => {
       scrolled = window.scrollY > 50;
     };
 
     window.addEventListener("scroll", handleScroll);
 
-    // Obtener el evento activo
-    const { data, error } = await supabase
-      .from("mEvento")
-      .select("idevento")
-      .eq("activo", 1)
-      .limit(1)
-      .single();
-
-    if (!error && data) {
-      eventoActivoId = data.idevento;
-    }
+    // Iniciar carga del evento si no se ha cargado
+    eventoStore.loadEvento();
 
     return () => window.removeEventListener("scroll", handleScroll);
   });

@@ -4,7 +4,7 @@
   import { derived } from "svelte/store";
   import Checkout from "../components/Checkout.svelte";
   import { onMount, tick } from "svelte";
-  import supabase from "../../lib/supabase.js";
+  import { validarCodigoDescuentoSupabase } from "$lib/services/dataService";
 
   export let ticketDataEve;
   export let eventoPasado = false;
@@ -67,12 +67,7 @@
     mensajeDescuento = "";
 
     try {
-      const { data, error } = await supabase
-        .from("codigosDescuento")
-        .select("*")
-        .eq("codigo", codigoDescuento.trim())
-        .eq("acreditado", false)
-        .single();
+      const { data, error } = await validarCodigoDescuentoSupabase(codigoDescuento.trim());
 
       if (error || !data) {
         mensajeDescuento = "Código de descuento inválido";
