@@ -1,29 +1,12 @@
 <script>
-	import { fade, fly, blur } from "svelte/transition";
-	import { quintOut } from "svelte/easing";
-	import logoTakeOver from "../../lib/images/takeover-logo.png";
-	import alanImg from "../../lib/images/crew/alan.jpg";
-	import cobosImg from "../../lib/images/crew/cobos.jpeg";
-	import iscoImg from "../../lib/images/crew/isco.jpg";
-	import sokImg from "../../lib/images/crew/sok.webp";
 	import CardTeamMember from "../components/cardTeamMember.svelte";
-	import { onMount } from "svelte";
 
 	export let data;
 
 	let selectedMember = null;
 	let detailsSection;
-	let crewMembers = [];
-
-	onMount(async () => {
-		await loadCrewMembers();
-	});
-
-  async function loadCrewMembers() {
-	// Cargar los miembros del equipo desde data o servicio
-	crewMembers = data?.crewMembers;
-	//console.log("Crew Members cargados:", crewMembers);
-  }
+	
+	$: ({ crewMembers = [] } = data);
 
 	function selectMember(member) {
 		if (selectedMember?.team_id === member.team_id) {
