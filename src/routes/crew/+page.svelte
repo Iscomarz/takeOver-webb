@@ -4,7 +4,6 @@
 	export let data;
 
 	let selectedMember = null;
-	let detailsSection;
 	
 	$: ({ crewMembers = [] } = data);
 
