@@ -1,73 +1,57 @@
 <script>
   import Title from "../components/Title.svelte";
-  import Date from "../components/Date.svelte";
+  import DateComponent from "../components/Date.svelte";
   import Location from "../components/Location.svelte";
   import AboutEvent from "../components/AboutEvent.svelte";
   import Tickets from "../components/Tickets.svelte";
-  import supabase from "../../lib/supabase";
   import { onMount, tick } from "svelte";
-  import { invalidateAll, goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../components/botonComunidad.svelte";
+  import { eventoStore } from "$lib/stores/eventoStore";
+  import { getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
 
   let loading = true;
   let eventoActivo = true;
 
   let mEvento = {};
   let fases = [];
-  let productosStripe = [];
   let urlImagenPortada;
 
-  async function loadData() {
-    let { data: evento, error } = await supabase
-      .from("mEvento")
-      .select("*")
-      .eq("activo", 1);
-    if (evento) {
-      mEvento = evento[0];
-    }
-
-    if (error) {
-      eventoActivo = false;
-      console.log("Error al traer el evento activo");
-    }else if (evento.length ==0){
-      eventoActivo = false;
-      console.log("No hay eventos activos en este momento");
-    } else {
-      //Traer portada del evento
-      const { data } = supabase.storage
-        .from("imageEventos")
-        .getPublicUrl(mEvento.pathImage);
-
-      urlImagenPortada = data.publicUrl;
-      //Obtener las faces o tickets del evento selecionado
-      let { data: cFases, errorF } = await supabase
-        .from("cFaseEvento")
-        .select("*")
-        .eq("idEvento", mEvento.idevento);
-
-      if (cFases.length > 0) {
-        fases = cFases;
-        // Llama a la función para obtener los productos
-        //productosStripe = await getProducts();
-        //enlazar identificador de precio con fase (Despues hay que hacerlo directamente al crear la fase en supabase y el producto en stripe)
-        //for(const producto of productosStripe){
-        //  for(const fase of fases){
-        //    if(producto.name == fase.nombreFace){
-        //      fase.idPrecioStripe = producto.default_price;
-        //    }
-        //  }
-        //}
-      } else if (errorF) {
-        console.log("Error al traer las fases");
+  // Reactividad con el store
+  $: if (!$eventoStore.loading) {
+      if ($eventoStore.error || !$eventoStore.evento) {
+          eventoActivo = false;
+          loading = false;
+          if ($eventoStore.error) {
+              console.log("Error al traer el evento activo", $eventoStore.error);
+          } else {
+              console.log("No hay eventos activos en este momento");
+          }
+      } else {
+          mEvento = $eventoStore.evento;
+          loadEventDetails();
       }
-    }
-    await tick();
-    loading = false;
   }
 
-  onMount(async () => {
-    await loadData();
+  async function loadEventDetails() {
+      eventoActivo = true;
+      urlImagenPortada = getImagenPublicUrl(mEvento.pathImage);
+
+      const { data: cFases, error: errorF } = await getFasesByEvento(mEvento.idevento);
+
+      if (cFases && cFases.length > 0) {
+        fases = cFases;
+      } else if (errorF) {
+        console.log("Error al traer las fases", errorF);
+      }
+
+      await tick();
+      loading = false;
+  }
+
+  onMount(() => {
+    eventoStore.loadEvento();
   });
 
   async function getProducts() {
@@ -129,7 +113,7 @@
 
   <section class="info-event">
     <div class="components">
-      <Date fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
+      <DateComponent fecha="Dom, 16 Mar 2025 17:00 - 2:00" />
       <Location
         nombreLugar={mEvento.venue}
         direccion={mEvento.direccion}

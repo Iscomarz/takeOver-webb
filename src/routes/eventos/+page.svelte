@@ -3,13 +3,9 @@
   import BotonComunidad from "../components/botonComunidad.svelte";
   import CardEventoPasado from "../components/cardEventoPasado.svelte";
   import CardEventoActivo from "../components/cardEventoActivo.svelte";
-  import { onMount } from "svelte";
-  import { fade } from "svelte/transition";
 
   export let data;
-  let loading = true;
-  let eventosPasados = [];
-  let eventosActivos = [];
+  $: ({ eventosPasados = [], eventosActivos = [] } = data);
   
   // Variables para paginación y búsqueda
   let searchQuery = "";
@@ -43,49 +39,6 @@
     }
   }
 
-  onMount(async () => {
-    await loadData();
-  });
-
-  async function loadData() {
-    // Simulación de carga de datos
-    eventosPasados = data?.eventosPasados || [];
-    eventosActivos = data?.eventosActivos || [];
-
-    await waitForImagesToLoad();
-
-    setTimeout(() => {
-      loading = false;
-    }, 1000);
-  }
-
-  function waitForImagesToLoad() {
-    return new Promise((resolve) => {
-      const images = Array.from(document.images);
-      const total = images.length;
-      let loaded = 0;
-
-      if (total === 0) {
-        resolve();
-      }
-
-      images.forEach((img) => {
-        if (img.complete) {
-          loaded++;
-          if (loaded === total) resolve();
-        } else {
-          img.addEventListener("load", () => {
-            loaded++;
-            if (loaded === total) resolve();
-          });
-          img.addEventListener("error", () => {
-            loaded++;
-            if (loaded === total) resolve();
-          });
-        }
-      });
-    });
-  }
 </script>
 
 <svelte:head>
@@ -93,12 +46,7 @@
   <meta name="description" content="Eventos Take Over" />
 </svelte:head>
 
-{#if loading}
-  <div class="loading-container" transition:fade={{ duration: 200 }}>
-    <p class="loading-message">Cargando información...</p>
-  </div>
-{:else}
-  <div class="banner">
+<div class="banner">
     <h1>_EVENTS</h1>
   </div>
 
@@ -189,35 +137,8 @@
       {/if}
     {/if}
   </div>
-{/if}
 
 <style>
-  .loading-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .loading-message {
-    font-family: "JostRegular", sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.7);
-    animation: pulse-text 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-text {
-    0%, 100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
   .banner {
     position: relative;
     height: 100px;

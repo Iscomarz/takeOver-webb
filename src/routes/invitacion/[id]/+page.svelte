@@ -1,7 +1,7 @@
 <script>
   import Title from "../../components/Title.svelte";
   import toast, { Toaster } from "svelte-french-toast";
-  import supabase from "$lib/supabase";
+  import { getEventoById } from "$lib/services/dataService";
   import { onMount, tick } from "svelte";
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
@@ -31,17 +31,13 @@
   });
 
   async function loadData() {
-    let { data: evento, error } = await supabase
-      .from("mEvento")
-      .select("*")
-      .eq("idevento", idEvento)
-      .single();
+    let { data: evento, error } = await getEventoById(idEvento);
 
-    if (error || !evento) {
+    if (error || !evento || evento.length === 0) {
       eventoActivo = false;
       console.log("Error al traer el evento o no existe.");
     } else {
-      mEvento = evento;
+      mEvento = evento[0];
     }
     await tick();
     loading = false;
