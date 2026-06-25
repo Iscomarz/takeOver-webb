@@ -13,7 +13,7 @@
   let currentPage = 1;
   let viewMode = "list"; // 'grid' o 'list'
 
-  $: itemsPerPage = viewMode === "grid" ? 8 : 12;
+  $: itemsPerPage = viewMode === "grid" ? 8 : 10;
 
   // Eventos pasados filtrados por búsqueda
   $: eventosPasadosFiltrados = eventosPasados.filter(evento =>
