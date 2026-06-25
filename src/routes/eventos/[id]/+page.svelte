@@ -5,96 +5,14 @@
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
   import Cards from "../../components/cards.svelte";
-  import supabase from "$lib/supabase";
-  import { onMount, tick } from "svelte";
-  import { invalidateAll, goto } from "$app/navigation";
-  import { tweened } from "svelte/motion";
-  import { cubicOut } from "svelte/easing";
-  import logo from "$lib/images/takeover-logo.png";
+  import { goto } from "$app/navigation";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
-  import { eventoId }  from "../../../lib/stores/eventoId";
 
-  let scale = tweened(1, {
-    duration: 400,
-    easing: cubicOut,
-  });
-  let loading = true;
-  let eventoActivo = true;
+  export let data;
 
-  let mEvento = {};
-  let fases = [];
-  let productosStripe = [];
-  let urlImagenPortada;
-  let idEvento;
-
-  const unsubscribe = eventoId.subscribe((value) => {
-    idEvento = value;
-  });
-
-  async function loadData() {
-    let { data: evento, error } = await supabase
-      .from("mEvento")
-      .select("*")
-      .eq("idevento", idEvento);
-    if (evento) {
-      mEvento = evento[0];
-    }
-
-    if (error) {
-      eventoActivo = false;
-      console.log("Error al traer el evento activo");
-    } else if (evento.length == 0) {
-      eventoActivo = false;
-      console.log("No hay eventos activos en este momento");
-    } else {
-      //Traer portada del evento
-      const { data } = supabase.storage
-        .from("imageEventos")
-        .getPublicUrl(mEvento.pathImage);
-
-      urlImagenPortada = data.publicUrl;
-      //Obtener las faces o tickets del evento selecionado
-      let { data: cFases, errorF } = await supabase
-        .from("cFaseEvento")
-        .select("*")
-        .eq("idEvento", mEvento.idevento);
-
-      if (cFases.length > 0) {
-        fases = cFases;
-        console.log("Fases del evento:", fases);
-        // Llama a la función para obtener los productos
-        //productosStripe = await getProducts();
-        //enlazar identificador de precio con fase (Despues hay que hacerlo directamente al crear la fase en supabase y el producto en stripe)
-        //for(const producto of productosStripe){
-        //  for(const fase of fases){
-        //    if(producto.name == fase.nombreFace){
-        //      fase.idPrecioStripe = producto.default_price;
-        //    }
-        //  }
-        //}
-      } else if (errorF) {
-        console.log("Error al traer las fases");
-      }
-    }
-    await tick();
-    loading = false;
-  }
-
-  onMount(async () => {
-    //Obtener evento activo
-    await loadData();
-    let interval = setInterval(() => {
-      if (loading) {
-        scale.set(1.1);
-        setTimeout(() => {
-          scale.set(1);
-        }, 400);
-      } else {
-        clearInterval(interval);
-      }
-    }, 1500);
-  });
+  let loading = false;
+  $: ({ mEvento, fases, urlImagenPortada, eventoActivo, id: idEvento } = data);
 
   async function getProducts() {
     try {
@@ -176,16 +94,29 @@
 </script>
 
 <svelte:head>
-  <title>{mEvento.nombreEvento || "Take Over presenta: Disco Freaks"}</title>
-  <meta
-    name="description"
-    content="Adquiere tus accesos para el proximo Take Over"
-  />
+  <title>Take Over Presenta: {mEvento?.nombreEvento || "Evento"}</title>
+  <meta name="description" content={mEvento?.descripcionCorta || "Adquiere tus accesos para el próximo Take Over"} />
+  
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Take Over Presenta: {mEvento?.nombreEvento || 'Evento'}" />
+  <meta property="og:description" content={mEvento?.descripcionCorta || "Adquiere tus accesos para el próximo Take Over"} />
+  {#if urlImagenPortada}
+    <meta property="og:image" content={urlImagenPortada} />
+  {/if}
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Take Over Presenta: {mEvento?.nombreEvento || 'Evento'}" />
+  <meta name="twitter:description" content={mEvento?.descripcionCorta || "Adquiere tus accesos para el próximo Take Over"} />
+  {#if urlImagenPortada}
+    <meta name="twitter:image" content={urlImagenPortada} />
+  {/if}
 </svelte:head>
 <section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[1500px] mx-auto flex flex-col mt-[50px] md:mt-[80px] lg:mt-[100px] xl:mt-[120px] gap-4">
   {#if loading}
     <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center" transition:fade={{ duration: 200 }}>
-      <img src={logo} style="transform: scale({$scale})" alt="loading" class="w-[150px] transition-transform duration-[750ms] ease-in-out" />
+      <p class="text-white/70 text-xl tracking-wider animate-pulse">Cargando evento...</p>
     </div>
   {:else if !eventoActivo}
     <div class="text-gray-100">
@@ -235,6 +166,10 @@
           <img 
             src={urlImagenPortada} 
             alt="portada" 
+            width="800"
+            height="1000"
+            fetchpriority="high"
+            loading="eager"
             class="w-full h-full object-cover rounded-[20px] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-700 group-hover/image:scale-105 group-hover/image:brightness-110" 
           />
         </div>
@@ -252,6 +187,7 @@
                   ? true
                   : false}
                 nombreEvento={mEvento.nombreEvento || ""}
+                eventoReferidos={mEvento.referidos}
               />
             </div>
           </div>

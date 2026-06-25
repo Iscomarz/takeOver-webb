@@ -118,7 +118,10 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   console.log("Evento no procesado, continuando...");
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
+  const phone = sessionCheckout.customer_details.phone;
   const amount = sessionCheckout.amount_total / 100;
+  const codigoReferido = sessionCheckout.metadata?.codigoReferido;
+
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
   );
@@ -129,15 +132,18 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
     cantidadT = item.quantity;
     console.log(`Producto: ${descripcionFase}, Cantidad: ${cantidadT}`);
   });
+
+  // Buscar o crear cliente
+  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
+
   console.log("checkout_session_stripe", stripeEventId);
   // Llamada al procedimiento almacenado
   const { data, error } = await supabase.rpc("guardar_pago_venta", {
     cantidadt: cantidadT,
-    correov: email,
+    cliente_id: clienteId,
     descripcionfase: descripcionFase,
     idtransstripe: sessionCheckout.payment_intent,
     monto: amount,
-    nombrev: name == null ? email : name,
     checkout_session_stripe: stripeEventId,
   });
 
@@ -268,7 +274,7 @@ async function generarCorreoYTicket(
       pdfBuffer,
       nombreComprador,
       correoComprador,
-      evento.nombreEvento
+      evento
     );
     console.log("correo enviado");
 
@@ -305,6 +311,9 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
 async function insertaVenta(sessionCheckout) {
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
+  const phone = sessionCheckout.customer_details.phone;
+  const codigoReferido = sessionCheckout.metadata?.codigoReferido;
+
   const lineItems = await stripe.checkout.sessions.listLineItems(
     sessionCheckout.id
   );
@@ -315,9 +324,11 @@ async function insertaVenta(sessionCheckout) {
     cantidadT = item.quantity;
   });
 
+  // Buscar o crear cliente
+  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
+
   const { data, error } = await supabase.rpc("insertaventa", {
-    nombrev: name,
-    correov: email,
+    cliente_id: clienteId,
     cantidad: cantidadT,
     idpagostripe: sessionCheckout.payment_intent,
     descripcionfase: descripcionFase,
@@ -357,9 +368,23 @@ async function enviarTicketAlServidor(
   pdfBufferCorreo,
   nombreComprador,
   correoComprador,
-  nombreEvento
+  evento
 ) {
   console.log("Enviando ticket al servidor...");
+
+  // Buscar el código de referido del cliente
+  const { data: cliente } = await supabase
+    .from("mCliente")
+    .select("codigo")
+    .eq("correo", correoComprador)
+    .maybeSingle();
+
+  // Obtener la URL pública del flyer del evento
+  const { data: publicImgData } = supabase.storage
+    .from("imageEventos")
+    .getPublicUrl(evento.pathImage);
+  const flyerUrl = publicImgData.publicUrl;
+
   const response = await event.fetch("/api/resend", {
     method: "POST",
     headers: {
@@ -368,45 +393,64 @@ async function enviarTicketAlServidor(
     body: JSON.stringify({
       pdfBuffer: Array.from(new Uint8Array(pdfBufferCorreo)),
       to: correoComprador,
-      subject: "Tickets Take Over",
+      subject: "🎫 Tus tickets para " + evento.nombreEvento,
       html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f8f8f8; padding: 30px; color: #333;">
-        <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-          <h2 style="color: #111; text-align: center;">🎟️ ¡Gracias por tu compra, ${nombreComprador}!</h2>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0a0a; padding: 40px 10px; color: #e5e5e5; display: flex; justify-content: center;">
+        <div style="max-width: 500px; width: 100%; margin: auto; background: linear-gradient(145deg, #161616 0%, #1e1e1e 100%); padding: 30px; border-radius: 12px; border: 1px solid rgba(86, 253, 184, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #56fdb8; margin: 0; font-size: 32px; letter-spacing: 2px; text-transform: uppercase;">TAKE OVER</h1>
+            <p style="color: #888; margin-top: 5px; font-size: 14px; letter-spacing: 1px;">UNDERGROUND MUSIC EST. 2024</p>
+          </div>
 
-          <p style="font-size: 16px; line-height: 1.6;">
-            Adjuntamos tus tickets para el evento <strong>${nombreEvento}</strong> en formato PDF. 
-            Recuerda presentarlo en la entrada para validar tu acceso.
+          <h2 style="color: #ffffff; text-align: center; margin-bottom: 25px; font-weight: normal;">¡ESTÁS ADENTRO, <strong style="color: #56fdb8;">${nombreComprador.split(' ')[0]}</strong>!</h2>
+
+          <!-- Flyer del evento -->
+          ${flyerUrl ? `<div style="text-align: center; margin-bottom: 25px;">
+            <img src="${flyerUrl}" alt="${evento.nombreEvento}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;" />
+          </div>` : ''}
+
+          <p style="font-size: 16px; line-height: 1.6; text-align: center;">
+            Hemos procesado tu compra para el evento <strong>${evento.nombreEvento}</strong> con éxito. 
           </p>
 
-          <p style="font-size: 16px; line-height: 1.6;">
-            Si tienes dudas, contáctanos a <a href="mailto:take.oover.show@gmail.com" style="color: #0077cc;">take.oover.show@gmail.com</a>.
-          </p>
+          <div style="background-color: rgba(86, 253, 184, 0.05); border-left: 4px solid #56fdb8; padding: 15px; margin: 25px 0;">
+            <p style="margin: 0; font-size: 15px;">
+              🎟️ <strong>Tus accesos están adjuntos</strong> a este correo en formato PDF. Asegúrate de llevarlos en tu celular el día del evento.
+            </p>
+          </div>
 
-          <div style="text-align: center; margin: 30px 0;">
+          ${cliente && cliente.codigo ? `
+          <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(86, 253, 184, 0.5); padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <h3 style="margin-top: 0; color: #56fdb8; font-size: 16px;">💸 Invita a tus amigos</h3>
+            <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">Comparte tu código único de referido con tus amigos para que compren con precio especial:</p>
+            <p style="font-size: 26px; font-weight: bold; color: #fff; text-align: center; letter-spacing: 3px; margin: 0;">${cliente.codigo}</p>
+          </div>
+          ` : ''}
+
+          <div style="text-align: center; margin: 35px 0 20px 0;">
             <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
-              <div style="display: inline-block; background-color: #25D366; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold;">
-                <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" style="width: 20px; vertical-align: middle; margin-right: 8px;">
-                Únete a la comunidad en WhatsApp
+              <div style="display: inline-block; background-color: transparent; color: #56fdb8; border: 1px solid #56fdb8; padding: 12px 20px; border-radius: 6px; font-size: 15px; font-weight: bold;">
+                📱 Únete a la comunidad en WhatsApp
               </div>
             </a>
           </div>
 
-          <div style="text-align: center; margin: 10px 0;">
-            <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none;">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" style="width: 28px; height: 28px;">
-              <p style="margin-top: 5px; font-size: 14px; color: #333;">Síguenos en Instagram</p>
+          <div style="text-align: center; margin: 20px 0 30px 0;">
+            <a href="https://www.instagram.com/_takeeover/" target="_blank" style="text-decoration: none; color: #aaa; font-size: 14px;">
+              Síguenos en Instagram @_takeeover
             </a>
           </div>
 
-          <div style="text-align: center; margin-top: 30px;">
-            <p style="font-size: 14px; color: #777;">Nos vemos en la pista 🕺</p>
-            <p style="font-size: 18px; color: #000;"><strong>Equipo Take Over</strong></p>
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="font-size: 14px; color: #666; margin: 0;">Nos vemos en la pista 🕺</p>
+            <p style="font-size: 16px; color: #fff; margin-top: 5px;"><strong>Equipo Take Over</strong></p>
           </div>
 
-          <hr style="margin-top: 40px; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999; text-align: center;">
-            Este correo fue enviado automáticamente, favor de no responder.
+          <hr style="margin-top: 30px; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+          <p style="font-size: 11px; color: #555; text-align: center; margin-top: 15px;">
+            Si tienes dudas, contáctanos a <a href="mailto:take.oover.show@gmail.com" style="color: #56fdb8;">take.oover.show@gmail.com</a>.<br/>
+            Este correo fue enviado automáticamente.
           </p>
         </div>
       </div>
@@ -527,14 +571,16 @@ async function insertaPagoDesdePaymentIntent(paymentIntent) {
 
     console.log("Datos extraídos del Payment Intent:", { nombre, correo, cantidad, descripcionFase, amount });
 
+    // Para la integración con la base de datos de la nueva arquitectura, obtenemos o creamos el cliente
+    const clienteId = await getOrCreateCliente(nombre || correo, correo, null, metadata.codigoReferido);
+
     // Llamada al procedimiento almacenado
     const { data, error } = await supabase.rpc("guardar_pago_venta", {
       cantidadt: cantidad,
-      correov: correo,
+      cliente_id: clienteId,
       descripcionfase: descripcionFase,
       idtransstripe: paymentIntent.id,
       monto: amount,
-      nombrev: nombre,
       checkout_session_stripe: paymentIntent.id, // Usamos el payment intent ID
     });
 
@@ -549,4 +595,65 @@ async function insertaPagoDesdePaymentIntent(paymentIntent) {
     console.error("Error en insertaPagoDesdePaymentIntent:", error);
     return false;
   }
+}
+
+// Función auxiliar para obtener o crear un cliente
+async function getOrCreateCliente(nombre, correo, telefono, codigoReferido) {
+  console.log("Buscando o creando cliente:", correo);
+  
+  // 1. Intentar buscar el cliente por correo
+  const { data: cliente, error: searchError } = await supabase
+    .from("mCliente")
+    .select("cliente_id, codigo")
+    .eq("correo", correo)
+    .maybeSingle();
+
+  if (cliente) {
+    console.log("Cliente encontrado con ID:", cliente.cliente_id);
+    return cliente.cliente_id;
+  }
+
+  // 2. Si no existe, averiguar el origen a partir del código referido (si existe)
+  let id_origen = 4; // Por defecto: Venta Directa
+  let id_referidor = null;
+  
+  if (codigoReferido) {
+    const { data: refCliente } = await supabase
+      .from("mCliente")
+      .select("cliente_id")
+      .eq("codigo", codigoReferido)
+      .maybeSingle();
+      
+    if (refCliente) {
+      id_origen = 1; // 1 = Cliente
+      id_referidor = refCliente.cliente_id;
+    } else {
+      // Podrías extender esto buscando en mpromotor, si no halló en mCliente:
+      // const { data: promotor } = await supabase.from("mpromotor").select("id").eq("codigo", codigoReferido).maybeSingle();
+      // if (promotor) { id_origen = 2; id_referidor = promotor.id; }
+    }
+  }
+
+  // 3. Crearlo
+  console.log("Cliente no encontrado, creando uno nuevo...");
+  const { data: nuevoCliente, error: insertError } = await supabase
+    .from("mCliente")
+    .insert([{ 
+      nombre: nombre || correo, 
+      correo: correo, 
+      telefono: telefono || null,
+      id_origen: id_origen,
+      id_referidor: id_referidor
+    }])
+    .select("cliente_id")
+    .single();
+
+  if (insertError) {
+    console.error("Error al crear cliente:", insertError);
+    // En caso de error, podrías lanzar una excepción o manejarlo según tu flujo
+    throw new Error(`No se pudo crear o recuperar el cliente: ${insertError.message}`);
+  }
+
+  console.log("Nuevo cliente creado con ID:", nuevoCliente.cliente_id);
+  return nuevoCliente.cliente_id;
 }

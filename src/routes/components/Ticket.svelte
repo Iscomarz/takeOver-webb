@@ -16,9 +16,11 @@
   export let soldout = false;
   export let descripcion = "";
   export let oculto = false;
+  export let isFirst = false;
+  export let isLast = false;
 
   let cantidad = 0;
-  let mostrarDescripcion = false;
+  let mostrarPopup = false;
 
   const dispatch = createEventDispatcher();
 
@@ -26,10 +28,6 @@
   $: inactivoState.subscribe((state) => {
     inactivo = state[index];
   });
-
-  function toggleDescripcion() {
-    mostrarDescripcion = !mostrarDescripcion;
-  }
 
   function formatearFechas(dateString) {
     const date = new Date(dateString);
@@ -85,11 +83,28 @@
   });
 </script>
 {#if !oculto}
-<div class="rounded" class:inactivo>
+<div class="rounded" class:inactivo class:first={isFirst} class:last={isLast} class:middle={!isFirst && !isLast}>
+  {#if descripcion}
+    <span 
+      class="info-icon"
+      on:mouseenter={() => mostrarPopup = true}
+      on:mouseleave={() => mostrarPopup = false}
+    >
+      <img src="/src/lib/images/icons/info.svg" alt="info" class="icon-img" />
+      {#if mostrarPopup}
+        <div class="popup">
+          {descripcion}
+        </div>
+      {/if}
+    </span>
+  {/if}
+  
   <div style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 10px;">
     <div class="grid-container">
       <div class="nombre">
-        <h4>{nombreFace}</h4>
+        <h4>
+          {nombreFace}
+        </h4>
       </div>
       <div class="precio">
         <p>Mex${precio}</p>
@@ -106,25 +121,13 @@
       </div>
     </div>
   </div>
-
-  {#if descripcion}
-    <div class="descripcion-toggle" on:click={toggleDescripcion}>
-      <span>{mostrarDescripcion ? "▲" : "▼"} Descripción</span>
-    </div>
-
-    {#if mostrarDescripcion}
-      <div class="descripcion-box">
-        <p>{descripcion}</p>
-      </div>
-    {/if}
-  {/if}
 </div>
 {/if}
 
 <style>
   .rounded {
-    border: 3px solid #4b4b4b;
-    border-radius: 10px;
+    border: 1px solid #4b4b4b;
+    border-radius: 0;
     color: whitesmoke;
     padding: 10px;
     display: flex;
@@ -132,29 +135,83 @@
     justify-content: center;
     align-items: start;
     width: 100%;
+    position: relative;
   }
 
-  .descripcion-toggle {
-    cursor: pointer;
-    margin-top: 10px;
-    text-align: center;
-    font-size: 0.9em;
-    color: #ccc;
-    width: 100%;
+  /* Primer ticket - borde superior redondeado */
+  .rounded.first {
+    border-radius: 10px 10px 0 0;
   }
 
-  .descripcion-toggle:hover {
-    color: rgb(255, 0, 0);
+  /* Último ticket - borde inferior redondeado */
+  .rounded.last {
+    border-radius: 0 0 10px 10px;
+    border-top: none;
   }
 
-  .descripcion-box {
+  /* Tickets del medio - sin bordes redondeados */
+  .rounded.middle {
+    border-radius: 0;
+    border-top: none;
+  }
+
+  /* Si hay solo un ticket, mantener todos los bordes redondeados */
+  .rounded.first.last {
+    border-radius: 10px;
+    border-top: 1px solid #4b4b4b;
+  }
+
+  .info-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+
+  .info-icon:hover {
+    opacity: 0.7;
+  }
+
+  .icon-img {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+
+  .popup {
+    position: absolute;
+    top: 100%;
+    right: 0;
     margin-top: 8px;
-    padding: 10px;
-    border-top: 1px solid #666;
+    background-color: #2a2a2a;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
     font-size: 0.85em;
-    color: #ddd;
+    white-space: normal;
+    min-width: 200px;
+    max-width: 300px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 1px solid #4b4b4b;
     text-align: center;
-    width: 100%;
+    pointer-events: none;
+    font-family: "JostRegular";
+  }
+
+  .popup::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 10px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #2a2a2a transparent;
   }
 
   .soldout {
@@ -182,6 +239,12 @@
     align-items: center;
     justify-content: center;
     font-family: "JostRegular";
+  }
+
+  .nombre h4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .vigencia {

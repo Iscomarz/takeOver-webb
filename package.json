@@ -25,6 +25,9 @@
 	"dependencies": {
 		"@phosphor-icons/web": "^2.1.1",
 		"@supabase/supabase-js": "^2.45.3",
+		"@tsparticles/engine": "^3.9.1",
+		"@tsparticles/slim": "^3.9.1",
+		"@tsparticles/svelte": "^3.1.1",
 		"buffer": "^6.0.3",
 		"bull": "^4.16.5",
 		"dotenv": "^16.4.5",
@@ -36,6 +39,8 @@
 		"qrcode": "^1.5.4",
 		"resend": "^4.5.1",
 		"svelte-french-toast": "^1.2.0",
-		"takeover-web-app": "file:"
+		"takeover-web-app": "file:",
+		"three": "^0.182.0",
+		"vanta": "^0.5.24"
 	}
 }

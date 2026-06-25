@@ -9,6 +9,7 @@
   export let eventoPasado = false; // Cambia a true si es un evento pasado
   export let descuentoAplicado = false;
   export let codigoDescuentoUsado = null;
+  export let isReferral = false;
 
   let stripe;
   let acceptedTerms = false;
@@ -32,17 +33,26 @@
     const finalPrice = $totalPrice;
     console.log('boton checkout',idPrecioStripe, cantidad);
     if (finalPrice !== 0 || idPrecioStripe != null) {
+      
+      const payload = {
+        items: [{ price: idPrecioStripe, quantity: cantidad }],
+        metadata: {}
+      };
+
+      if (codigoDescuentoUsado) {
+        if (isReferral) {
+          payload.metadata.codigoReferido = codigoDescuentoUsado;
+        } else {
+          payload.metadata.codigoDescuento = codigoDescuentoUsado;
+        }
+      }
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          items: [{ price: idPrecioStripe, quantity: cantidad }],
-          metadata: {
-            codigoDescuento: codigoDescuentoUsado
-          }
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();

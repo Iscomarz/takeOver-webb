@@ -1,14 +1,48 @@
 <script>
+  import { onNavigate } from '$app/navigation';
+  import { navigating, page } from '$app/stores';
+  import { fade } from 'svelte/transition';
   import Header from "./Header.svelte";
   import Footer from "./Footer.svelte";
+  import AnimatedBackground from "./components/AnimatedBackground.svelte";
+  import logoTakeOver from "$lib/images/takeover-logo.png";
   import "../app.css";
+
+  // Usar la View Transitions API nativa del navegador
+  onNavigate((navigation) => {
+    if (!document.startViewTransition) return;
+
+    return new Promise(resolve => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 </script>
 
 <div class="app">
+  <AnimatedBackground />
+  
+  <!-- Loading indicator durante la navegación -->
+  {#if $navigating}
+    <div class="navigation-loading" transition:fade={{ duration: 200 }}>
+      <div class="loading-content">
+        <img src={logoTakeOver} alt="Loading" class="loading-logo" />
+        <div class="loading-bar">
+          <div class="loading-bar-fill"></div>
+        </div>
+        <p class="loading-text">LOADING...</p>
+      </div>
+    </div>
+  {/if}
+
   <Header />
 
   <main>
-    <slot />
+    <div class="page-content">
+      <slot />
+    </div>
   </main>
 
   <Footer />
@@ -46,6 +80,115 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+  }
+
+  .page-content {
+    width: 100%;
+    view-transition-name: main-content;
+  }
+
+  /* Configuración de View Transitions - transición MUY lenta y suave */
+  :global(::view-transition-old(main-content)) {
+    animation: fade-out 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  :global(::view-transition-new(main-content)) {
+    animation: fade-in 2500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Loading indicator durante navegación */
+  .navigation-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .loading-logo {
+    width: 150px;
+    height: auto;
+    opacity: 0.9;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-theme-1), white);
+    animation: loading 1.5s ease-in-out infinite;
+    transform-origin: left;
+  }
+
+  @keyframes loading {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .loading-text {
+    font-family: "JostRegular", sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
   }
 
   main::after {

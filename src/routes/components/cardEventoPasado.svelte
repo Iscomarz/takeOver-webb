@@ -45,7 +45,9 @@
           <p>{lugar}</p>
         </div>
         <div style="display: flex; justify-content: center; width: 100%;">
-          <ButtonStyle texto="VER MÁS" href={`eventos/${idEvento}`} />
+          <div class="button-wrapper">
+            <ButtonStyle texto="VER MÁS" href={`eventos/${idEvento}`} />
+          </div>
         </div>
       </div>
     </div>
@@ -54,42 +56,87 @@
 
 <style>
   .evento-card {
-    padding: 10px 10px 10px 10px;
+    padding: 8px;
     width: 100%;
     height: 100%;
+    transition: transform 0.3s ease;
   }
+
+  .evento-card:hover {
+    transform: translateY(-5px);
+  }
+
   .evento-info {
     background-color: #000000;
     box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.28);
-    padding: 10px;
-    height: calc(100% - 290px);
+    padding: 8px 10px;
     display: flex;
-    justify-content: space-between;
     flex-direction: column;
+    gap: 4px;
     color: white;
     font-family: "JostRegular";
   }
+
   .evento-lugar {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     color: rgb(208, 208, 208);
     flex-direction: column;
+    font-size: 0.9rem;
   }
+
+  .button-wrapper {
+    transform: scale(0.75);
+  }
+
   h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    margin: 0 0 4px 0;
   }
+
+  .evento-info p {
+    margin: 4px 0;
+    font-size: 0.85rem;
+  }
+
   .image-eve {
     width: 100%;
-    height: 320px;
+    height: 280px;
     object-fit: cover;
     box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.28);
-    transition: all 0.3s ease-in-out;
   }
 
-  @media screen and (min-width: 600px) {
-  .evento-card {
-    width: 320px;
+  @media screen and (max-width: 1200px) {
+    .image-eve {
+      height: 300px;
+    }
   }
-}
 
+  @media screen and (max-width: 900px) {
+    .image-eve {
+      height: 280px;
+    }
+    
+    h3 {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    .evento-card {
+      padding: 10px;
+    }
+    
+    .image-eve {
+      height: 300px;
+    }
+    
+    h3 {
+      font-size: 1.2rem;
+    }
+    
+    .evento-info {
+      padding: 10px;
+    }
+  }
 </style>

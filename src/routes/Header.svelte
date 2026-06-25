@@ -3,22 +3,51 @@
   import logo from "$lib/images/takeover-logo.png";
   import { goto } from "$app/navigation";
   import AnimatedText from "./components/AnimatedText.svelte";
+  import { onMount } from "svelte";
+  import { eventoStore } from "$lib/stores/eventoStore";
 
   let showHeader = false;
   let showMenuIcon = false;
   let titleHeader = "titulo";
   let backBlack = false;
-
   let menuOpen = false;
+  let scrolled = false;
+  let eventoActivoId = null;
 
   $: currentPath = $page.url.pathname;
   $: showHeader = currentPath !== "/";
   $: showMenuIcon = currentPath !== "/";
   $: backBlack = currentPath !== "/";
   $: titleHeader = currentPath;
+
+  // Suscribirse al store de evento
+  $: if ($eventoStore.evento) {
+    eventoActivoId = $eventoStore.evento.idevento;
+  }
+
+  onMount(() => {
+    const handleScroll = () => {
+      scrolled = window.scrollY > 50;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Iniciar carga del evento si no se ha cargado
+    eventoStore.loadEvento();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  });
+
+  function handleGetTickets() {
+    if (eventoActivoId) {
+      goto(`/eventos/${eventoActivoId}`);
+    } else {
+      goto("/eventos");
+    }
+  }
 </script>
 
-<header style={backBlack ? "background-color: black;" : ""}>
+<header class:scrolled >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="menu-icon" on:click={() => (menuOpen = !menuOpen)}>
@@ -27,12 +56,16 @@
       <div class="line bottom"></div>
     </div>
   </div>
-  <div class="corner">
+
+  {#if currentPath !== "/"}
+    <div class="corner">
     <a href="/">
       <img src={logo} alt="Take Over Logo" />
       <!-- <p style="color: white;">_TAKE OVER</p> -->
     </a>
   </div>
+  {/if}
+  
 
   <!-- Menú lateral -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -43,6 +76,15 @@
   >
     <div class="side-menu-content" on:click|stopPropagation>
       <ul>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/");
+          }}
+        >
+          _HOME
+        </li>
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <li
           on:click={() => {
@@ -97,6 +139,11 @@
     <nav>
       <ul>
         <li
+          aria-current={$page.url.pathname === "/" ? "page" : undefined}
+        >
+          <a href="/">HOME</a>
+        </li>
+        <li
           aria-current={$page.url.pathname === "/eventos" ? "page" : undefined}
         >
           <a href="/eventos">EVENTS</a>
@@ -116,6 +163,12 @@
           <a href="/contact">CONTACT</a>
         </li>
       </ul>
+      
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="cta-button" on:click={handleGetTickets}>
+        <span class="cta-text">GET TICKETS</span>
+      </div>
     </nav>
   {/if}
 </header>
@@ -129,17 +182,24 @@
     z-index: 1000;
     padding-left: 20px;
     padding-right: 20px;
-    height: 6em;
+    height: 4.5em;
     align-items: center;
     display: flex;
     justify-content: flex-start;
     width: 100%;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color 0.3s ease, height 0.3s ease;
+  }
+
+  header.scrolled {
+    background-color: rgba(0, 0, 0, 0) !important;
+    backdrop-filter: blur(10px);
   }
 
   .corner {
     width: auto;
-    padding: 15px;
-    height: 4em;
+    padding: 10px;
+    height: 3.5em;
     margin-right: 20px;
   }
 
@@ -152,14 +212,16 @@
   }
 
   .corner img {
-    width: 4em;
-    height: 4em;
+    width: 3.5em;
+    height: 3.5em;
     object-fit: contain;
   }
 
   nav {
     display: flex;
     justify-content: end;
+    align-items: center;
+    gap: 30px;
     --background: rgba(255, 255, 255, 0);
     width: 100%;
   }
@@ -168,7 +230,7 @@
     position: relative;
     padding: 0;
     margin: 0;
-    height: 4em;
+    height: 3.5em;
     display: flex;
     gap: 20px;
     align-items: center;
@@ -178,9 +240,61 @@
     border-radius: 0 0 40px 40px;
   }
 
+  /* Botón CTA */
+  .cta-button {
+    position: relative;
+    padding: 6px 20px;
+    background: rgba(255, 80, 40, 0.08);
+    border: 2px solid #ff5722;
+    border-radius: 25px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  .cta-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 87, 34, 0.2) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+  }
+
+  .cta-button:hover::before {
+    width: 200%;
+    height: 200%;
+  }
+
+  .cta-button:hover {
+    background: rgba(255, 80, 40, 0.15);
+    box-shadow: 0 0 20px rgba(255, 87, 34, 0.4);
+    border-color: #ff6b3d;
+  }
+
+  .cta-text {
+    position: relative;
+    color: #e0e0e0;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    z-index: 1;
+    transition: color 0.3s ease;
+  }
+
+  .cta-button:hover .cta-text {
+    color: #ffffff;
+  }
+
   li {
     position: relative;
-    height: 100%;
+    height: 70%;
   }
 
   li[aria-current="page"]::before {
@@ -215,7 +329,7 @@
     padding: 0 0.5rem;
     color: rgb(255, 255, 255);
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-decoration: none;
@@ -309,7 +423,7 @@
 
   .side-menu-content li {
     color: white;
-    font-size: 1rem;
+    font-size: 0.75rem;
     text-decoration: none;
     text-transform: uppercase;
     font-weight: 500;
@@ -346,6 +460,10 @@
     .corner img {
       width: 100%;
       height: auto;
+    }
+    
+    .cta-button {
+      display: none;
     }
   }
 </style>
