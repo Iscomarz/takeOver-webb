@@ -47,8 +47,8 @@ export async function POST(event) {
 
   switch (eventStripe.type) {
     case "checkout.session.completed":
-      //Esperamos a que se complete el pago antes de preguntar por el estado
-    await new Promise(resolve => setTimeout(resolve, 2000));
+      // Reducimos la espera para no superar el límite de Vercel (de 2000 a 500ms)
+    await new Promise(resolve => setTimeout(resolve, 500));
 
       if (await existePago(session.payment_intent)) {
         console.log("existe pago");
@@ -187,6 +187,12 @@ async function obtenerEvento(idEvento) {
 
 async function login() {
   try {
+    // Verificar si ya hay una sesión activa para ahorrar 1-2 segundos de login
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData?.session) {
+      return sessionData.session.user.id;
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: "franmtz96@gmail.com",
       password: process.env.SUPABASE_PASSWORD,
@@ -205,7 +211,8 @@ async function login() {
 }
 
 async function cerrarSesion() {
-  await supabase.auth.signOut();
+  // Ya no cerramos sesión para reutilizarla en futuras ejecuciones del webhook (Vercel warm start)
+  // await supabase.auth.signOut();
 }
 
 async function generarQRCode(texto) {

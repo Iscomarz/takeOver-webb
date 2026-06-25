@@ -2,6 +2,7 @@
   import fondoEvents from "$lib/images/covers/fondo-events.jpg";
   import BotonComunidad from "../components/botonComunidad.svelte";
   import CardEventoPasado from "../components/cardEventoPasado.svelte";
+  import CardEventoPasadoList from "../components/cardEventoPasadoList.svelte";
   import CardEventoActivo from "../components/cardEventoActivo.svelte";
 
   export let data;
@@ -10,7 +11,9 @@
   // Variables para paginación y búsqueda
   let searchQuery = "";
   let currentPage = 1;
-  const itemsPerPage = 8; // 4x2 grid
+  let viewMode = "list"; // 'grid' o 'list'
+
+  $: itemsPerPage = viewMode === "grid" ? 8 : 12;
 
   // Eventos pasados filtrados por búsqueda
   $: eventosPasadosFiltrados = eventosPasados.filter(evento =>
@@ -29,6 +32,11 @@
   // Reiniciar a página 1 cuando cambia la búsqueda
   $: if (searchQuery) {
     currentPage = 1;
+  }
+
+  // Ajustar la página actual si cambia el tamaño de paginación
+  $: if (currentPage > totalPages && totalPages > 0) {
+    currentPage = totalPages;
   }
 
   function goToPage(page) {
@@ -75,35 +83,84 @@
   <div class="eventos-pasados">
     <h2>EVENTOS PASADOS</h2>
     
-    <!-- Buscador -->
-    <div class="search-container">
-      <input 
-        type="text" 
-        placeholder="Buscar..." 
-        bind:value={searchQuery}
-        class="search-input"
-      />
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.35-4.35"></path>
-      </svg>
+    <!-- Controles (Buscador y Toggle de Vista) -->
+    <div class="controls-container">
+      <div class="search-container">
+        <input 
+          type="text" 
+          placeholder="Buscar..." 
+          bind:value={searchQuery}
+          class="search-input"
+        />
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </div>
+
+      <div class="view-toggle">
+        <button 
+          class="toggle-btn" 
+          class:active={viewMode === 'grid'} 
+          on:click={() => viewMode = 'grid'}
+          title="Vista Cuadrícula"
+          aria-label="Vista Cuadrícula"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+        <button 
+          class="toggle-btn" 
+          class:active={viewMode === 'list'} 
+          on:click={() => viewMode = 'list'}
+          title="Vista Lista"
+          aria-label="Vista Lista"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </div>
 
     {#if eventosPasadosFiltrados.length === 0}
       <p class="no-results">No se encontraron eventos</p>
     {:else}
-      <div class="eventos-container-pasados">
-        {#each eventosPasadosPaginados as evento}
-          <CardEventoPasado
-            pathImage={evento.pathImage}
-            titulo={evento.nombreEvento}
-            fecha={evento.fechaInicio}
-            diaYHora={evento.diaYHora}
-            lugar={evento.venue}
-            idEvento={evento.idevento}
-          />
-        {/each}
-      </div>
+      {#if viewMode === 'grid'}
+        <div class="eventos-container-pasados">
+          {#each eventosPasadosPaginados as evento}
+            <CardEventoPasado
+              pathImage={evento.pathImage}
+              titulo={evento.nombreEvento}
+              fecha={evento.fechaInicio}
+              diaYHora={evento.diaYHora}
+              lugar={evento.venue}
+              idEvento={evento.idevento}
+            />
+          {/each}
+        </div>
+      {:else}
+        <div class="eventos-list-pasados">
+          {#each eventosPasadosPaginados as evento}
+            <CardEventoPasadoList
+              pathImage={evento.pathImage}
+              titulo={evento.nombreEvento}
+              fecha={evento.fechaInicio}
+              lugar={evento.venue}
+              idEvento={evento.idevento}
+            />
+          {/each}
+        </div>
+      {/if}
 
       <!-- Paginación -->
       {#if totalPages > 1}
@@ -202,12 +259,24 @@
     padding: 1rem;
   }
 
-  /* Buscador */
-  .search-container {
-    position: relative;
-    max-width: 500px;
+  /* Controles (Buscador y Selector de Vista) */
+  .controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    width: 90%;
     margin: 0 auto 2rem;
     padding: 0 1rem;
+    gap: 1.5rem;
+  }
+
+  .search-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0;
+    padding: 0;
   }
 
   .search-input {
@@ -233,11 +302,54 @@
 
   .search-icon {
     position: absolute;
-    right: 30px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     color: #888;
     pointer-events: none;
+  }
+
+  .view-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    padding: 8px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .toggle-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .toggle-btn.active {
+    color: black;
+    background: white;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  }
+
+  /* Contenedores de Eventos Pasados */
+  .eventos-list-pasados {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
   }
 
   /* Paginación */
@@ -300,13 +412,26 @@
   }
 
   @media screen and (max-width: 600px) {
+    .controls-container {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+      width: 95%;
+    }
+
+    .view-toggle {
+      justify-content: center;
+      align-self: center;
+    }
+
     .eventos-container-pasados {
       grid-template-columns: 1fr;
       width: 95%;
     }
-    
-    .search-container {
-      padding: 0 1.5rem;
+
+    .eventos-list-pasados {
+      width: 95%;
+      padding: 0.5rem;
     }
   }
 
