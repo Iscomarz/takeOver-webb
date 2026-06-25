@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from "svelte";
   import ButtonStyle from "./buttonStyle.svelte";
   import { formatDiaYHora, formatDate } from '$lib/utils/formatFechas.js';
 
@@ -9,13 +8,8 @@
   export let lugar;
   export let idEvento;
 
-  let fechaFormateada = "";
-  let diaYHora = "";
-
-  onMount(() => {
-    fechaFormateada = formatDate(fecha);
-    diaYHora = formatDiaYHora(fecha);
-  });
+  $: fechaFormateada = formatDate(fecha);
+  $: diaYHora = formatDiaYHora(fecha);
 </script>
 
 <div class="evento-list-card">
