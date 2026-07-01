@@ -37,7 +37,7 @@
 
     const finalPrice = $totalPrice;
     
-    if (finalPrice === 0 || cantidad === 0) {
+    if (cantidad === 0) {
       toast.error("Selecciona un ticket para continuar la compra", {
         position: "bottom-center",
         style: 'background: #333; color: #fff;',
@@ -179,6 +179,75 @@
     // Si no hay error, Stripe redirigirá automáticamente
   }
 
+  async function confirmarRegistroGratis() {
+    if (!acceptedTerms) {
+      toast.error("Debes aceptar los términos y condiciones para continuar", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+      return;
+    }
+
+    if (!nombre.trim() || !correo.trim()) {
+      toast.error("Por favor ingresa tu nombre y correo electrónico", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correo)) {
+      toast.error("Por favor ingresa un correo electrónico válido", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+      return;
+    }
+
+    isProcessing = true;
+
+    try {
+      const selectedTicket = tickets.find(t => t.cantidad > 0);
+      const idEvento = selectedTicket ? selectedTicket.idEvento : null;
+
+      const response = await fetch("/api/free-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          correo: correo,
+          cantidad: cantidad,
+          tickets: tickets,
+          nombreEvento: nombreEvento,
+          idEvento: idEvento
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Registro completado exitosamente", {
+          position: "bottom-center",
+          style: 'background: #333; color: #fff;',
+        });
+        window.location.href = `${window.location.origin}/success?free=true&nombre=${encodeURIComponent(nombre)}&correo=${encodeURIComponent(correo)}`;
+      } else {
+        throw new Error(data.error || "Error al procesar el registro");
+      }
+    } catch (error) {
+      console.error("Error en registro gratis:", error);
+      toast.error(error.message || "Error al procesar el registro", {
+        position: "bottom-center",
+        style: 'background: #333; color: #fff;',
+      });
+    } finally {
+      isProcessing = false;
+    }
+  }
+
   function cancelarCheckout() {
     showPaymentForm = false;
     clientSecret = "";
@@ -194,27 +263,82 @@
 
 <div class="checkout-container">
   {#if !showPaymentForm}
-    <!-- Botón para iniciar checkout -->
-    <label class="terms-label">
-      <input type="checkbox" bind:checked={acceptedTerms} disabled={isProcessing} />
-      <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
-    </label>
+    {#if $totalPrice === 0 && cantidad > 0}
+      <!-- Formulario directo para registro gratis -->
+      <div class="payment-form">
+        <div class="payment-header">
+          <h4>Completa tu registro gratis</h4>
+        </div>
 
-    <p class="nota">*Pueden aplicar cargos por servicio y procesamiento</p>
+        <!-- Datos del comprador -->
+        <div class="buyer-data" style="margin-bottom: 15px;">
+          <div class="input-group">
+            <label for="nombre-free">Nombre completo *</label>
+            <input
+              id="nombre-free"
+              type="text"
+              bind:value={nombre}
+              placeholder="Juan Pérez"
+              disabled={isProcessing}
+            />
+          </div>
 
-    <button
-      class="btn-primary"
-      on:click={iniciarCheckout}
-      disabled={eventoPasado || isProcessing}
-    >
-      {#if isProcessing}
-        Procesando...
-      {:else if eventoPasado}
-        El evento ha terminado
-      {:else}
-        Checkout - Mex${$totalPrice}
+          <div class="input-group">
+            <label for="correo-free">Correo electrónico *</label>
+            <input
+              id="correo-free"
+              type="email"
+              bind:value={correo}
+              placeholder="tu@email.com"
+              disabled={isProcessing}
+            />
+          </div>
+        </div>
+
+        <label class="terms-label">
+          <input type="checkbox" bind:checked={acceptedTerms} disabled={isProcessing} />
+          <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
+        </label>
+
+        <button
+          class="btn-primary"
+          on:click={confirmarRegistroGratis}
+          disabled={eventoPasado || isProcessing}
+        >
+          {#if isProcessing}
+            Procesando...
+          {:else}
+            Confirmar Registro Gratis
+          {/if}
+        </button>
+      </div>
+    {:else}
+      <!-- Botón para iniciar checkout o seleccionar ticket -->
+      <label class="terms-label">
+        <input type="checkbox" bind:checked={acceptedTerms} disabled={isProcessing || cantidad === 0} />
+        <p class="terminos">Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></p>
+      </label>
+
+      {#if $totalPrice > 0}
+        <p class="nota">*Pueden aplicar cargos por servicio y procesamiento</p>
       {/if}
-    </button>
+
+      <button
+        class="btn-primary"
+        on:click={iniciarCheckout}
+        disabled={eventoPasado || isProcessing || cantidad === 0}
+      >
+        {#if isProcessing}
+          Procesando...
+        {:else if eventoPasado}
+          El evento ha terminado
+        {:else if cantidad === 0}
+          Selecciona un ticket
+        {:else}
+          Checkout - Mex${$totalPrice}
+        {/if}
+      </button>
+    {/if}
   {:else}
     <!-- Formulario de pago con Stripe Elements -->
     <div class="payment-form">

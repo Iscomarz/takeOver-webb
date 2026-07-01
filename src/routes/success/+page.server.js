@@ -2,14 +2,35 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 export async function load({ url }) {
-    const sessionId = url.searchParams.get('session_id');
-    if (!sessionId) return { codigoReferido: null };
-
-    const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
     const supabase = createClient(
         import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_PROJECT_URL,
         import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_API_KEY
     );
+
+    const free = url.searchParams.get('free');
+    const nombre = url.searchParams.get('nombre');
+    const correo = url.searchParams.get('correo');
+
+    if (free === 'true') {
+        let codigoReferido = null;
+        if (correo) {
+            const { data } = await supabase
+                .from('mCliente')
+                .select('codigo')
+                .eq('correo', correo)
+                .maybeSingle();
+            codigoReferido = data?.codigo || null;
+        }
+        return {
+            codigoReferido,
+            nombreCliente: nombre || ''
+        };
+    }
+
+    const sessionId = url.searchParams.get('session_id');
+    if (!sessionId) return { codigoReferido: null };
+
+    const stripe = new Stripe(import.meta.env.VITE_SECRET_STRIPE_KEY_LIVE);
 
     try {
         // 1. Obtener la sesión de Stripe para sacar el email
