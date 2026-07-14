@@ -104,14 +104,14 @@
           _ABOUT TAKE OVER
         </li>
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-         <li
+        <!-- <li
           on:click={() => {
             menuOpen = false;
             goto("/crew");
           }}
         >
           _CREW
-        </li>
+        </li> -->
        <!-- <li
           on:click={() => {
             menuOpen = false;
@@ -151,9 +151,9 @@
         <li aria-current={$page.url.pathname === "/about" ? "page" : undefined}>
           <a href="/about">ABOUT TAKE OVER</a>
         </li>
-         <li aria-current={$page.url.pathname === "/crew" ? "page" : undefined}>
+        <!-- <li aria-current={$page.url.pathname === "/crew" ? "page" : undefined}>
           <a href="/crew">CREW</a>
-        </li>
+        </li> -->
       <!--  <li aria-current={$page.url.pathname === "/merch" ? "page" : undefined}>
           <a href="/merch">MERCH</a>
         </li> -->

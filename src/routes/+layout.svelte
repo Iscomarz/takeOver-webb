@@ -5,6 +5,7 @@
   import Header from "./Header.svelte";
   import Footer from "./Footer.svelte";
   import AnimatedBackground from "./components/AnimatedBackground.svelte";
+  import MouseTrail from "./components/MouseTrail.svelte";
   import logoTakeOver from "$lib/images/takeover-logo.png";
   import "../app.css";
 
@@ -23,6 +24,7 @@
 
 <div class="app">
   <AnimatedBackground />
+  <MouseTrail />
   
   <!-- Loading indicator durante la navegación -->
   {#if $navigating}
