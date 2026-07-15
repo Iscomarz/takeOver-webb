@@ -117,7 +117,8 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Take Over Presenta <tickets@takeover.mx>',
+        from: 'Take Over <eventos@takeovermx.com>',
+        bcc: ['take.oover.show@gmail.com', 'franmtz96@gmail.com'],
         to: cliente.correo,
         subject: `🎫 Tus tickets para ${evento.nombreEvento}`,
         html: `
