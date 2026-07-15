@@ -7,7 +7,7 @@ import QRCode from "qrcode";
 
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL,
-  process.env.SUPABASE_API_KEY
+  process.env.SUPABASE_API_KEY,
 );
 
 let tickets = [];
@@ -35,7 +35,7 @@ export async function POST(event) {
     console.error("Webhook signature verification failed.", err.message);
     return json(
       { error: "Webhook signature verification failed." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -48,7 +48,7 @@ export async function POST(event) {
   switch (eventStripe.type) {
     case "checkout.session.completed":
       // Reducimos la espera para no superar el límite de Vercel (de 2000 a 500ms)
-    await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (await existePago(session.payment_intent)) {
         console.log("existe pago");
@@ -60,7 +60,14 @@ export async function POST(event) {
           return json({ message: "Pago guardado exitoso" }, { status: 200 });
         }
       } else {
-        if (await capturarCheckOut(session, stripeEventId, event, session.payment_intent)) {
+        if (
+          await capturarCheckOut(
+            session,
+            stripeEventId,
+            event,
+            session.payment_intent,
+          )
+        ) {
           // Acreditar código de descuento si existe
           await acreditarCodigoDescuento(session);
           // Enviar correo de confirmacion y proceso de pago
@@ -114,7 +121,12 @@ export async function POST(event) {
   }
 }
 
-async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIntent) {
+async function capturarCheckOut(
+  sessionCheckout,
+  stripeEventId,
+  event,
+  paymentIntent,
+) {
   console.log("Evento no procesado, continuando...");
   const email = sessionCheckout.customer_details.email;
   const name = sessionCheckout.customer_details.name;
@@ -123,7 +135,7 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   const codigoReferido = sessionCheckout.metadata?.codigoReferido;
 
   const lineItems = await stripe.checkout.sessions.listLineItems(
-    sessionCheckout.id
+    sessionCheckout.id,
   );
   let cantidadT = 0;
   let descripcionFase = "";
@@ -134,7 +146,12 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
   });
 
   // Buscar o crear cliente
-  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
+  const clienteId = await getOrCreateCliente(
+    name || email,
+    email,
+    phone,
+    codigoReferido,
+  );
 
   console.log("checkout_session_stripe", stripeEventId);
   // Llamada al procedimiento almacenado
@@ -147,8 +164,8 @@ async function capturarCheckOut(sessionCheckout, stripeEventId, event, paymentIn
     checkout_session_stripe: stripeEventId,
   });
 
-  if(amount == 0 && cantidadT != 0){
-    console.log("Entro a acreditar y generar tickets")
+  if (amount == 0 && cantidadT != 0) {
+    console.log("Entro a acreditar y generar tickets");
     await acreditaPagoYGeneraTickets(event, stripeEventId);
   }
 
@@ -254,7 +271,7 @@ async function generarCorreoYTicket(
   tickets,
   nombreComprador,
   correoComprador,
-  idEvento
+  idEvento,
 ) {
   console.log("🔹 Iniciando...");
   try {
@@ -268,7 +285,7 @@ async function generarCorreoYTicket(
           console.error(`❌ Error con el ticket ${ticket.referencia}:`, err);
           // Podrías marcar un estado de error o registrar algo en la base
         }
-      })
+      }),
     );
 
     const evento = await obtenerEvento(idEvento);
@@ -281,7 +298,7 @@ async function generarCorreoYTicket(
       pdfBuffer,
       nombreComprador,
       correoComprador,
-      evento
+      evento,
     );
     console.log("correo enviado");
 
@@ -295,7 +312,7 @@ async function generarCorreoYTicket(
 async function acreditaPagoYGeneraTickets(event, paymentIntent) {
   let { data: acreditaData, error: acreditaError } = await supabase.rpc(
     "acredita_pago_function",
-    { idpagostripe: paymentIntent }
+    { idpagostripe: paymentIntent },
   );
 
   if (acreditaError) {
@@ -309,7 +326,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
       acreditaData.tickets,
       acreditaData.nombreComprador,
       acreditaData.correoComprador,
-      acreditaData.idEvento
+      acreditaData.idEvento,
     );
     return true;
   }
@@ -322,7 +339,7 @@ async function insertaVenta(sessionCheckout) {
   const codigoReferido = sessionCheckout.metadata?.codigoReferido;
 
   const lineItems = await stripe.checkout.sessions.listLineItems(
-    sessionCheckout.id
+    sessionCheckout.id,
   );
   let cantidadT = 0;
   let descripcionFase = "";
@@ -332,7 +349,12 @@ async function insertaVenta(sessionCheckout) {
   });
 
   // Buscar o crear cliente
-  const clienteId = await getOrCreateCliente(name || email, email, phone, codigoReferido);
+  const clienteId = await getOrCreateCliente(
+    name || email,
+    email,
+    phone,
+    codigoReferido,
+  );
 
   const { data, error } = await supabase.rpc("insertaventa", {
     cliente_id: clienteId,
@@ -375,7 +397,7 @@ async function enviarTicketAlServidor(
   pdfBufferCorreo,
   nombreComprador,
   correoComprador,
-  evento
+  evento,
 ) {
   console.log("Enviando ticket al servidor...");
 
@@ -410,12 +432,16 @@ async function enviarTicketAlServidor(
             <p style="color: #888; margin-top: 5px; font-size: 14px; letter-spacing: 1px;">UNDERGROUND MUSIC EST. 2024</p>
           </div>
 
-          <h2 style="color: #ffffff; text-align: center; margin-bottom: 25px; font-weight: normal;">¡ESTÁS ADENTRO, <strong style="color: #56fdb8;">${nombreComprador.split(' ')[0]}</strong>!</h2>
+          <h2 style="color: #ffffff; text-align: center; margin-bottom: 25px; font-weight: normal;">¡ESTÁS ADENTRO, <strong style="color: #56fdb8;">${nombreComprador.split(" ")[0]}</strong>!</h2>
 
           <!-- Flyer del evento -->
-          ${flyerUrl ? `<div style="text-align: center; margin-bottom: 25px;">
+          ${
+            flyerUrl
+              ? `<div style="text-align: center; margin-bottom: 25px;">
             <img src="${flyerUrl}" alt="${evento.nombreEvento}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;" />
-          </div>` : ''}
+          </div>`
+              : ""
+          }
 
           <p style="font-size: 16px; line-height: 1.6; text-align: center;">
             Hemos procesado tu compra para el evento <strong>${evento.nombreEvento}</strong> con éxito. 
@@ -427,13 +453,17 @@ async function enviarTicketAlServidor(
             </p>
           </div>
 
-          ${cliente && cliente.codigo ? `
+          ${
+            cliente && cliente.codigo
+              ? `
           <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(86, 253, 184, 0.5); padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
             <h3 style="margin-top: 0; color: #56fdb8; font-size: 16px;">💸 Invita a tus amigos</h3>
             <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">Comparte tu código único de referido con tus amigos para que compren con precio especial:</p>
             <p style="font-size: 26px; font-weight: bold; color: #fff; text-align: center; letter-spacing: 3px; margin: 0;">${cliente.codigo}</p>
           </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <div style="text-align: center; margin: 35px 0 20px 0;">
             <a href="https://chat.whatsapp.com/GeVsOcSVbteDq4S8wy72rk" target="_blank" style="text-decoration: none;">
@@ -477,16 +507,16 @@ async function enviarTicketAlServidor(
 async function acreditarCodigoDescuento(session) {
   try {
     const codigoDescuento = session.metadata?.codigoDescuento;
-    
+
     if (codigoDescuento) {
       console.log(`Acreditando código de descuento: ${codigoDescuento}`);
-      
+
       const { data, error } = await supabase
         .from("codigosDescuento")
-        .update({ 
-          acreditado: true, 
+        .update({
+          acreditado: true,
           fecha_acreditado: new Date().toISOString(),
-          session_id: session.id 
+          session_id: session.id,
         })
         .eq("codigo", codigoDescuento);
 
@@ -494,7 +524,10 @@ async function acreditarCodigoDescuento(session) {
         console.error("Error al acreditar código de descuento:", error);
         return false;
       } else {
-        console.log("Código de descuento acreditado exitosamente:", codigoDescuento);
+        console.log(
+          "Código de descuento acreditado exitosamente:",
+          codigoDescuento,
+        );
         return true;
       }
     }
@@ -509,15 +542,17 @@ async function acreditarCodigoDescuento(session) {
 async function acreditarCodigoDescuentoDesdeMetadata(metadata) {
   try {
     const codigoDescuento = metadata?.codigoDescuento;
-    
+
     if (codigoDescuento) {
-      console.log(`Acreditando código de descuento desde metadata: ${codigoDescuento}`);
-      
+      console.log(
+        `Acreditando código de descuento desde metadata: ${codigoDescuento}`,
+      );
+
       const { data, error } = await supabase
         .from("codigosDescuento")
-        .update({ 
-          acreditado: true, 
-          fecha_acreditado: new Date().toISOString()
+        .update({
+          acreditado: true,
+          fecha_acreditado: new Date().toISOString(),
         })
         .eq("codigo", codigoDescuento);
 
@@ -525,7 +560,10 @@ async function acreditarCodigoDescuentoDesdeMetadata(metadata) {
         console.error("Error al acreditar código de descuento:", error);
         return false;
       } else {
-        console.log("Código de descuento acreditado exitosamente:", codigoDescuento);
+        console.log(
+          "Código de descuento acreditado exitosamente:",
+          codigoDescuento,
+        );
         return true;
       }
     }
@@ -541,7 +579,7 @@ async function guardarPaymentIntentInicial(paymentIntent) {
   try {
     console.log("Guardando Payment Intent inicial:", paymentIntent.id);
     const metadata = paymentIntent.metadata || {};
-    
+
     const { data, error } = await supabase.from("mPago").insert([
       {
         idFormaPago: 3,
@@ -570,16 +608,34 @@ async function insertaPagoDesdePaymentIntent(paymentIntent) {
   try {
     console.log("Insertando pago desde Payment Intent:", paymentIntent.id);
     const metadata = paymentIntent.metadata || {};
-    const nombre = metadata.nombre || paymentIntent.charges?.data[0]?.billing_details?.name || "Cliente";
-    const correo = metadata.correo || paymentIntent.charges?.data[0]?.billing_details?.email || "";
+    const nombre =
+      metadata.nombre ||
+      paymentIntent.charges?.data[0]?.billing_details?.name ||
+      "Cliente";
+    const correo =
+      metadata.correo ||
+      paymentIntent.charges?.data[0]?.billing_details?.email ||
+      "";
     const cantidad = parseInt(metadata.cantidad) || 1;
-    const descripcionFase = metadata.ticketsDescripcion || metadata.nombreFase || "Tickets";
+    const descripcionFase =
+      metadata.nombreFase || metadata.ticketsDescripcion || "Tickets";
     const amount = paymentIntent.amount / 100;
 
-    console.log("Datos extraídos del Payment Intent:", { nombre, correo, cantidad, descripcionFase, amount });
+    console.log("Datos extraídos del Payment Intent:", {
+      nombre,
+      correo,
+      cantidad,
+      descripcionFase,
+      amount,
+    });
 
     // Para la integración con la base de datos de la nueva arquitectura, obtenemos o creamos el cliente
-    const clienteId = await getOrCreateCliente(nombre || correo, correo, null, metadata.codigoReferido);
+    const clienteId = await getOrCreateCliente(
+      nombre || correo,
+      correo,
+      null,
+      metadata.codigoReferido,
+    );
 
     // Llamada al procedimiento almacenado
     const { data, error } = await supabase.rpc("guardar_pago_venta", {
@@ -607,7 +663,7 @@ async function insertaPagoDesdePaymentIntent(paymentIntent) {
 // Función auxiliar para obtener o crear un cliente
 async function getOrCreateCliente(nombre, correo, telefono, codigoReferido) {
   console.log("Buscando o creando cliente:", correo);
-  
+
   // 1. Intentar buscar el cliente por correo
   const { data: cliente, error: searchError } = await supabase
     .from("mCliente")
@@ -623,14 +679,14 @@ async function getOrCreateCliente(nombre, correo, telefono, codigoReferido) {
   // 2. Si no existe, averiguar el origen a partir del código referido (si existe)
   let id_origen = 4; // Por defecto: Venta Directa
   let id_referidor = null;
-  
+
   if (codigoReferido) {
     const { data: refCliente } = await supabase
       .from("mCliente")
       .select("cliente_id")
       .eq("codigo", codigoReferido)
       .maybeSingle();
-      
+
     if (refCliente) {
       id_origen = 1; // 1 = Cliente
       id_referidor = refCliente.cliente_id;
@@ -645,20 +701,24 @@ async function getOrCreateCliente(nombre, correo, telefono, codigoReferido) {
   console.log("Cliente no encontrado, creando uno nuevo...");
   const { data: nuevoCliente, error: insertError } = await supabase
     .from("mCliente")
-    .insert([{ 
-      nombre: nombre || correo, 
-      correo: correo, 
-      telefono: telefono || null,
-      id_origen: id_origen,
-      id_referidor: id_referidor
-    }])
+    .insert([
+      {
+        nombre: nombre || correo,
+        correo: correo,
+        telefono: telefono || null,
+        id_origen: id_origen,
+        id_referidor: id_referidor,
+      },
+    ])
     .select("cliente_id")
     .single();
 
   if (insertError) {
     console.error("Error al crear cliente:", insertError);
     // En caso de error, podrías lanzar una excepción o manejarlo según tu flujo
-    throw new Error(`No se pudo crear o recuperar el cliente: ${insertError.message}`);
+    throw new Error(
+      `No se pudo crear o recuperar el cliente: ${insertError.message}`,
+    );
   }
 
   console.log("Nuevo cliente creado con ID:", nuevoCliente.cliente_id);

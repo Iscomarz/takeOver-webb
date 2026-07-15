@@ -11,6 +11,9 @@
   export let nombreEvento = "";
   export let eventoReferidos = false;
 
+  export let mEvento = null;
+  export let urlImagenPortada = null;
+
   let ticketsPublicos = [];
   let ticketReferidoInfo = null;
   let idStripeSeleccionado = null;
@@ -279,6 +282,8 @@
       nombreEvento={nombreEvento}
       nombreFase={$tickets.filter(t => t.cantidad > 0)[0]?.nombreFace || ""}
       tickets={$tickets}
+      {mEvento}
+      {urlImagenPortada}
     />
   </div>
 

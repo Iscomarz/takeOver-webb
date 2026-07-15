@@ -188,6 +188,8 @@
                   : false}
                 nombreEvento={mEvento.nombreEvento || ""}
                 eventoReferidos={mEvento.referidos}
+                mEvento={mEvento}
+                urlImagenPortada={urlImagenPortada}
               />
             </div>
           </div>
