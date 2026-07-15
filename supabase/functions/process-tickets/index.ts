@@ -7,6 +7,7 @@ import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts"
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+const RESEND_FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'Take Over <eventos@takeovermx.com>'
 
 serve(async (req) => {
   // Manejo de peticiones CORS preflight
@@ -117,7 +118,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Take Over <eventos@takeovermx.com>',
+        from: RESEND_FROM_EMAIL,
         bcc: ['take.oover.show@gmail.com', 'franmtz96@gmail.com'],
         to: cliente.correo,
         subject: `🎫 Tus tickets para ${evento.nombreEvento}`,
