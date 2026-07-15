@@ -95,8 +95,17 @@ export async function POST(event) {
       } else {
         console.log("no existe pago");
         // Guardar pago desde Payment Intent (nuevo checkout embebido)
-        await insertaPagoDesdePaymentIntent(session);
-        return json({ message: "Pago guardado exitoso" }, { status: 200 });
+        const guardado = await insertaPagoDesdePaymentIntent(session);
+        if (guardado) {
+          // Acreditar y generar tickets inmediatamente después de insertar
+          if (await acreditaPagoYGeneraTickets(event, session.id)) {
+            if (session.metadata?.codigoDescuento) {
+              await acreditarCodigoDescuentoDesdeMetadata(session.metadata);
+            }
+            return json({ message: "Pago guardado y acreditado exitosamente" }, { status: 200 });
+          }
+        }
+        return json({ message: "Error al procesar el pago" }, { status: 400 });
       }
     case "payment_intent.created":
       console.log("Payment Intent creado, guardando información inicial...");
@@ -316,7 +325,7 @@ async function acreditaPagoYGeneraTickets(event, paymentIntent) {
   );
 
   if (acreditaError) {
-    console.error("Error llamando la función:", error);
+    console.error("Error llamando la función:", acreditaError);
     return false;
   } else {
     console.log("stp ejectuado correctamente", acreditaData);

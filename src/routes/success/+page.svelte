@@ -3,16 +3,24 @@
   import toast, { Toaster } from "svelte-french-toast";
   import logo from "$lib/images/takeover-logo.png";
   import BotonComunidad from "../components/botonComunidad.svelte";
+  import { goto } from "$app/navigation";
 
   export let data;
-  const { codigoReferido, nombreCliente } = data;
+  const { codigoReferido, nombreCliente, error, mensaje } = data;
 
   onMount(() => {
-    toast.success("¡Compra completada con éxito!", {
-      icon: "👏",
-      style: "border-radius: 200px; background: #333; color: #fff;",
-      duration: 5000,
-    });
+    if (error) {
+      toast.error(mensaje || "Ocurrió un error al verificar tu pago.", {
+        style: "border-radius: 200px; background: #333; color: #fff;",
+        duration: 5000,
+      });
+    } else {
+      toast.success("¡Compra completada con éxito!", {
+        icon: "👏",
+        style: "border-radius: 200px; background: #333; color: #fff;",
+        duration: 5000,
+      });
+    }
   });
 
   function copiarCodigo() {
@@ -25,34 +33,48 @@
 
 <Toaster />
 <section class="welcomeTO">
-  <h2>BIENVENIDO A TAKEOVER</h2><br>
-  <span>
-    <img src={logo} alt="takeOver logo" />
-  </span><br>
-  <div class="parrafo">
-    <p>
-      ¡Felicidades {nombreCliente || ''}, completaste la compra con éxito! Enviaremos los tickets al
-      correo electrónico proporcionado. Por mientras te puedes sumar a la
-      comunidad Take Over en el siguiente enlace, ¡nos vemos en la rave! Gracias.
-    </p>
+  {#if error}
+    <h2>Ocurrió un problema</h2><br>
+    <span>
+      <img src={logo} alt="takeOver logo" style="opacity: 0.3; filter: grayscale(100%); width: 250px;" />
+    </span><br>
+    <div class="parrafo">
+      <p class="error-msg">
+        {mensaje || "Lo sentimos, no pudimos verificar tu pago con Stripe. Si consideras que esto es un error y se realizó el cargo en tu tarjeta, por favor contáctanos con tu comprobante."}
+      </p>
+      <br>
+      <button on:click={() => goto("/")} class="action-btn">Volver al inicio</button>
+    </div>
+  {:else}
+    <h2>BIENVENIDO A TAKEOVER</h2><br>
+    <span>
+      <img src={logo} alt="takeOver logo" />
+    </span><br>
+    <div class="parrafo">
+      <p>
+        ¡Felicidades {nombreCliente || ''}, completaste la compra con éxito! Enviaremos los tickets al
+        correo electrónico proporcionado. Por mientras te puedes sumar a la
+        comunidad Take Over en el siguiente enlace, ¡nos vemos en la rave! Gracias.
+      </p>
 
-    {#if codigoReferido}
-      <div class="referral-box">
-        <h3>Tu código de referido</h3>
-        <div class="code-container">
-          <span class="code">{codigoReferido}</span>
-          <button on:click={copiarCodigo} class="copy-btn">Copiar</button>
+      {#if codigoReferido}
+        <div class="referral-box">
+          <h3>Tu código de referido</h3>
+          <div class="code-container">
+            <span class="code">{codigoReferido}</span>
+            <button on:click={copiarCodigo} class="copy-btn">Copiar</button>
+          </div>
+          <p class="referral-desc">
+            ¡Comparte este código con tus amigos y obtengan beneficios especiales!
+          </p>
         </div>
-        <p class="referral-desc">
-          ¡Comparte este código con tus amigos y obtengan beneficios especiales!
-        </p>
-      </div>
-    {/if}
-<br>
-    <p>*Si no vez el correo en tu bandeja de entrada, revisa en las secciones de promoción y spam.</p>
-    <br>
-    <BotonComunidad />
-  </div>
+      {/if}
+      <br>
+      <p>*Si no vez el correo en tu bandeja de entrada, revisa en las secciones de promoción y spam.</p>
+      <br>
+      <BotonComunidad />
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -140,5 +162,28 @@
     font-size: 0.85em !important;
     opacity: 0.8;
     width: 100% !important;
+  }
+
+  .error-msg {
+    color: #df1b41 !important;
+    font-weight: 500;
+  }
+
+  .action-btn {
+    background: #56fdb8;
+    color: black;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: "JostRegular";
+  }
+
+  .action-btn:hover {
+    background: #fff;
+    transform: scale(1.05);
   }
 </style>
