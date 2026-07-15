@@ -282,6 +282,7 @@ async function generarTicketPDF(nombre: string, evento: any, tickets: any[], eve
       contadorTickets = 0
     }
 
+    let desfaseY = 0
     if (contadorTickets === 0) {
       doc.setFont("helvetica", "bold")
       doc.setFontSize(16)
@@ -296,25 +297,28 @@ async function generarTicketPDF(nombre: string, evento: any, tickets: any[], eve
 
       doc.setLineWidth(0.5)
       doc.line(10, 36 + altura, 200, 36 + altura)
+    } else {
+      // Si no es el primer ticket de la página, desplazamos hacia arriba para compensar la falta de cabecera
+      desfaseY = -33
     }
 
     doc.setFontSize(12)
     doc.setFont("helvetica", "bold")
     let tituloTicket = evento.nombreEvento + " - " + tickets[i].nombreFase
     if (tituloTicket.length > 55) tituloTicket = tituloTicket.substring(0, 52) + "..."
-    doc.text(tituloTicket, 10, 43 + altura)
+    doc.text(tituloTicket, 10, 43 + altura + desfaseY)
     
     doc.setFont("helvetica", "normal")
-    doc.text("TICKET N. " + (i + 1) + " / " + tickets.length, 160, 43 + altura)
+    doc.text("TICKET N. " + (i + 1) + " / " + tickets.length, 160, 43 + altura + desfaseY)
 
     doc.setFontSize(10)
     doc.setFillColor(230, 230, 230)
-    doc.rect(10, 48 + altura, 85, 7, "F")
-    doc.rect(100, 48 + altura, 100, 7, "F")
+    doc.rect(10, 48 + altura + desfaseY, 85, 7, "F")
+    doc.rect(100, 48 + altura + desfaseY, 100, 7, "F")
     
     doc.setFont("helvetica", "bold")
-    doc.text("Descripción:", 12, 53 + altura)
-    doc.text("Referencia: " + tickets[i].referencia, 102, 53 + altura)
+    doc.text("Descripción:", 12, 53 + altura + desfaseY)
+    doc.text("Referencia: " + tickets[i].referencia, 102, 53 + altura + desfaseY)
 
     const maxWidth = 125
     doc.setFont("helvetica", "normal")
@@ -323,7 +327,7 @@ async function generarTicketPDF(nombre: string, evento: any, tickets: any[], eve
       lineasDesc = lineasDesc.slice(0, 5)
       lineasDesc[4] = lineasDesc[4].substring(0, lineasDesc[4].length - 3) + "..."
     }
-    doc.text(lineasDesc, 10, 62 + altura)
+    doc.text(lineasDesc, 10, 62 + altura + desfaseY)
 
     const fechaEvento = new Date(evento.fechaInicio)
     const optionsFecha: any = { day: "2-digit", month: "2-digit", year: "numeric" }
@@ -338,17 +342,17 @@ async function generarTicketPDF(nombre: string, evento: any, tickets: any[], eve
 
     const infoY = 105
     doc.setFont("helvetica", "bold")
-    doc.text("Día: ", 10, infoY + altura)
+    doc.text("Día: ", 10, infoY + altura + desfaseY)
     doc.setFont("helvetica", "normal")
-    doc.text(fechaFormateada, 20, infoY + altura)
+    doc.text(fechaFormateada, 20, infoY + altura + desfaseY)
 
     doc.setFont("helvetica", "bold")
-    doc.text("Hora: ", 10, infoY + 6 + altura)
+    doc.text("Hora: ", 10, infoY + 6 + altura + desfaseY)
     doc.setFont("helvetica", "normal")
-    doc.text(horaFormateada, 22, infoY + 6 + altura)
+    doc.text(horaFormateada, 22, infoY + 6 + altura + desfaseY)
 
     doc.setFont("helvetica", "bold")
-    doc.text("Lugar: ", 10, infoY + 12 + altura)
+    doc.text("Lugar: ", 10, infoY + 12 + altura + desfaseY)
     doc.setFont("helvetica", "normal")
     
     let dLines = doc.splitTextToSize(evento.venue + " - " + evento.direccion, maxWidth)
@@ -356,18 +360,18 @@ async function generarTicketPDF(nombre: string, evento: any, tickets: any[], eve
       dLines = dLines.slice(0, 2)
       dLines[1] = dLines[1].substring(0, dLines[1].length - 3) + "..."
     }
-    doc.text(dLines, 24, infoY + 12 + altura)
+    doc.text(dLines, 24, infoY + 12 + altura + desfaseY)
 
     doc.setFontSize(9)
     doc.setFont("helvetica", "italic")
-    doc.text("*Este evento es exclusivo para personas mayores de 18 años.", 10, infoY + 28 + altura)
+    doc.text("*Este evento es exclusivo para personas mayores de 18 años.", 10, infoY + 28 + altura + desfaseY)
 
     if (eventoImageDataUrl) {
       const fX = 150 + (45 - flyerW) / 2
-      doc.addImage(eventoImageDataUrl, "PNG", fX, 60 + altura, flyerW, flyerH) 
+      doc.addImage(eventoImageDataUrl, "PNG", fX, 60 + altura + desfaseY, flyerW, flyerH) 
     }
     if (qrImageDataUrl) {
-      doc.addImage(qrImageDataUrl, "PNG", 152, 110 + altura, 40, 40)
+      doc.addImage(qrImageDataUrl, "PNG", 152, 110 + altura + desfaseY, 40, 40)
     }
 
     if (contadorTickets === 0 && i < tickets.length - 1) {
