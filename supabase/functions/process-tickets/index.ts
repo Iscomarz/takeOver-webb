@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8"
 import { jsPDF } from "https://esm.sh/jspdf@2.5.1"
 import QRCode from "https://esm.sh/qrcode@1.5.3"
+import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts"
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -77,7 +78,7 @@ serve(async (req) => {
       throw new Error(`No se encontraron tickets generados para la venta ${venta.idventa}: ${ticketsError?.message}`)
     }
 
-    console.log(`🔹 Tickets encontrados en BD: ${dbTickets.length}. Generando códigos QR y subiendo a Storage...`)
+    console.log(`🔹 Tickets encontrados en BD: ${dbTickets.length}. Generando códigos QR...`)
 
     // 6. Generar e integrar códigos QR en paralelo
     const tickets = await Promise.all(
@@ -98,13 +99,8 @@ serve(async (req) => {
     const flyerUrl = await obtenerFlyerUrl(supabase, evento.pathImage)
     const pdfArrayBuffer = await generarTicketPDF(cliente.nombre, evento, tickets, flyerUrl)
     
-    // Convertir ArrayBuffer a Base64 para Resend
-    const uint8 = new Uint8Array(pdfArrayBuffer)
-    let binary = ''
-    for (let i = 0; i < uint8.byteLength; i++) {
-      binary += String.fromCharCode(uint8[i])
-    }
-    const pdfBase64 = btoa(binary)
+    // Convertir ArrayBuffer a Base64 usando la librería de codificación nativa de Deno
+    const pdfBase64 = encodeBase64(new Uint8Array(pdfArrayBuffer))
 
     // 8. Obtener la URL pública del flyer para el cuerpo del correo
     const { data: publicImgData } = supabase.storage
@@ -241,11 +237,9 @@ async function obtenerFlyerUrl(supabaseClient: any, path: string) {
     const response = await fetch(data.signedUrl)
     const arrayBuffer = await response.arrayBuffer()
     const uint8 = new Uint8Array(arrayBuffer)
-    let binary = ''
-    for (let i = 0; i < uint8.byteLength; i++) {
-      binary += String.fromCharCode(uint8[i])
-    }
-    return `data:image/png;base64,${btoa(binary)}`
+    // Usar codificación nativa eficiente en memoria de Deno
+    const base64 = encodeBase64(uint8)
+    return `data:image/png;base64,${base64}`
   } catch (error) {
     console.error("Error convirtiendo flyer a Base64:", error.message)
     return null

@@ -25,8 +25,8 @@ BEGIN
     -- Realizar la llamada HTTP POST asíncrona no bloqueante a la Edge Function
     PERFORM net.http_post(
       url := 'https://koubjdnhazjtykkmalfw.supabase.co/functions/v1/process-tickets',
-      headers := '{"Content-Type": "application/json", "Authorization": "Bearer YOUR_SUPABASE_ANON_KEY"}'::JSON,
-      body := payload::TEXT
+      headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvdWJqZG5oYXpqdHlra21hbGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU5MjA2NTYsImV4cCI6MjA0MTQ5NjY1Nn0.oWcXG_M4EC5_nw6gchqN6LHujrxIn-nzPvpPsdEGsDc"}'::jsonb,
+      body := payload
     );
   END IF;
   
