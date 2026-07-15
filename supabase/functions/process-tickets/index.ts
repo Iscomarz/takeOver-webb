@@ -211,7 +211,7 @@ async function subirQRASupabase(supabaseClient: any, base64Image: string, refere
   const blob = new Blob([bytes], { type: "image/png" })
 
   const { error } = await supabaseClient.storage
-    .from("qrs")
+    .from("codigosQR")
     .upload(`qr_${referencia}.png`, blob, {
       contentType: "image/png",
       upsert: true,
