@@ -1,6 +1,9 @@
 <script>
   import insta from "$lib/images/instagram-logo.svg";
   import logoTakeOver from "$lib/images/takeover-logo.png";
+  import SoundsSection from "$lib/components/SoundsSection.svelte";
+
+  export let data;
 </script>
 
 <svelte:head>
@@ -47,12 +50,18 @@
       <span class="link-number">03</span>
       <span class="link-text">CREW</span>
     </a>
-    <a class="link" href="contact">
+    <a class="link" href="/sounds">
       <span class="link-number">04</span>
+      <span class="link-text">SOUNDS</span>
+    </a>
+    <a class="link" href="contact">
+      <span class="link-number">05</span>
       <span class="link-text">CONTACT</span>
     </a>
   </nav>
 </div>
+
+<SoundsSection sounds={data?.sounds ?? []} limit={3} />
 
 <style>
   .home-container {
