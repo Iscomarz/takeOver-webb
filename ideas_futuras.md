@@ -6,6 +6,9 @@ Este documento contiene el detalle y la propuesta de desarrollo simple para las 
 
 ## 1. "The Sounds of Take Over" (Reproductor de Sets & Playlists)
 
+> **Estado:** En especificacion (OpenSpec/SDD).
+> **Change:** `sounds-of-take-over`
+
 ### 📝 Concepto
 Integrar la música en el sitio para que los usuarios puedan escuchar sets de DJs grabados en vivo en eventos pasados o playlists curadas de la marca mientras navegan por la web.
 
@@ -39,6 +42,10 @@ Una sección visualmente potente que muestre la atmósfera de los eventos anteri
 ---
 
 ## 4. "Modo Teaser & Hype" (Para cuando no hay eventos activos)
+
+> **Estado:** Completado y desplegado en produccion.
+>
+> **Mantenimiento futuro:** Se podran agregar rate limiting o CAPTCHA, un panel administrativo para la configuracion, metricas de conversion, variantes visuales programables y pruebas automatizadas de la lista de espera.
 
 ### 📝 Concepto
 Evitar mostrar una pantalla vacía o sosa cuando no hay un evento activo a la venta. En su lugar, activar un "modo misterio" que capture leads (correos o teléfonos de WhatsApp) generando intriga sobre la siguiente locación o fecha.

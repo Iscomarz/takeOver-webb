@@ -105,6 +105,15 @@
           _ABOUT TAKE OVER
         </li>
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li
+          on:click={() => {
+            menuOpen = false;
+            goto("/sounds");
+          }}
+        >
+          _SOUNDS
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <!-- <li
           on:click={() => {
             menuOpen = false;
@@ -151,6 +160,9 @@
         </li>
         <li aria-current={$page.url.pathname === "/about" ? "page" : undefined}>
           <a href="/about">ABOUT TAKE OVER</a>
+        </li>
+        <li aria-current={$page.url.pathname === "/sounds" ? "page" : undefined}>
+          <a href="/sounds">SOUNDS</a>
         </li>
         <!-- <li aria-current={$page.url.pathname === "/crew" ? "page" : undefined}>
           <a href="/crew">CREW</a>

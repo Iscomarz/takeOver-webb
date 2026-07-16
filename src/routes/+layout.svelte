@@ -6,8 +6,12 @@
   import Footer from "./Footer.svelte";
   import AnimatedBackground from "./components/AnimatedBackground.svelte";
   import MouseTrail from "./components/MouseTrail.svelte";
+  import MiniPlayer from "$lib/components/MiniPlayer.svelte";
   import logoTakeOver from "$lib/images/takeover-logo.png";
   import "../app.css";
+
+  export let data;
+  $: sounds = data?.sounds ?? [];
 
   // Usar la View Transitions API nativa del navegador
   onNavigate((navigation) => {
@@ -48,6 +52,7 @@
   </main>
 
   <Footer />
+  <MiniPlayer {sounds} />
 </div>
 
 <style>
