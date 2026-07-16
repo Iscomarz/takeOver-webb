@@ -1,11 +1,12 @@
 <script>
   import Title from "../../components/Title.svelte";
   import toast, { Toaster } from "svelte-french-toast";
-  import { getEventoById } from "$lib/services/dataService";
+  import { getEventoByIdOrSlug } from "$lib/services/dataService";
   import { onMount, tick } from "svelte";
   import { page } from "$app/stores";
   import logo from "$lib/images/takeover-logo.png";
   import BotonComunidad from "../../components/botonComunidad.svelte";
+  import { slugify } from "$lib/utils/slugify";
 
   let loading = true;
   let mEvento = {};
@@ -24,14 +25,14 @@
   let premioObtenido = null; // "gratis" o "descuento"
   let codigoPremio = "";
 
-  const idEvento = $page.params.id;
+  const slug = $page.params.slug;
 
   onMount(async () => {
     await loadData();
   });
 
   async function loadData() {
-    let { data: evento, error } = await getEventoById(idEvento);
+    let { data: evento, error } = await getEventoByIdOrSlug(slug);
 
     if (error || !evento || evento.length === 0) {
       eventoActivo = false;
@@ -59,7 +60,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idEvento,
+          idEvento: mEvento.idevento,
           nombre: nombre.trim(),
           correo: correo.trim(),
           enterado,
@@ -147,7 +148,7 @@
       </div>
 
       <div class="mt-8 flex justify-center gap-4">
-        <a href="/eventos/{idEvento}" class="action-btn primary">Ir al Evento</a>
+        <a href="/eventos/{slugify(mEvento.nombreEvento)}" class="action-btn primary">Ir al Evento</a>
       </div>
     </div>
   {:else}

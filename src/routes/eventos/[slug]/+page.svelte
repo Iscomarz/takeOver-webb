@@ -125,6 +125,32 @@
       <button on:click={() => goto("/")}>Volver al inicio</button>
     </div>
   {:else}
+    <!-- Botón de regresar -->
+    <div class="flex justify-start mb-4 mt-8 sm:mt-0">
+      <a 
+        href="/eventos" 
+        style="font-family: 'JostRegular', sans-serif;"
+        class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-all duration-300 text-xs font-semibold tracking-wider uppercase group no-underline px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95 shadow-lg backdrop-blur-sm"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="14" 
+          height="14" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          class="transition-transform duration-300 group-hover:-translate-x-1"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver a Eventos
+      </a>
+    </div>
+
     <!-- Header del evento -->
     <div class="text-center mb-2 mt-4" style="font-family: 'JostRegular', sans-serif;">
       <h2 class="text-3xl md:text-4xl text-white uppercase tracking-wide mb-2 font-semibold">

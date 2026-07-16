@@ -6,11 +6,12 @@
     export let lugar;
     export let idEvento;
 
-    import { goto } from '$app/navigation';
+        import { goto } from '$app/navigation';
     import { formatDiaYHora, formatDate } from '$lib/utils/formatFechas.js';
+    import { slugify } from '$lib/utils/slugify.js';
 
     function navigateToEvent() {
-        goto(`/eventos/${idEvento}`);
+        goto(`/eventos/${slugify(titulo)}`);
     }
 
     $: formattedDiaYHora = formatDiaYHora(fecha);

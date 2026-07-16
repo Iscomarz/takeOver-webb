@@ -4,6 +4,7 @@
   import toast, { Toaster } from 'svelte-french-toast';
   import { goto } from "$app/navigation";
   import { slide } from "svelte/transition";
+  import { slugify } from "$lib/utils/slugify";
 
   let stripe;
   let elements;
@@ -337,7 +338,9 @@
   }
 
   function volverAtras() {
-    if (mEvento && mEvento.idevento) {
+    if (mEvento && mEvento.nombreEvento) {
+      goto(`/eventos/${slugify(mEvento.nombreEvento)}`);
+    } else if (mEvento && mEvento.idevento) {
       goto(`/eventos/${mEvento.idevento}`);
     } else {
       goto("/");
