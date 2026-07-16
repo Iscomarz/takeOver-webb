@@ -1,6 +1,7 @@
 <script>
   import ButtonStyle from "./buttonStyle.svelte";
   import { formatDiaYHora, formatDate } from '$lib/utils/formatFechas.js';
+  import { slugify } from '$lib/utils/slugify.js';
 
   export let pathImage;
   export let titulo;
@@ -14,7 +15,7 @@
 
 <div class="evento-list-card">
   <div class="image-container">
-    <a href={`/eventos/${idEvento}`}>
+    <a href={`/eventos/${slugify(titulo)}`}>
       <img class="image-list" src={pathImage} alt={titulo} />
     </a>
   </div>
@@ -45,7 +46,7 @@
     
     <div class="action-right">
       <div class="button-wrapper">
-        <ButtonStyle texto="VER MÁS" href={`eventos/${idEvento}`} />
+        <ButtonStyle texto="VER MÁS" href={`/eventos/${slugify(titulo)}`} />
       </div>
     </div>
   </div>

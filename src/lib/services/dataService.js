@@ -1,4 +1,5 @@
 import supabase from "$lib/supabase";
+import { slugify } from "$lib/utils/slugify";
 
 export async function getEventoActivo() {
   const { data, error } = await supabase
@@ -27,6 +28,26 @@ export async function getEventoById(idEvento) {
     return { data: null, error };
   }
   return { data, error: null };
+}
+
+export async function getEventoByIdOrSlug(idOrSlug) {
+  const isId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug) || /^\d+$/.test(idOrSlug);
+
+  if (isId) {
+    return getEventoById(idOrSlug);
+  }
+
+  const { data: events, error } = await supabase
+    .from("mEvento")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching events for slug match:", error);
+    return { data: null, error };
+  }
+
+  const matched = events.filter(e => slugify(e.nombreEvento) === idOrSlug);
+  return { data: matched, error: null };
 }
 
 export async function getFasesByEvento(idEvento) {

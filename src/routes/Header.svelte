@@ -5,6 +5,7 @@
   import AnimatedText from "./components/AnimatedText.svelte";
   import { onMount } from "svelte";
   import { eventoStore } from "$lib/stores/eventoStore";
+  import { slugify } from "$lib/utils/slugify";
 
   let showHeader = false;
   let showMenuIcon = false;
@@ -12,7 +13,7 @@
   let backBlack = false;
   let menuOpen = false;
   let scrolled = false;
-  let eventoActivoId = null;
+  let eventoActivoSlug = null;
 
   $: currentPath = $page.url.pathname;
   $: showHeader = currentPath !== "/";
@@ -22,7 +23,7 @@
 
   // Suscribirse al store de evento
   $: if ($eventoStore.evento) {
-    eventoActivoId = $eventoStore.evento.idevento;
+    eventoActivoSlug = slugify($eventoStore.evento.nombreEvento);
   }
 
   onMount(() => {
@@ -39,8 +40,8 @@
   });
 
   function handleGetTickets() {
-    if (eventoActivoId) {
-      goto(`/eventos/${eventoActivoId}`);
+    if (eventoActivoSlug) {
+      goto(`/eventos/${eventoActivoSlug}`);
     } else {
       goto("/eventos");
     }

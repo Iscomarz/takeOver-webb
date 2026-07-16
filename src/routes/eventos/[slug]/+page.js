@@ -1,22 +1,22 @@
 import { eventoId } from "../../../lib/stores/eventoId";
-import { getEventoById, getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
+import { getEventoByIdOrSlug, getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
 
 export async function load({ params }) {
-    const { id } = params; // Extraemos el id de la URL
+    const { slug } = params; // Extraemos el id o slug de la URL
     
-    eventoId.set(id);
-
     let mEvento = {};
     let fases = [];
     let urlImagenPortada = null;
     let eventoActivo = true;
 
-    // Obtener evento
-    let { data: evento, error } = await getEventoById(id);
+    // Obtener evento por ID o por Slug
+    let { data: evento, error } = await getEventoByIdOrSlug(slug);
     
     if (evento && evento.length > 0) {
         mEvento = evento[0];
         urlImagenPortada = getImagenPublicUrl(mEvento.pathImage);
+        
+        eventoId.set(mEvento.idevento);
 
         // Obtener las fases o tickets del evento
         let { data: cFases, error: errorF } = await getFasesByEvento(mEvento.idevento);
@@ -30,12 +30,13 @@ export async function load({ params }) {
         if (error) {
             console.log("Error al traer el evento activo");
         } else {
-            console.log("No hay eventos activos en este momento");
+            console.log("No hay eventos activos en este momento o el evento no existe");
         }
     }
 
     return {
-        id,
+        id: mEvento.idevento || slug,
+        slug,
         mEvento,
         fases,
         urlImagenPortada,
