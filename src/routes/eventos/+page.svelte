@@ -60,23 +60,16 @@
 
   <div class="eventos-disponibles">
     <div class="eventos-container">
-      {#if eventosActivos.length === 0}
-        <section class="no-eventos">
-          <p>Estamos trabajando para traerte los mejores eventos.</p>
-          <BotonComunidad />
-        </section>
-      {:else}
-        {#each eventosActivos as evento}
-          <CardEventoActivo
-            pathImage={evento.pathImage}
-            titulo={evento.nombreEvento}
-            fecha={evento.fechaInicio}
-            diaYHora={evento.diaYHora}
-            lugar={evento.venue}
-            idEvento={evento.idevento}
-          />
-        {/each}
-      {/if}
+      {#each eventosActivos as evento}
+        <CardEventoActivo
+          pathImage={evento.pathImage}
+          titulo={evento.nombreEvento}
+          fecha={evento.fechaInicio}
+          diaYHora={evento.diaYHora}
+          lugar={evento.venue}
+          idEvento={evento.idevento}
+        />
+      {/each}
     </div>
   </div>
   <hr class="divider" />

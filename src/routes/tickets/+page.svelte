@@ -28,6 +28,7 @@
           } else {
               console.log("No hay eventos activos en este momento");
           }
+          goto("/eventos");
       } else {
           mEvento = $eventoStore.evento;
           loadEventDetails();

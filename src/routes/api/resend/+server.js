@@ -6,22 +6,26 @@ const resend = new Resend(import.meta.env.VITE_RESEND_KEY || import.meta.env.VIT
 export async function POST({ request }) {
 	const { pdfBuffer,to,subject,html } = await request.json();
     console.log("✅ Endpoint de correo ejecutado");
-
 	try {
-		const data = await resend.emails.send({
+		const emailPayload = {
 			from: 'Take Over <eventos@takeovermx.com>',
 			bcc: ['take.oover.show@gmail.com','franmtz96@gmail.com'],
 			to,
 			subject,
-			html,
-            attachments: [
-                {
-                    content: pdfBuffer,
-                    type: 'application/pdf',
-                    filename: 'ticket.pdf'
-                }
-            ]
-		});
+			html
+		};
+
+		if (pdfBuffer) {
+			emailPayload.attachments = [
+				{
+					content: pdfBuffer,
+					type: 'application/pdf',
+					filename: 'ticket.pdf'
+				}
+			];
+		}
+
+		const data = await resend.emails.send(emailPayload);
 
 		return json({ success: true, data });
 	} catch (error) {
