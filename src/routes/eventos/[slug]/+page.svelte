@@ -126,16 +126,16 @@
     </div>
   {:else}
     <!-- Botón de regresar -->
-    <div class="flex justify-start mb-6">
+    <div class="flex justify-start mb-4 mt-8 sm:mt-0">
       <a 
         href="/eventos" 
         style="font-family: 'JostRegular', sans-serif;"
-        class="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors duration-300 text-sm font-medium tracking-wide uppercase group no-underline"
+        class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-all duration-300 text-xs font-semibold tracking-wider uppercase group no-underline px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95 shadow-lg backdrop-blur-sm"
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          width="16" 
-          height="16" 
+          width="14" 
+          height="14" 
           viewBox="0 0 24 24" 
           fill="none" 
           stroke="currentColor" 
