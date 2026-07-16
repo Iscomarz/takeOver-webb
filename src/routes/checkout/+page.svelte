@@ -3,6 +3,7 @@
   import { loadStripe } from "@stripe/stripe-js";
   import toast, { Toaster } from 'svelte-french-toast';
   import { goto } from "$app/navigation";
+  import { slide } from "svelte/transition";
 
   let stripe;
   let elements;
@@ -13,6 +14,8 @@
   let correo = "";
   let clientSecret = "";
   let paymentIntentId = "";
+  let expandirDatosComprador = true;
+  let recordarDatos = false;
 
   // Datos recuperados de sessionStorage
   let checkoutData = null;
@@ -33,6 +36,16 @@
         goto("/");
       }, 2000);
       return;
+    }
+
+    // Cargar datos recordados si existen
+    const nombreGuardado = localStorage.getItem("takeover_buyer_name");
+    const correoGuardado = localStorage.getItem("takeover_buyer_email");
+    if (nombreGuardado && correoGuardado) {
+      nombre = nombreGuardado;
+      correo = correoGuardado;
+      recordarDatos = true;
+      expandirDatosComprador = false; // Colapsado porque ya tenemos los datos
     }
 
     try {
@@ -76,6 +89,7 @@
         },
         body: JSON.stringify({
           amount: finalPrice,
+          tickets: tickets,
           metadata: {
             codigoDescuento: codigoDescuentoUsado,
             nombre: nombre, 
@@ -91,6 +105,22 @@
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
+      }
+
+      // Actualizar precios y total con los valores reales obtenidos de Stripe
+      if (data.realPrices) {
+        tickets = tickets.map(t => {
+          if (t.idPrecioStripe && data.realPrices[t.idPrecioStripe] !== undefined) {
+            return {
+              ...t,
+              precio: data.realPrices[t.idPrecioStripe]
+            };
+          }
+          return t;
+        });
+      }
+      if (data.totalPriceReal !== undefined) {
+        finalPrice = data.totalPriceReal;
       }
 
       clientSecret = data.clientSecret;
@@ -131,7 +161,14 @@
       showPaymentForm = true;
       await tick();
 
-      const paymentElement = elements.create('payment');
+      const paymentElement = elements.create('payment', {
+        layout: {
+          type: 'accordion',
+          defaultCollapsed: false,
+          radios: true,
+          spaced: false
+        }
+      });
       paymentElement.mount('#payment-element');
     } catch (error) {
       console.error("Error iniciando Stripe Elements:", error);
@@ -164,6 +201,15 @@
     }
 
     isProcessing = true;
+
+    // Guardar o eliminar datos del comprador según la preferencia
+    if (recordarDatos) {
+      localStorage.setItem("takeover_buyer_name", nombre.trim());
+      localStorage.setItem("takeover_buyer_email", correo.trim());
+    } else {
+      localStorage.removeItem("takeover_buyer_name");
+      localStorage.removeItem("takeover_buyer_email");
+    }
 
     try {
       // Actualizar metadatos en Stripe antes de confirmar el pago
@@ -222,6 +268,15 @@
     }
 
     isProcessing = true;
+
+    // Guardar o eliminar datos del comprador según la preferencia
+    if (recordarDatos) {
+      localStorage.setItem("takeover_buyer_name", nombre.trim());
+      localStorage.setItem("takeover_buyer_email", correo.trim());
+    } else {
+      localStorage.removeItem("takeover_buyer_name");
+      localStorage.removeItem("takeover_buyer_email");
+    }
 
     try {
       const selectedTicket = tickets[0];
@@ -351,7 +406,7 @@
                   <span class="ticket-name">{ticket.nombreFace}</span>
                   <span class="ticket-qty">x{ticket.cantidad}</span>
                 </div>
-                <span class="ticket-price">Mex${(ticket.precio * ticket.cantidad).toFixed(2)}</span>
+                <span class="ticket-price">Mex${ticket.precio.toFixed(2)}</span>
               </div>
             {/each}
           </div>
@@ -375,29 +430,44 @@
       <!-- Columna Derecha: Formulario de Registro y Pago -->
       <section class="form-column">
         <div class="checkout-form glass-card">
-          <h4>Datos del comprador</h4>
+          <div class="buyer-data-header" on:click={() => expandirDatosComprador = !expandirDatosComprador} role="button" tabindex="0" on:keydown={(e) => e.key === 'Enter' && (expandirDatosComprador = !expandirDatosComprador)}>
+            <h4>Datos del comprador</h4>
+            {#if !expandirDatosComprador && nombre && correo}
+              <span class="buyer-summary-preview">{nombre.split(" ")[0]} ({correo})</span>
+            {/if}
+            <span class="toggle-icon">{expandirDatosComprador ? '−' : '+'}</span>
+          </div>
           
-          <div class="input-group">
-            <label for="nombre">Nombre completo *</label>
-            <input
-              id="nombre"
-              type="text"
-              bind:value={nombre}
-              placeholder="Juan Pérez"
-              disabled={isProcessing}
-            />
-          </div>
+          {#if expandirDatosComprador}
+            <div class="buyer-data-content" transition:slide|local>
+              <div class="input-group">
+                <label for="nombre">Nombre completo *</label>
+                <input
+                  id="nombre"
+                  type="text"
+                  bind:value={nombre}
+                  placeholder="Juan Pérez"
+                  disabled={isProcessing}
+                />
+              </div>
 
-          <div class="input-group">
-            <label for="correo">Correo electrónico *</label>
-            <input
-              id="correo"
-              type="email"
-              bind:value={correo}
-              placeholder="tu@email.com"
-              disabled={isProcessing}
-            />
-          </div>
+              <div class="input-group">
+                <label for="correo">Correo electrónico *</label>
+                <input
+                  id="correo"
+                  type="email"
+                  bind:value={correo}
+                  placeholder="tu@email.com"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <label class="remember-label">
+                <input type="checkbox" bind:checked={recordarDatos} disabled={isProcessing} />
+                <span class="remember-text">Guardar mis datos para futuras compras (Save my info)</span>
+              </label>
+            </div>
+          {/if}
 
           <!-- Stripe Elements -->
           {#if finalPrice > 0}
@@ -774,5 +844,55 @@
     font-size: 0.8em;
     margin-top: 15px;
     margin-bottom: 0;
+  }
+
+  /* Estilos para el acordeón y guardado de datos */
+  .buyer-data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 20px;
+  }
+
+  .buyer-data-header h4 {
+    margin: 0 !important;
+  }
+
+  .buyer-summary-preview {
+    font-size: 0.85em;
+    color: #56fdb8;
+    background-color: rgba(86, 253, 184, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid rgba(86, 253, 184, 0.2);
+  }
+
+  .buyer-data-content {
+    margin-bottom: 20px;
+  }
+
+  .remember-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    cursor: pointer;
+  }
+
+  .remember-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #56fdb8;
+  }
+
+  .remember-text {
+    font-size: 0.85em;
+    color: #aaa;
   }
 </style>
