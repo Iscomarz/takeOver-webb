@@ -40,7 +40,7 @@
         </div>
         <div style="display: flex; justify-content: center; width: 100%;">
           <div class="button-wrapper">
-            <ButtonStyle texto="VER MÁS" href={`/eventos/${slugify(titulo)}`} />
+            <ButtonStyle texto="VER MÁS" href={`eventos/${slugify(titulo)}`} />
           </div>
         </div>
       </div>
