@@ -15,6 +15,7 @@
 			...state,
 			currentIndex: globalIndex,
 			isExpanded: true,
+			isVisible: true,
 			positionMs: 0,
 			playRequest: state.playRequest + 1
 		}));

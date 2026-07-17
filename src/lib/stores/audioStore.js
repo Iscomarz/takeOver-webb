@@ -4,6 +4,7 @@ export const initialAudioState = {
 	status: 'idle',
 	isPlaying: false,
 	isExpanded: false,
+	isVisible: true,
 	isMuted: false,
 	volume: 70,
 	positionMs: 0,

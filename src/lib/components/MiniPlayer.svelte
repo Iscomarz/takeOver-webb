@@ -192,6 +192,15 @@
 		initialize(false);
 	}
 
+	function hidePlayer() {
+		if ($audioStore.isPlaying || $audioStore.status === 'loading') return;
+		audioStore.update((state) => ({ ...state, isVisible: false, isExpanded: false }));
+	}
+
+	function showPlayer() {
+		audioStore.update((state) => ({ ...state, isVisible: true }));
+	}
+
 	onMount(() => initialize(false));
 
 	onDestroy(() => {
@@ -202,7 +211,13 @@
 </script>
 
 {#if current}
-	<aside class:expanded={$audioStore.isExpanded} class="mini-player" aria-label="Sound of Take Over">
+	<aside
+		class:expanded={$audioStore.isExpanded}
+		class:hidden={!$audioStore.isVisible}
+		class:closable={!$audioStore.isPlaying && $audioStore.status !== 'loading'}
+		class="mini-player"
+		aria-label="Sound of Take Over"
+	>
 		<iframe
 			bind:this={iframe}
 			title="SoundCloud player"
@@ -233,8 +248,11 @@
 				on:click={() => audioStore.update((state) => ({ ...state, isExpanded: !state.isExpanded }))}
 				aria-label={$audioStore.isExpanded ? 'Contraer reproductor' : 'Expandir reproductor'}
 			>
-				{$audioStore.isExpanded ? '×' : '⌃'}
+				{$audioStore.isExpanded ? '⌄' : '⌃'}
 			</button>
+			{#if !$audioStore.isPlaying && $audioStore.status !== 'loading'}
+				<button class="close-player" on:click={hidePlayer} aria-label="Cerrar reproductor">×</button>
+			{/if}
 		</div>
 
 		{#if $audioStore.isExpanded}
@@ -267,13 +285,21 @@
 			</div>
 		{/if}
 	</aside>
+	{#if !$audioStore.isVisible}
+		<button class="show-player" on:click={showPlayer} aria-label="Mostrar reproductor">
+			<span aria-hidden="true">♫</span>
+			<span>PLAYER</span>
+		</button>
+	{/if}
 {/if}
 
 <style>
 	iframe { position: fixed; left: -10000px; bottom: 0; width: 500px; height: 166px; opacity: .01; pointer-events: none; border: 0; }
 	.mini-player.expanded iframe { position: relative; left: auto; bottom: auto; width: 100%; height: 166px; opacity: 1; pointer-events: auto; display: block; }
 	.mini-player { position: fixed; right: 1.25rem; bottom: max(1.25rem, env(safe-area-inset-bottom)); z-index: 80; width: min(390px, calc(100vw - 2rem)); color: #fff; background: rgba(11,13,13,.88); border: 1px solid rgba(86,253,184,.18); border-radius: 14px; backdrop-filter: blur(20px); box-shadow: 0 16px 50px rgba(0,0,0,.42); overflow: hidden; }
+	.mini-player.hidden { visibility: hidden; pointer-events: none; transform: translateY(1rem); opacity: 0; }
 	.summary { display: grid; grid-template-columns: 48px minmax(0,1fr) 42px 32px; gap: .7rem; align-items: center; padding: .7rem; }
+	.mini-player.closable .summary { grid-template-columns: 48px minmax(0,1fr) 42px 30px 28px; gap: .55rem; }
 	.artwork { width: 48px; height: 48px; display: grid; place-items: center; overflow: hidden; border-radius: 9px; background: rgba(86,253,184,.08); }
 	.artwork img { width: 100%; height: 100%; object-fit: cover; }
 	.metadata { display: flex; min-width: 0; flex-direction: column; gap: .12rem; }
@@ -285,6 +311,10 @@
 	button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid #56fdb8; outline-offset: 2px; }
 	.primary { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(86,253,184,.35); background: rgba(86,253,184,.1); color: #56fdb8; }
 	.icon-button { border: 0; background: transparent; color: rgba(255,255,255,.55); font-size: 1.1rem; }
+	.close-player { width: 28px; height: 28px; padding: 0; border: 0; border-left: 1px solid rgba(255,255,255,.1); color: rgba(255,255,255,.55); background: transparent; font-size: 1rem; }
+	.close-player:hover { color: #fff; }
+	.show-player { position: fixed; right: 1.25rem; bottom: max(1.25rem,env(safe-area-inset-bottom)); z-index: 80; display: inline-flex; align-items: center; gap: .55rem; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: .65rem .85rem; color: rgba(255,255,255,.72); background: rgba(11,13,13,.88); backdrop-filter: blur(16px); font-size: .58rem; letter-spacing: .16em; }
+	.show-player:hover { color: #fff; border-color: #fff; }
 	.details { padding: .75rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,.06); }
 	.progress-row, .controls { display: flex; align-items: center; gap: .7rem; }
 	.progress-row span { width: 34px; font-size: .68rem; color: rgba(255,255,255,.45); }
@@ -302,6 +332,12 @@
 	.equalizer i:nth-child(2) { animation-delay: -.25s; }
 	.equalizer i:nth-child(3) { animation-delay: -.45s; }
 	@keyframes equalize { to { height: 100%; } }
-	@media (max-width: 600px) { .mini-player { left: 1rem; right: 1rem; width: auto; bottom: max(.75rem, env(safe-area-inset-bottom)); } .summary { grid-template-columns: 42px minmax(0,1fr) 40px 28px; } .artwork { width: 42px; height: 42px; } }
+	@media (max-width: 600px) {
+		.mini-player { left: 0; right: 0; bottom: 0; width: 100%; border-right: 0; border-bottom: 0; border-left: 0; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
+		.summary { grid-template-columns: 42px minmax(0,1fr) 40px 28px; padding: .6rem .75rem; }
+		.mini-player.closable .summary { grid-template-columns: 42px minmax(0,1fr) 40px 26px 26px; gap: .4rem; }
+		.artwork { width: 42px; height: 42px; }
+		.show-player { right: .75rem; bottom: max(.75rem,env(safe-area-inset-bottom)); }
+	}
 	@media (prefers-reduced-motion: reduce) { .equalizer i { animation: none; height: 65%; } }
 </style>
