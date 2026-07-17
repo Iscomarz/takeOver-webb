@@ -5,59 +5,45 @@
   let email = "";
   let djSetLink = "";
   let message = "";
-  let styleToast = "border-radius: 200px; background: #333; color: #fff;";
+  const styleToast = "border-radius: 200px; background: #333; color: #fff;";
 
-  //validaciones
   function validarFormulario() {
-    // Expresión regular para validar el correo electrónico
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // Expresión regular para validar una URL
-    const urlRegex =
-      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
     if (name === "") {
-      toast.error("Por favor, ingresa un nombre.", {
-        style: styleToast,
-      });
+      toast.error("Por favor, ingresa un nombre.", { style: styleToast });
       return false;
     }
-    // Validar el correo
     if (!emailRegex.test(email)) {
-      toast.error("Por favor, ingresa un correo electrónico válido.", {
-        style: styleToast,
-      });
+      toast.error("Por favor, ingresa un correo electrónico válido.", { style: styleToast });
       return false;
     }
-
     if (message === "") {
-      toast.error("Por favor, ingresa un mensaje.", {
-        style: "border-radius: 200px; background: #333; color: #fff;",
-      });
+      toast.error("Por favor, ingresa un mensaje.", { style: styleToast });
       return false;
     }
-
     return true;
   }
 
-  // Función para enviar el email
   async function sendMessage() {
-    // Primero validar el formulario
-    if (!validarFormulario()) {
-      return; // Si la validación falla, no continúa
-    }
+    if (!validarFormulario()) return;
 
     const sendEmailPromise = fetch("/api/emailContact", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name,
-        email: email,
+        name,
+        email,
         djset: djSetLink,
-        message: message,
+        message,
       }),
-    }).then((response) => response.json());
+    }).then(async (response) => {
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "No se pudo enviar el correo.");
+      }
+      return result;
+    });
 
     toast.promise(
       sendEmailPromise,
@@ -66,18 +52,14 @@
         success: "Correo enviado correctamente, gracias por contactarnos!",
         error: "No se pudo enviar el correo.",
       },
-      {
-        duration: 5000,
-      }
+      { duration: 5000 }
     );
 
-    const result = await sendEmailPromise;
-
-    if (result.success) {
-      console.log("Correo enviado exitosamente", result.info);
+    try {
+      await sendEmailPromise;
       limpiarForm();
-    } else {
-      console.error("Error enviando el correo", result.error);
+    } catch {
+      // El toast ya presenta el error al usuario.
     }
   }
 
@@ -92,112 +74,125 @@
 <Toaster />
 
 <svelte:head>
-  <title>Contact</title>
-  <meta name="description" content="Ponte en contacto con nosotros" />
+  <title>Contact | Take Over</title>
+  <meta name="description" content="Bookings, colaboraciones y contacto con Take Over." />
 </svelte:head>
 
-<!-- Contenedor principal con glassmorphism -->
-<section class="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] 2xl:w-[70%] max-w-[900px] mx-auto flex flex-col mt-[70px] md:mt-[80px] lg:mt-[100px] mb-12">
-  <!-- Título principal -->
-  <h1 class="px-14 font-jockey text-xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 text-center uppercase tracking-wide">
-    Send me a message... or a DJ set
-  </h1>
+<main class="contact-page">
+  <section class="contact-hero" aria-labelledby="contact-title">
+    <div class="intro">
+      <span class="eyebrow">05 / GET IN TOUCH</span>
+      <h1 id="contact-title">SEND US<br />A SIGNAL.</h1>
+      <p class="lead">
+        Bookings, collaborations, ideas or a DJ set we need to hear.
+        If it moves the culture, we want to know about it.
+      </p>
 
-  <!-- Card del formulario con glass effect -->
-  <div class=" p-8 md:p-10 relative overflow-hidden">
-    <!-- Efecto de brillo sutil -->
-    <div class="absolute inset-0 bg-gradient-to-br from-black/[0.03] to-black/20 pointer-events-none"></div>
-    
-    <!-- Textura de ruido sutil -->
-    <div class="absolute inset-0 opacity-[0.015] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-
-    <div class="relative z-10 flex flex-col gap-6">
-      <!-- Campo Name -->
-      <div class="relative z-0">
-        <input
-          maxlength="15"
-          type="text"
-          id="floating_name"
-          bind:value={name}
-          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
-          placeholder=" "
-        />
-        <label
-          for="floating_name"
-          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
-          >Name</label
-        >
+      <div class="contact-notes">
+        <div>
+          <small>FOR</small>
+          <p>BOOKINGS · COLLABS · DJ SUBMISSIONS</p>
+        </div>
+        <div>
+          <small>BASED IN</small>
+          <p>MEXICO · MOVING EVERYWHERE</p>
+        </div>
       </div>
 
-      <!-- Campo Email -->
-      <div class="relative z-0">
-        <input
-          type="email"
-          maxlength="100"
-          id="floating_email"
-          bind:value={email}
-          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
-          placeholder=" "
-        />
-        <label
-          for="floating_email"
-          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
-          >Email</label
-        >
-      </div>
-
-      <!-- Campo DJ Set link -->
-      <div class="relative z-0">
-        <input
-          type="text"
-          maxlength="100"
-          id="floating_link"
-          bind:value={djSetLink}
-          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer transition-colors duration-300"
-          placeholder=" "
-        />
-        <label
-          for="floating_link"
-          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
-          >DJ Set link</label
-        >
-      </div>
-
-      <!-- Campo Message -->
-      <div class="relative z-0">
-        <textarea
-          maxlength="300"
-          id="floating_message"
-          bind:value={message}
-          class="block py-3 px-0 w-full text-base font-jost text-white bg-transparent border-0 border-b-2 border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-white peer resize-none h-[150px] transition-colors duration-300"
-          placeholder=" "
-        ></textarea>
-        <label
-          for="floating_message"
-          class="absolute font-jost text-base text-gray-400 duration-300 transform -translate-y-7 scale-90 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-7"
-          >Message</label
-        >
-      </div>
-
-      <!-- Botón de envío con estilo glassmorphism -->
-      <div class="flex justify-center mt-4">
-        <button
-          on:click={sendMessage}
-          class="px-10 py-4 bg-white/10 backdrop-blur-md text-white border-2 border-white/30 rounded-xl text-base font-semibold font-jost cursor-pointer transition-all duration-300 hover:bg-white hover:text-gray-900 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-95 uppercase tracking-wider w-full md:w-auto"
-        >
-          Send
-        </button>
+      <div class="signal" aria-hidden="true">
+        <span></span><i></i><span></span>
       </div>
     </div>
-  </div>
-</section>
+
+    <form class="contact-form" on:submit|preventDefault={sendMessage}>
+      <div class="form-heading">
+        <span>START A CONVERSATION</span>
+        <p>We usually reply as soon as the bass allows.</p>
+      </div>
+
+      <div class="field-row">
+        <label>
+          <span>01 / NAME</span>
+          <input maxlength="15" type="text" bind:value={name} placeholder="Your name" autocomplete="name" />
+        </label>
+        <label>
+          <span>02 / EMAIL</span>
+          <input type="email" maxlength="100" bind:value={email} placeholder="you@email.com" autocomplete="email" />
+        </label>
+      </div>
+
+      <label>
+        <span>03 / DJ SET LINK <em>OPTIONAL</em></span>
+        <input type="text" inputmode="url" maxlength="100" bind:value={djSetLink} placeholder="SoundCloud, Mixcloud, YouTube..." />
+      </label>
+
+      <label>
+        <span>04 / MESSAGE</span>
+        <textarea maxlength="300" bind:value={message} placeholder="Tell us what you have in mind..."></textarea>
+        <small class="counter">{message.length} / 300</small>
+      </label>
+
+      <button type="submit" class="send-button">
+        <span>SEND MESSAGE</span>
+        <span class="arrow">↗</span>
+      </button>
+    </form>
+  </section>
+
+  <footer class="contact-footer">
+    <span></span>
+    <p>COME AS YOU ARE · LEAVE DIFFERENT</p>
+    <span></span>
+  </footer>
+</main>
 
 <style>
-  .glass-card {
-    /* background: linear-gradient(to bottom right, rgba(23, 23, 23, 0.95), rgba(38, 38, 38, 0.95), rgba(23, 23, 23, 0.95)); */
-    backdrop-filter: blur(24px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  .contact-page { width: min(1180px,calc(100% - 2rem)); min-height: 100vh; margin: 0 auto; padding: 8.5rem 0 3rem; color: #fff; }
+  .contact-hero { display: grid; grid-template-columns: minmax(0,.9fr) minmax(420px,1.1fr); gap: clamp(3rem,8vw,8rem); align-items: start; }
+  .eyebrow,.form-heading>span { color: #56fdb8; font-size: .64rem; letter-spacing: .25em; }
+  h1 { margin: 1rem 0 1.25rem; font: 400 clamp(3.7rem,7.5vw,7rem)/.82 "JockeyOne",sans-serif; letter-spacing: -.015em; }
+  .lead { max-width: 460px; margin: 0; color: rgba(255,255,255,.48); font-size: clamp(.9rem,1.3vw,1.02rem); line-height: 1.7; }
+  .contact-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: clamp(3rem,7vw,5rem); padding-top: 1.3rem; border-top: 1px solid rgba(255,255,255,.12); }
+  .contact-notes small { color: rgba(255,255,255,.3); font-size: .55rem; letter-spacing: .22em; }
+  .contact-notes p { margin: .45rem 0 0; color: rgba(255,255,255,.72); font-size: .64rem; letter-spacing: .12em; line-height: 1.55; }
+  .signal { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .75rem; margin-top: 2.5rem; opacity: .35; }
+  .signal span { height: 1px; background: linear-gradient(90deg,rgba(255,255,255,.5),transparent); }
+  .signal span:last-child { transform: scaleX(-1); }
+  .signal i { width: 4px; height: 4px; border-radius: 50%; background: #fff; }
+  .contact-form { position: relative; padding: clamp(1.5rem,4vw,3rem); border: 1px solid rgba(255,255,255,.12); background: rgba(7,7,7,.56); backdrop-filter: blur(12px); }
+  .contact-form::before { content:""; position:absolute; inset:-1px auto auto -1px; width:42px; height:42px; border-top:1px solid #56fdb8; border-left:1px solid #56fdb8; pointer-events:none; }
+  .form-heading { margin-bottom: 2.5rem; }
+  .form-heading p { margin: .55rem 0 0; color: rgba(255,255,255,.38); font-size: .78rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  label { position: relative; display: block; margin-bottom: 1.6rem; }
+  label>span { display: flex; justify-content: space-between; margin-bottom: .55rem; color: rgba(255,255,255,.4); font-size: .57rem; letter-spacing: .18em; }
+  label em { color: rgba(255,255,255,.2); font-style: normal; }
+  input,textarea { width: 100%; box-sizing: border-box; border: 0; border-bottom: 1px solid rgba(255,255,255,.16); border-radius: 0; padding: .7rem 0 .85rem; color: #fff; background: transparent; font: .92rem "Jost",sans-serif; outline: none; transition: border-color .25s ease; }
+  input::placeholder,textarea::placeholder { color: rgba(255,255,255,.2); }
+  input:focus,textarea:focus { border-color: rgba(255,255,255,.8); }
+  textarea { min-height: 110px; resize: vertical; }
+  .counter { position: absolute; right: 0; bottom: .4rem; color: rgba(255,255,255,.22); font-size: .55rem; letter-spacing: .1em; }
+  .send-button { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: .75rem; border: 1px solid rgba(255,255,255,.22); padding: 1rem 1.15rem; color: #fff; background: transparent; font: 600 .66rem "Jost",sans-serif; letter-spacing: .2em; cursor: pointer; transition: color .25s,border-color .25s,background .25s; }
+  .send-button:hover { color: #080808; border-color: #fff; background: #fff; }
+  .arrow { font-size: 1rem; transition: transform .25s ease; }
+  .send-button:hover .arrow { transform: translate(2px,-2px); }
+  .contact-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; margin-top: clamp(5rem,10vw,8rem); color: rgba(255,255,255,.24); }
+  .contact-footer span { height: 1px; background: linear-gradient(90deg,transparent,rgba(255,255,255,.18)); }
+  .contact-footer span:last-child { transform: scaleX(-1); }
+  .contact-footer p { margin: 0; font-size: .52rem; letter-spacing: .3em; text-align: center; }
+  @media(max-width:850px){
+    .contact-page{padding-top:7rem}
+    .contact-hero{grid-template-columns:1fr;gap:3.5rem}
+    .intro{max-width:680px}
+    h1{font-size:clamp(3.6rem,14vw,6.5rem)}
   }
+  @media(max-width:560px){
+    .contact-page{width:min(100% - 1.5rem,1180px);padding-top:6rem}
+    .contact-notes,.field-row{grid-template-columns:1fr}
+    .contact-notes{gap:1rem}
+    .contact-form{padding:1.4rem 1.1rem}
+    .contact-footer{gap:.75rem}
+    .contact-footer p{font-size:.45rem;letter-spacing:.18em}
+  }
+  @media(prefers-reduced-motion:reduce){.send-button,.arrow,input,textarea{transition:none}}
 </style>

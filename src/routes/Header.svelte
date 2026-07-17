@@ -114,6 +114,10 @@
           _SOUNDS
         </li>
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <li on:click={() => { menuOpen = false; goto("/vibe"); }}>
+          _VIBE WALL
+        </li>
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <!-- <li
           on:click={() => {
             menuOpen = false;
@@ -163,6 +167,9 @@
         </li>
         <li aria-current={$page.url.pathname === "/sounds" ? "page" : undefined}>
           <a href="/sounds">SOUNDS</a>
+        </li>
+        <li aria-current={$page.url.pathname === "/vibe" ? "page" : undefined}>
+          <a href="/vibe">VIBE WALL</a>
         </li>
         <!-- <li aria-current={$page.url.pathname === "/crew" ? "page" : undefined}>
           <a href="/crew">CREW</a>
