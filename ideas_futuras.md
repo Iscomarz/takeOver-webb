@@ -6,8 +6,10 @@ Este documento contiene el detalle y la propuesta de desarrollo simple para las 
 
 ## 1. "The Sounds of Take Over" (Reproductor de Sets & Playlists)
 
-> **Estado:** En especificacion (OpenSpec/SDD).
+> **Estado:** Completado y desplegado en produccion.
 > **Change:** `sounds-of-take-over`
+>
+> **Mantenimiento futuro:** Se podran ampliar las fuentes de audio, agregar analitica de reproducciones y mejorar la integracion nativa con SoundCloud.
 
 ### 📝 Concepto
 Integrar la música en el sitio para que los usuarios puedan escuchar sets de DJs grabados en vivo en eventos pasados o playlists curadas de la marca mientras navegan por la web.
@@ -25,6 +27,11 @@ Integrar la música en el sitio para que los usuarios puedan escuchar sets de DJ
 ---
 
 ## 2. "Vibe Wall" (Galería Inmersiva de Recuerdos)
+
+> **Estado:** En implementacion mediante OpenSpec/SDD.
+> **Change:** `vibe-wall`
+>
+> **Mantenimiento futuro:** Se podra incorporar video corto, albumes editoriales, carga progresiva y optimizacion automatica de imagenes.
 
 ### 📝 Concepto
 Una sección visualmente potente que muestre la atmósfera de los eventos anteriores mediante un collage interactivo de fotos de alta definición y bucles de video cortos (aftermovies / reels).
