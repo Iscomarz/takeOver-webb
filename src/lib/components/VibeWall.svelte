@@ -11,6 +11,7 @@
 	let selected = null;
 	let galleryTrack;
 	let mixedItems = [];
+	let touchStartX = null;
 
 	function shuffle(list) {
 		const result = [...list];
@@ -83,6 +84,19 @@
 		if (event.key === 'ArrowLeft') changePhoto(-1);
 		if (event.key === 'ArrowRight') changePhoto(1);
 	}
+
+	function startSwipe(event) {
+		touchStartX = event.changedTouches[0]?.clientX ?? null;
+	}
+
+	function finishSwipe(event) {
+		if (touchStartX === null) return;
+		const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX;
+		const distance = touchEndX - touchStartX;
+		touchStartX = null;
+		if (Math.abs(distance) < 45) return;
+		changePhoto(distance < 0 ? 1 : -1);
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -152,7 +166,7 @@
 {#if selected}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="lightbox" on:click={closeFromBackdrop}>
+	<div class="lightbox" on:click={closeFromBackdrop} on:touchstart={startSwipe} on:touchend={finishSwipe}>
 		<button class="close" on:click={closeLightbox} aria-label="Cerrar">×</button>
 		{#if visible.length > 1}
 			<button class="lightbox-arrow previous" on:click={() => changePhoto(-1)} aria-label="Foto anterior">←</button>
@@ -234,10 +248,10 @@
 		.gallery-arrow{width:2.4rem;height:2.4rem}
 		.gallery-arrow.previous{left:-.6rem}
 		.gallery-arrow.next{right:-.6rem}
-		.lightbox{padding:4rem 1rem 5rem}
-		.lightbox-arrow{top:auto;bottom:1.25rem}
-		.lightbox-arrow.previous{left:calc(50% - 3.5rem)}
-		.lightbox-arrow.next{right:calc(50% - 3.5rem)}
+		.lightbox{padding:4rem 2.75rem}
+		.lightbox-arrow{top:50%;bottom:auto;width:2.35rem;height:2.35rem;background:rgba(8,8,8,.72)}
+		.lightbox-arrow.previous{left:.35rem}
+		.lightbox-arrow.next{right:.35rem}
 		.gallery-signature{width:100%;gap:.85rem;margin-top:4.5rem}
 		.gallery-signature p{font-size:.5rem;letter-spacing:.25em}
 	}
