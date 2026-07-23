@@ -42,11 +42,11 @@
       <span class="link-number">01</span>
       <span class="link-text">EVENTS</span>
     </a>
-    <a class="link" href="about">
+    <a class="link" href="/about">
       <span class="link-number">02</span>
       <span class="link-text">ABOUT</span>
     </a>
-    <a class="link" href="crew">
+    <a class="link" href="/crew">
       <span class="link-number">03</span>
       <span class="link-text">CREW</span>
     </a>
@@ -54,8 +54,12 @@
       <span class="link-number">04</span>
       <span class="link-text">SOUNDS</span>
     </a>
-    <a class="link" href="contact">
+    <a class="link" href="/vibe">
       <span class="link-number">05</span>
+      <span class="link-text">VIBE WALL</span>
+    </a>
+    <a class="link" href="/contact">
+      <span class="link-number">06</span>
       <span class="link-text">CONTACT</span>
     </a>
   </nav>
@@ -150,7 +154,7 @@
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 1.8rem;
     z-index: 10;
   }
 
@@ -161,14 +165,14 @@
     text-decoration: none;
     color: rgba(255, 255, 255, 0.6);
     font-family: "JostRegular", sans-serif;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     letter-spacing: 0.1em;
     transition: all 0.3s ease;
     position: relative;
   }
 
   .link-number {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.3);
     font-weight: 300;
     transition: all 0.3s ease;
@@ -206,7 +210,7 @@
   @media screen and (max-width: 1024px) {
     .nav-links {
       right: 2rem;
-      gap: 2rem;
+      gap: 1.5rem;
     }
   }
 
@@ -223,11 +227,11 @@
       top: auto;
       transform: none;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1.2rem;
     }
 
     .link {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
     }
 
     .logo-takeover {
@@ -251,11 +255,11 @@
     }
 
     .nav-links {
-      gap: 1.2rem;
+      gap: 1rem;
     }
 
     .link {
-      font-size: 1rem;
+      font-size: 0.85rem;
     }
 
     .content-wrapper {
