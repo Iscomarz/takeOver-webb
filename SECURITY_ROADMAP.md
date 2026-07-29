@@ -11,7 +11,7 @@
 | **SEC-01** | Exfiltración de datos RLS en Supabase (Tickets / PII) | 🔴 CRÍTICA | ✅ COMPLETADO | Supabase RLS |
 | **SEC-02** | Scrapers, escáneres y ataques en capa Edge | 🟠 ALTA | ✅ COMPLETADO | `src/hooks.server.js` |
 | **SEC-03** | Optimización de autenticación en Webhook (`getSession()` activo) | 🟢 BAJA (Optimizado) | ✅ FUNCIONANDO | `src/routes/api/webhook/+server.js` |
-| **SEC-04** | Permisos y visibilidad en Supabase Storage Buckets | 🟡 MEDIA | ⏳ PENDIENTE | Supabase Storage (`codigosQR`) |
+| **SEC-04** | Permisos y visibilidad en Supabase Storage Buckets (`codigosQR`) | 🟡 MEDIA | ✅ COMPLETADO | Supabase Storage (`codigosQR`) |
 | **SEC-05** | Rate Limit volátil en entornos Serverless (Vercel) | 🔵 BAJA-MEDIA | ⏳ PENDIENTE | Edge / Upstash Redis |
 | **SEC-06** | Validación de esquemas e inyección en endpoints JSON | 🔵 BAJA-MEDIA | ⏳ PENDIENTE | `src/routes/api/*` |
 
@@ -42,12 +42,12 @@
 
 ---
 
-### ⏳ SEC-04: Auditoría de Políticas en Supabase Storage Buckets
-- **Severidad:** 🟡 MEDIA
-- **Descripción:** Las imágenes con códigos QR almacenadas en el bucket `codigosQR` podrían ser accesibles si el bucket permite enumeración pública.
-- **Plan de Mitigación:**
-  - [ ] Auditar las políticas RLS del bucket `codigosQR` en Supabase Storage.
-  - [ ] Restringir la lectura pública directa o configurar generación de URLs firmadas temporales.
+### ✅ SEC-04: Auditoría y Blindaje de Storage Buckets (`codigosQR`)
+- **Estado:** ✅ COMPLETADO
+- **Descripción:** Migración `20260729223000_secure_storage_codigos_qr.sql` ejecutada en la nube mediante Supabase CLI:
+  - El bucket `codigosQR` se configuró explícitamente como **Privado** (`public = false`).
+  - La lectura/enumeración pública de archivos `anon` sin autenticación quedó bloqueada.
+  - Acceso total configurado para el rol `authenticated` del panel de administración y bypass seguro vía `service_role` en las APIs del servidor.
 
 ---
 
