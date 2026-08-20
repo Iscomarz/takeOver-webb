@@ -1,10 +1,16 @@
 <script>
+	import { onMount } from 'svelte';
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import { audioStore } from '$lib/stores/audioStore.js';
 
 	export let sounds = [];
 	export let title = 'THE SOUNDS OF TAKE OVER';
 	export let eyebrow = 'SETS & SESSIONS';
 	export let limit = null;
+
+	let sectionElement;
+	let displayedTitle = '\u00A0';
 
 	$: visibleSounds = limit ? sounds.slice(0, limit) : sounds;
 
@@ -20,14 +26,79 @@
 			playRequest: state.playRequest + 1
 		}));
 	}
+
+	onMount(() => {
+		gsap.registerPlugin(ScrollTrigger);
+
+		const ctx = gsap.context(() => {
+			if (!sectionElement) return;
+
+			const proxy = { progress: 0 };
+			const tl = gsap.timeline({
+				scrollTrigger: {
+					trigger: sectionElement,
+					start: 'top 85%',
+					toggleActions: 'play none none none'
+				},
+				defaults: { ease: 'power2.out' }
+			});
+
+			tl.from('header span', {
+				opacity: 0,
+				y: -10,
+				duration: 0.5
+			})
+			.to(
+				proxy,
+				{
+					progress: 1,
+					duration: 1.2,
+					ease: 'none',
+					onUpdate: () => {
+						const count = Math.ceil(proxy.progress * title.length);
+						displayedTitle = title.slice(0, count) || '\u00A0';
+					},
+					onComplete: () => {
+						displayedTitle = title;
+					}
+				},
+				'-=0.2'
+			)
+			.from(
+				'header p',
+				{
+					opacity: 0,
+					y: 10,
+					duration: 0.5
+				},
+				'-=0.2'
+			)
+			.from(
+				'.sound-row',
+				{
+					scale: 0.85,
+					opacity: 0,
+					y: 25,
+					duration: 0.9,
+					stagger: 0.25,
+					ease: 'back.out(1.5)'
+				},
+				'-=0.3'
+			);
+		}, sectionElement);
+
+		return () => {
+			ctx.revert();
+		};
+	});
 </script>
 
 {#if visibleSounds.length}
-	<section class="sounds-section" aria-labelledby="sounds-heading">
+	<section bind:this={sectionElement} class="sounds-section" aria-labelledby="sounds-heading">
 		<header>
 			<div>
 				<span>{eyebrow}</span>
-				<h2 id="sounds-heading">{title}</h2>
+				<h2 id="sounds-heading">{displayedTitle}</h2>
 			</div>
 			<p>Selecciones, sesiones y sets compartidos por Take Over.</p>
 		</header>
@@ -56,7 +127,7 @@
 	.sounds-section { width: min(1120px, calc(100% - 2rem)); margin: 3rem auto; padding: 3rem 0; color: #fff; }
 	header { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,.09); padding-bottom: 1.25rem; }
 	header span { color: #56fdb8; font-size: .68rem; letter-spacing: .22em; }
-	h2 { margin: .35rem 0 0; font: 400 clamp(1.8rem,4vw,3rem)/1 "JockeyOne", sans-serif; letter-spacing: .04em; }
+	h2 { margin: .35rem 0 0; font: 400 clamp(1.8rem,4vw,3rem)/1 "JockeyOne", sans-serif; letter-spacing: .04em; color: #fff; }
 	header p { max-width: 390px; margin: 0; color: rgba(255,255,255,.48); font-size: .88rem; }
 	.sound-list { border-top: 1px solid rgba(255,255,255,.09); }
 	.sound-row { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1rem .25rem; border-bottom: 1px solid rgba(255,255,255,.09); transition: background-color .2s ease; }
