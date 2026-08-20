@@ -1,10 +1,15 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 	export let items = [];
 	export let showFilters = true;
 	export let limit = null;
 
+	const titleText = 'VIBE WALL';
+	let displayedTitle = '\u00A0';
+	let sectionElement;
 	let eventFilter = 'all';
 	// let yearFilter = 'all';
 	// let monthFilter = 'all';
@@ -40,8 +45,87 @@
 		return result;
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		mixedItems = mixByEvent(items);
+		await tick();
+
+		gsap.registerPlugin(ScrollTrigger);
+
+		const ctx = gsap.context(() => {
+			if (!sectionElement) return;
+
+			const proxy = { progress: 0 };
+			const tl = gsap.timeline({
+				scrollTrigger: {
+					trigger: sectionElement,
+					start: 'top 85%',
+					toggleActions: 'play none none none'
+				},
+				defaults: { ease: 'power2.out' }
+			});
+
+			// 1. Eyebrow
+			tl.from('header span', {
+				opacity: 0,
+				y: -10,
+				duration: 0.5
+			})
+			// 2. Título VIBE WALL se escribe
+			.to(
+				proxy,
+				{
+					progress: 1,
+					duration: 0.8,
+					ease: 'none',
+					onUpdate: () => {
+						const count = Math.ceil(proxy.progress * titleText.length);
+						displayedTitle = titleText.slice(0, count) || '\u00A0';
+					},
+					onComplete: () => {
+						displayedTitle = titleText;
+					}
+				},
+				'-=0.2'
+			)
+			// 3. Descripción y filtros
+			.from(
+				'header p, .filters',
+				{
+					opacity: 0,
+					y: 10,
+					duration: 0.5,
+					stagger: 0.1
+				},
+				'-=0.2'
+			)
+			// 4. Cada foto (tile) entra con POP en cascada
+			.from(
+				'.tile',
+				{
+					scale: 0.85,
+					opacity: 0,
+					y: 30,
+					duration: 0.9,
+					stagger: 0.18,
+					ease: 'back.out(1.5)'
+				},
+				'-=0.2'
+			)
+			// 5. Firma al final
+			.from(
+				'.gallery-signature',
+				{
+					opacity: 0,
+					y: 15,
+					duration: 0.8
+				},
+				'-=0.4'
+			);
+		}, sectionElement);
+
+		return () => {
+			ctx.revert();
+		};
 	});
 
 	$: events = [...new Map(items.map((item) => [String(item.evento_id), item.evento_nombre])).entries()];
@@ -101,10 +185,10 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<section class="vibe-wall" aria-labelledby="vibe-title">
+<section bind:this={sectionElement} class="vibe-wall" aria-labelledby="vibe-title">
 	<header>
 		<span>MEMORIES FROM THE DANCE FLOOR</span>
-		<h1 id="vibe-title">VIBE WALL</h1>
+		<h1 id="vibe-title">{displayedTitle}</h1>
 		<p>Momentos que vivimos juntos. Sin poses, sin filtros, sólo la energía de la noche.</p>
 	</header>
 

@@ -1,9 +1,106 @@
 <script>
+  import { onMount } from "svelte";
+  import { gsap } from "gsap";
   import insta from "$lib/images/instagram-logo.svg";
   import logoTakeOver from "$lib/images/takeover-logo.png";
   import SoundsSection from "$lib/components/SoundsSection.svelte";
 
   export let data;
+
+  const taglineTarget = "ELECTRONIC MUSIC EVENTS";
+  const sloganTarget = "WHERE THE NIGHT COMES ALIVE";
+  const scrambleChars = "!/<>[]_{}—=+*^?#01XYZ";
+
+  let displayedSlogan = "\u00A0";
+
+  function createScrambleTween(finalText, onUpdateCallback, duration = 2.8) {
+    const proxy = { progress: 0 };
+    return gsap.to(proxy, {
+      progress: 1,
+      duration,
+      ease: "power1.inOut",
+      onUpdate: () => {
+        const resolvedCount = Math.floor(proxy.progress * finalText.length);
+        const scrambled = finalText
+          .split("")
+          .map((char, index) => {
+            if (char === " ") return " ";
+            if (index < resolvedCount) return char;
+            return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+          })
+          .join("");
+        onUpdateCallback(scrambled);
+      },
+      onComplete: () => {
+        onUpdateCallback(finalText);
+      }
+    });
+  }
+
+  onMount(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    // 1. Línea decorativa
+    tl.from(".line-top", {
+      scaleX: 0,
+      opacity: 0,
+      duration: 0.8
+    })
+    // 2. Logo aparece lentamente
+    .from(
+      ".logo-takeover",
+      {
+        opacity: 0,
+        scale: 0.85,
+        duration: 1.8,
+        ease: "power2.out"
+      },
+      "-=0.4"
+    )
+    // 3. Tagline superior se escribe letra por letra
+    .from(
+      ".tagline-top .char",
+      {
+        opacity: 0,
+        y: 5,
+        duration: 0.05,
+        stagger: 0.04,
+        ease: "none"
+      },
+      "-=1.2"
+    )
+    // 4. Slogan con efecto Decoder / Scramble más lento
+    .add(
+      createScrambleTween(sloganTarget, (text) => (displayedSlogan = text), 2.8),
+      "-=0.8"
+    )
+    // 5. Info inferior
+    .from(
+      ".info-bottom",
+      {
+        opacity: 0,
+        y: 8,
+        duration: 0.8
+      },
+      "-=0.4"
+    )
+    // 6. Links hacen POP en cascada pausada
+    .from(
+      ".nav-links .link",
+      {
+        scale: 0,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.16,
+        ease: "back.out(1.8)"
+      },
+      "-=1.2"
+    );
+
+    return () => {
+      tl.kill();
+    };
+  });
 </script>
 
 <svelte:head>
@@ -19,13 +116,17 @@
       <div class="line-top"></div>
       
       <!-- Texto superior -->
-      <p class="tagline-top">ELECTRONIC MUSIC EVENTS</p>
+      <p class="tagline-top">
+        {#each taglineTarget.split("") as char}
+          <span class="char">{char}</span>
+        {/each}
+      </p>
       
       <!-- Logo principal -->
       <img src={logoTakeOver} alt="Take Over Logo" class="logo-takeover" />
       
       <!-- Slogan -->
-      <p class="slogan">WHERE THE NIGHT COMES ALIVE</p>
+      <p class="slogan">{displayedSlogan}</p>
       
       <!-- Ubicación o info -->
       <div class="info-bottom">
@@ -107,12 +208,17 @@
     font-weight: 300;
   }
 
+  .char {
+    display: inline-block;
+    white-space: pre;
+  }
+
   .logo-takeover {
     width: clamp(250px, 40vw, 400px);
     height: auto;
     opacity: 0.65;
     filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15));
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 1rem 0;
   }
 
@@ -167,8 +273,9 @@
     font-family: "JostRegular", sans-serif;
     font-size: 0.85rem;
     letter-spacing: 0.1em;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease;
     position: relative;
+    transform-origin: center right;
   }
 
   .link-number {
