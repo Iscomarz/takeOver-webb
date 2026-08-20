@@ -6,6 +6,9 @@
 		"build": "vite build",
 		"preview": "vite preview"
 	},
+	"engines": {
+		"node": "20.x"
+	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.0.0",
 		"@neoconfetti/svelte": "^2.0.0",
