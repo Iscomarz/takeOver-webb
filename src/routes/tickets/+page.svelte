@@ -4,18 +4,20 @@
   import Location from "../components/Location.svelte";
   import AboutEvent from "../components/AboutEvent.svelte";
   import Tickets from "../components/Tickets.svelte";
+  import EventMedia from "../components/EventMedia.svelte";
   import { onMount, tick } from "svelte";
   import { goto } from "$app/navigation";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../components/botonComunidad.svelte";
   import { eventoStore } from "$lib/stores/eventoStore";
-  import { getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
+  import { getFasesByEvento, getImagenPublicUrl, getMediaByEvento } from "$lib/services/dataService";
 
   let loading = true;
   let eventoActivo = true;
 
   let mEvento = {};
   let fases = [];
+  let media = [];
   let urlImagenPortada;
 
   // Reactividad con el store
@@ -39,12 +41,21 @@
       eventoActivo = true;
       urlImagenPortada = getImagenPublicUrl(mEvento.pathImage);
 
-      const { data: cFases, error: errorF } = await getFasesByEvento(mEvento.idevento);
+      const [cFasesRes, mediaRes] = await Promise.all([
+        getFasesByEvento(mEvento.idevento),
+        getMediaByEvento(mEvento.idevento)
+      ]);
 
-      if (cFases && cFases.length > 0) {
-        fases = cFases;
-      } else if (errorF) {
-        console.log("Error al traer las fases", errorF);
+      if (cFasesRes.data && cFasesRes.data.length > 0) {
+        fases = cFasesRes.data;
+      } else if (cFasesRes.error) {
+        console.log("Error al traer las fases", cFasesRes.error);
+      }
+
+      if (mediaRes.data && mediaRes.data.length > 0) {
+        media = mediaRes.data;
+      } else if (mediaRes.error) {
+        console.log("Error al traer media del evento", mediaRes.error);
       }
 
       await tick();
@@ -121,6 +132,7 @@
         linkMaps={mEvento.direccionURL}
       />
       <AboutEvent descripcion={mEvento.descripcion} />
+      <EventMedia {media} />
       {#if fases.length > 0}
         <Tickets ticketDataEve={fases} />
       {/if}

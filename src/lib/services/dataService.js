@@ -82,3 +82,20 @@ export async function validarCodigoDescuentoSupabase(codigo) {
 
     return { data, error };
 }
+
+export async function getMediaByEvento(idEvento) {
+  const { data, error } = await supabase
+    .from("tEventoMedia")
+    .select("*")
+    .eq("id_evento", idEvento)
+    .eq("activo", true)
+    .order("orden", { ascending: true })
+    .order("creado_en", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching event media:", error);
+    return { data: [], error };
+  }
+  return { data: data ?? [], error: null };
+}
+

@@ -5,6 +5,7 @@
   import AboutEvent from "../../components/AboutEvent.svelte";
   import Tickets from "../../components/Tickets.svelte";
   import Cards from "../../components/cards.svelte";
+  import EventMedia from "../../components/EventMedia.svelte";
   import { goto } from "$app/navigation";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
@@ -12,7 +13,7 @@
   export let data;
 
   let loading = false;
-  $: ({ mEvento, fases, urlImagenPortada, eventoActivo, id: idEvento } = data);
+  $: ({ mEvento, fases, media = [], urlImagenPortada, eventoActivo, id: idEvento } = data);
 
   async function getProducts() {
     try {
@@ -257,6 +258,8 @@
           direccion={mEvento.direccion}
           linkMaps={mEvento.direccionURL}
         />
+
+        <EventMedia {media} />
       </div>
     </div>
   {/if}
