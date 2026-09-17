@@ -1,11 +1,12 @@
 import { eventoId } from "../../../lib/stores/eventoId";
-import { getEventoByIdOrSlug, getFasesByEvento, getImagenPublicUrl } from "$lib/services/dataService";
+import { getEventoByIdOrSlug, getFasesByEvento, getImagenPublicUrl, getMediaByEvento } from "$lib/services/dataService";
 
 export async function load({ params }) {
     const { slug } = params; // Extraemos el id o slug de la URL
     
     let mEvento = {};
     let fases = [];
+    let media = [];
     let urlImagenPortada = null;
     let eventoActivo = true;
 
@@ -18,12 +19,22 @@ export async function load({ params }) {
         
         eventoId.set(mEvento.idevento);
 
-        // Obtener las fases o tickets del evento
-        let { data: cFases, error: errorF } = await getFasesByEvento(mEvento.idevento);
-        if (cFases && cFases.length > 0) {
-            fases = cFases;
-        } else if (errorF) {
-            console.log("Error al traer las fases", errorF);
+        // Obtener las fases y media del evento en paralelo
+        const [fasesRes, mediaRes] = await Promise.all([
+            getFasesByEvento(mEvento.idevento),
+            getMediaByEvento(mEvento.idevento)
+        ]);
+
+        if (fasesRes.data && fasesRes.data.length > 0) {
+            fases = fasesRes.data;
+        } else if (fasesRes.error) {
+            console.log("Error al traer las fases", fasesRes.error);
+        }
+
+        if (mediaRes.data && mediaRes.data.length > 0) {
+            media = mediaRes.data;
+        } else if (mediaRes.error) {
+            console.log("Error al traer media del evento", mediaRes.error);
         }
     } else {
         eventoActivo = false;
@@ -39,6 +50,7 @@ export async function load({ params }) {
         slug,
         mEvento,
         fases,
+        media,
         urlImagenPortada,
         eventoActivo
     };
