@@ -49,7 +49,14 @@ const BLOCKED_PATHS_REGEX = new RegExp(
 // ==========================================
 // 3. CONFIGURACIÓN DE RATE LIMITING POR IP
 // ==========================================
-const CRITICAL_ROUTES = ['/api/checkout', '/api/login', '/api/registro-invitacion', '/checkout'];
+const CRITICAL_ROUTES = [
+  '/api/checkout',
+  '/api/login',
+  '/api/registro-invitacion',
+  '/checkout',
+  '/api/validate-discount',
+  '/api/create-payment-intent'
+];
 
 const ipRequestCounts = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minuto
