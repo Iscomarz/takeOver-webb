@@ -1,10 +1,9 @@
 <script>
   import { inactivoState, tickets } from "./ticketStore.js";
   import Ticket from "./Ticket.svelte";
-  import { derived } from "svelte/store";
+  import { derived, writable } from "svelte/store";
   import CheckoutEmbedded from "../components/CheckoutEmbedded.svelte";
   import { onMount, tick } from "svelte";
-  import { validarCodigoDescuentoSupabase } from "$lib/services/dataService";
 
   export let ticketDataEve;
   export let eventoPasado = false;
@@ -13,6 +12,8 @@
 
   export let mEvento = null;
   export let urlImagenPortada = null;
+  // Code coming from the QR deep link (?code=). Auto-filled and validated on mount.
+  export let codigoInicial = "";
 
   let ticketsPublicos = [];
   let ticketReferidoInfo = null;
@@ -23,8 +24,9 @@
   let codigoDescuento = "";
   let descuentoAplicado = false;
   let mensajeDescuento = "";
-  let idPrecioDescuento = null;
   let validandoCodigo = false;
+  // Percentage confirmed by the server for the applied discount code (0 = none).
+  const porcentajeDescuento = writable(0);
 
   // Variables para código de referido
   let codigoReferido = "";
@@ -46,11 +48,26 @@
     tickets.set(ticketsPublicos);
     inactivoState.set(ticketsPublicos.map((ticket) => !ticket.activo));
     //console.log("Tickets iniciales:", ticketsPublicos);
+
+    if (codigoInicial && codigoInicial.trim()) {
+      codigoDescuento = codigoInicial.trim().toUpperCase();
+      showDescuento = true;
+      await validarCodigoDescuento();
+    }
   });
 
   const totalPrice = derived(tickets, ($tickets) =>
     $tickets.reduce((sum, ticket) => sum + ticket.precio * ticket.cantidad, 0)
   );
+
+  // Same integer math as the server (basis points, rounded to the nearest cent).
+  // The server remains the source of truth for the amount actually charged.
+  const totalConDescuento = derived([totalPrice, porcentajeDescuento], ([$total, $pct]) => {
+    if (!$pct) return $total;
+    const cents = Math.round($total * 100);
+    const discount = Math.round((cents * Math.round($pct * 100)) / 10000);
+    return (cents - discount) / 100;
+  });
 
   const totalCantidad = derived(tickets, ($tickets) =>
     $tickets.reduce((sum, ticket) => sum + ticket.cantidad, 0)
@@ -61,9 +78,24 @@
     cantidad = event.detail.cantidad;
   }
 
+  function obtenerIdEvento() {
+    const id = Number(mEvento?.idevento ?? ticketDataEve?.[0]?.idEvento);
+    return Number.isInteger(id) ? id : null;
+  }
+
   async function validarCodigoDescuento() {
     if (!codigoDescuento.trim()) {
       mensajeDescuento = "Por favor ingresa un código de descuento";
+      return;
+    }
+    if (referidoAplicado) {
+      mensajeDescuento = "No puedes combinar un código de descuento con un código de referido";
+      return;
+    }
+
+    const idEvento = obtenerIdEvento();
+    if (idEvento === null) {
+      mensajeDescuento = "No se pudo validar el código para este evento";
       return;
     }
 
@@ -71,24 +103,28 @@
     mensajeDescuento = "";
 
     try {
-      const { data, error } = await validarCodigoDescuentoSupabase(codigoDescuento.trim());
+      const response = await fetch("/api/validate-discount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo: codigoDescuento.trim(), idEvento })
+      });
+      const data = await response.json();
 
-      if (error || !data) {
+      if (!response.ok || !data.valid) {
         mensajeDescuento = "Código de descuento inválido";
         descuentoAplicado = false;
-        idPrecioDescuento = null;
+        porcentajeDescuento.set(0);
       } else {
-
-        mensajeDescuento = `¡Código aplicado! ${data.descripcion || 'Descuento válido'}`;
+        const pct = Number(data.porcentaje);
         descuentoAplicado = true;
-        // Por el momento usamos un ID estático como mencionaste
-        idPrecioDescuento = data.idPrecioStripeDescuento || "price_1SKUvo2KnoE6M9dvEHOmwBzR"; // ID estático de emergencia
+        porcentajeDescuento.set(pct);
+        mensajeDescuento = `¡Código aplicado! ${pct}% de descuento`;
       }
     } catch (error) {
       console.error("Error al validar código:", error);
       mensajeDescuento = "Error al validar el código, intenta de nuevo";
       descuentoAplicado = false;
-      idPrecioDescuento = null;
+      porcentajeDescuento.set(0);
     } finally {
       validandoCodigo = false;
     }
@@ -98,7 +134,7 @@
     codigoDescuento = "";
     descuentoAplicado = false;
     mensajeDescuento = "";
-    idPrecioDescuento = null;
+    porcentajeDescuento.set(0);
   }
 
   async function validarCodigoReferido() {
@@ -108,6 +144,10 @@
     }
     if (!correoValidacion.trim() || !correoValidacion.includes('@')) {
       mensajeReferido = "Ingresa tu correo para validar";
+      return;
+    }
+    if (descuentoAplicado) {
+      mensajeReferido = "No puedes combinar un código de referido con un código de descuento";
       return;
     }
 
@@ -273,12 +313,24 @@
       </div>
     {/if}
 
+    {#if descuentoAplicado && $totalPrice > 0}
+      <div class="discount-summary">
+        <span class="discount-badge">{$porcentajeDescuento}% de descuento</span>
+        <span class="discount-total">
+          <s>Mex${$totalPrice}</s> Mex${$totalConDescuento}
+        </span>
+      </div>
+    {/if}
+
     <CheckoutEmbedded
-      {totalPrice}
+      totalPrice={totalConDescuento}
       cantidad={$totalCantidad}
       {eventoPasado}
       descuentoAplicado={descuentoAplicado || referidoAplicado}
-      codigoDescuentoUsado={referidoAplicado ? codigoReferido : (descuentoAplicado ? codigoDescuento : null)}
+      tipoCodigo={referidoAplicado ? "referido" : (descuentoAplicado ? "descuento" : null)}
+      codigoDescuentoUsado={referidoAplicado ? codigoReferido.trim() : (descuentoAplicado ? codigoDescuento.trim() : null)}
+      porcentajeDescuento={descuentoAplicado ? $porcentajeDescuento : 0}
+      idEvento={obtenerIdEvento()}
       nombreEvento={nombreEvento}
       nombreFase={$tickets.filter(t => t.cantidad > 0)[0]?.nombreFace || ""}
       tickets={$tickets}
@@ -423,6 +475,26 @@
 
   .discount-message.error {
     color: #dc3545;
+  }
+
+  .discount-summary {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    color: whitesmoke;
+    font-size: 14px;
+  }
+
+  .discount-badge {
+    color: #56fdb8;
+    font-weight: bold;
+  }
+
+  .discount-total s {
+    color: #999;
+    margin-right: 6px;
   }
 
   @media (max-width: 480px) {
