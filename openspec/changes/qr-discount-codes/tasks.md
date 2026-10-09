@@ -51,12 +51,12 @@ Chain strategy: pending
 - [x] 2.11 Same file: add a `payment_intent.canceled` case calling `liberar`; guard the legacy `checkout.session` path with `"idEvento" IS NULL`. Do NOT touch the fall-through at lines 88-94.
 
 ## Phase 3: Client and Generator (PR 3)
-- [ ] 3.1 Modify `src/routes/components/Tickets.svelte`: `codigoInicial` prop, split fields (mutually exclusive), call `/api/validate-discount`, remove the hardcoded price (line 85).
-- [ ] 3.2 Modify `src/routes/eventos/[slug]/+page.svelte`: read `?code=`; show an error and the full price on an invalid code.
-- [ ] 3.3 Modify `src/routes/components/CheckoutEmbedded.svelte` and `src/routes/checkout/+page.svelte`: carry `idEvento`/`reservaDescuento`; handle `alreadyPaid` and `CODE_PENDING`; `sessionStorage.reservaPrevia` cleared after `confirmPayment`.
-- [ ] 3.4 Modify `src/lib/services/dataService.js`: remove `validarCodigoDescuentoSupabase`.
-- [ ] 3.5 Create `scripts/generate-discount-qr.mjs` (40 codes, 10 chars, safe alphabet, PNGs, CSV, insert SQL; required `--base-url` https, no default).
-- [ ] 3.6 Modify `.gitignore`: add `scripts/output/`.
+- [x] 3.1 Modify `src/routes/components/Tickets.svelte`: `codigoInicial` prop, split fields (mutually exclusive), call `/api/validate-discount`, remove the hardcoded price (line 85).
+- [x] 3.2 Modify `src/routes/eventos/[slug]/+page.svelte`: read `?code=`; show an error and the full price on an invalid code.
+- [x] 3.3 Modify `src/routes/components/CheckoutEmbedded.svelte` and `src/routes/checkout/+page.svelte`: carry `idEvento`/`reservaDescuento`; handle `alreadyPaid` and `CODE_PENDING`; `sessionStorage.reservaPrevia` cleared after `confirmPayment`.
+- [x] 3.4 Modify `src/lib/services/dataService.js`: remove `validarCodigoDescuentoSupabase`.
+- [x] 3.5 Create `scripts/generate-discount-qr.mjs` (40 codes, 10 chars, safe alphabet, PNGs, CSV, insert SQL; required `--base-url` https, no default).
+- [x] 3.6 Modify `.gitignore`: add `scripts/output/`.
 
 ## Phase 4: Verification (manual, Stripe test mode + CLI)
 - [ ] 4.1 Run 1.11 and 2.4 scripts. Query anon `/rest/v1/codigosDescuento` and expect no rows.

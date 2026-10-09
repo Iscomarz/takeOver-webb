@@ -117,3 +117,33 @@ Applied to `src/routes/api/create-payment-intent/+server.js` after an independen
 
 ### DEPLOY COUPLING (W2) - PENDING, prominent
 PR 2 (server) CANNOT be deployed without PR 3 (client) and the Phase 1 migration. The current client still sends referral codes in `metadata.codigoDescuento` and sends no `idEvento`, so the new server treats them as discount codes and returns 400/409. Ship PR 1 + PR 2 + PR 3 together. No code change made for this.
+
+---
+
+# Phase 3: Client and Generator (slice 3 of 3)
+
+**Branch**: feat/qr-discount-client (from feat/qr-discount-server). **Mode**: Standard (no test runner).
+
+- [x] 3.1 Tickets.svelte: `codigoInicial` prop, `/api/validate-discount` call, hardcoded price and dead columns removed, discount and referral mutually exclusive, discounted total store (`totalConDescuento`) + percentage badge, `idEvento` passed down
+- [x] 3.2 eventos/[slug]/+page.svelte: reads `?code=`, passes it as `codigoInicial`; invalid code shows an error and keeps the full price
+- [x] 3.3 CheckoutEmbedded + checkout/+page.svelte: `tipoCodigo`, `porcentajeDescuento`, `idEvento` carried via sessionStorage; request sends exactly one of `codigoDescuento` / `codigoReferido` plus `idEvento`; `reservaPrevia` read from sessionStorage and `reservaDescuento` stored from the response; 409 `CODE_PENDING` / `CODE_UNAVAILABLE` / `alreadyPaid` handled; `reservaPrevia` cleared on alreadyPaid, on CODE_UNAVAILABLE and after a successful `confirmPayment`
+- [x] 3.4 dataService.js: `validarCodigoDescuentoSupabase` removed
+- [x] 3.5 scripts/generate-discount-qr.mjs (40 unique 10-char codes, safe uppercase alphabet, PNGs, CSV, insert SQL; `--base-url` required, https origin only, no default)
+- [x] 3.6 .gitignore: `scripts/output/`
+
+## Verification performed
+- `node --check` on the generator; `npx vite build` OK
+- Generator run with a dummy base (https://example.com): 40 PNGs, 40 unique codes matching the alphabet/length, URL `<base>/eventos/101?code=<CODE>`, trailing slash normalized; missing, http:// and path-bearing `--base-url` all rejected. Output deleted afterwards and confirmed ignored by git.
+- No browser/Stripe/DB exercised.
+
+## Decisions / deviations
+- `Checkout.svelte` was NOT modified: it has no importers, targets the legacy `/api/checkout` Checkout Session flow and already routes referral codes to `metadata.codigoReferido` via `isReferral`. Only the embedded flow reaches `create-payment-intent`.
+- The checkout page does not trust the displayed percentage: charged amount comes from `totalPriceReal` in the response.
+- Old sessionStorage payloads without `tipoCodigo` send no code (fail safe).
+- `reservaPrevia` is kept after a `confirmPayment` error so the buyer can retake their own hold.
+
+## PENDING items for the user (Phase 3)
+1. Production origin for `--base-url` (e.g. `node scripts/generate-discount-qr.mjs --base-url https://<prod-origin>`); then review `scripts/output/insert-codes.sql` and run it manually. Nothing was generated into tracked files or inserted into any DB.
+2. Phase 4 E2E in Stripe test mode (scan QR, 85% for 1 and 10 tickets, reuse rejected, cancel releases, takeover, alreadyPaid return, referral still works, discount+referral 400).
+3. Deploy PR 1 + 2 + 3 together (see DEPLOY COUPLING above).
+4. Copy review: Spanish strings added in Tickets/checkout (conflict messages, "N% de descuento").
