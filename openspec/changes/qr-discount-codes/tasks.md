@@ -20,7 +20,7 @@ Chain strategy: pending
 
 | Unit | Goal | Likely PR | Notes |
 |------|------|-----------|-------|
-| 1 | Schema, RLS, grants, 6 RPCs, rollback, SQL race script | PR 1 | Base: main/tracker. Standalone: old app ignores new columns |
+| 1 | Schema, RLS, grants, 6 RPCs, rollback, SQL race script | PR 1 | Base: main/tracker. NOT standalone: REVOKE ALL FROM anon breaks the deployed app's legacy anon code check and turns the legacy webhook update into permission-denied, so apply the migration together with the app deploy (design Rollout step 3) |
 | 2 | supabaseAdmin, validate endpoint, create/update PI, webhook, hooks | PR 2 | Base: PR 1. Needs the service-role key in env |
 | 3 | UI, QR deep link, generator, `.gitignore` | PR 3 | Base: PR 2 |
 

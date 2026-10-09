@@ -10,7 +10,11 @@ DROP FUNCTION IF EXISTS public.vincular_reserva_descuento(uuid, text);
 DROP FUNCTION IF EXISTS public.reservar_codigo_descuento(text, integer, uuid, uuid, uuid, integer);
 DROP FUNCTION IF EXISTS public.validar_codigo_descuento(text, integer);
 
--- 2. Policies and grants back to the previous state
+-- 2. Void QR codes so restoring anon SELECT / ALL cannot expose or reuse them
+UPDATE public."codigosDescuento" SET acreditado = true
+WHERE "idEvento" IS NOT NULL AND acreditado IS NOT TRUE;
+
+-- 2b. Policies and grants back to the previous state
 DROP POLICY IF EXISTS "Admin All Access codigosDescuento" ON public."codigosDescuento";
 CREATE POLICY "Admin All Access codigosDescuento" ON public."codigosDescuento"
   FOR ALL TO authenticated USING (true) WITH CHECK (true);

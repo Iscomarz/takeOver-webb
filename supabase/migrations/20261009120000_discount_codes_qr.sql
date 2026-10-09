@@ -1,9 +1,24 @@
 -- Migration: Event-scoped QR discount codes (schema, RLS, grants, RPCs)
 -- Change: qr-discount-codes (Phase 1, database slice)
 --
--- BEFORE APPLYING: replace the admin uuid placeholder in section 3 below
+-- BEFORE APPLYING: replace the admin uuid placeholder in the guard below
 -- (v_admin_uid). The migration aborts if the placeholder is still present.
 -- Rollback: supabase/rollback/20261009120000_discount_codes_qr.down.sql
+
+-- Guard (MUST stay the first statement): abort before any change is applied if
+-- the placeholder is still present. The value is kept in a session-level setting
+-- so section 3 can reuse it without a second placeholder.
+DO $$
+DECLARE
+  -- PENDING: set to the auth.users.id of franmtz96@gmail.com before applying.
+  v_admin_uid text := '__ADMIN_UUID_PLACEHOLDER__';
+BEGIN
+  IF v_admin_uid !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
+    RAISE EXCEPTION 'Admin uuid placeholder not replaced in migration 20261009120000';
+  END IF;
+  PERFORM set_config('qr_discount.admin_uid', v_admin_uid, false);
+END
+$$;
 
 -- 1. Columns and uniqueness ---------------------------------------------------
 -- Legacy rows keep idEvento / porcentaje NULL, so the RPCs treat them as inert.
@@ -21,15 +36,11 @@ REVOKE ALL ON public."codigosDescuento" FROM anon;
 
 -- 3. Admin policy bound to a single auth uid ----------------------------------
 -- Replaces the permissive USING (true) policy from 20260729220000.
+-- The uid was validated by the guard at the top of this file.
 DO $$
 DECLARE
-  -- PENDING: set to the auth.users.id of franmtz96@gmail.com before applying.
-  v_admin_uid text := '__ADMIN_UUID_PLACEHOLDER__';
+  v_admin_uid text := current_setting('qr_discount.admin_uid');
 BEGIN
-  IF v_admin_uid !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
-    RAISE EXCEPTION 'Admin uuid placeholder not replaced in migration 20261009120000';
-  END IF;
-
   DROP POLICY IF EXISTS "Admin All Access codigosDescuento" ON public."codigosDescuento";
   EXECUTE format(
     'CREATE POLICY "Admin All Access codigosDescuento" ON public."codigosDescuento" '
@@ -52,7 +63,7 @@ CREATE OR REPLACE FUNCTION public.validar_codigo_descuento(
 RETURNS TABLE(valido boolean, porcentaje numeric)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 #variable_conflict use_column
 DECLARE
@@ -87,7 +98,7 @@ CREATE OR REPLACE FUNCTION public.reservar_codigo_descuento(
 RETURNS TABLE(resultado text, porcentaje numeric, token_actual uuid, pi_actual text)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 #variable_conflict use_column
 DECLARE
@@ -117,7 +128,7 @@ BEGIN
     UPDATE "codigosDescuento" c
     SET reserva_token = p_token,
         reserva_pi = NULL,
-        reserva_expira = now() + make_interval(mins => p_ttl_min)
+        reserva_expira = now() + make_interval(mins => COALESCE(p_ttl_min, 30))
     WHERE c.id = v_row.id;
     RETURN QUERY SELECT 'reserved'::text, v_row.porcentaje, p_token, NULL::text;
     RETURN;
@@ -150,12 +161,13 @@ CREATE OR REPLACE FUNCTION public.vincular_reserva_descuento(
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   UPDATE "codigosDescuento" c
   SET reserva_pi = p_payment_intent
   WHERE c.reserva_token = p_token
+    AND (c.reserva_pi IS NULL OR c.reserva_pi = p_payment_intent)
     AND c.acreditado IS NOT TRUE;
   RETURN FOUND;
 END;
@@ -169,11 +181,11 @@ CREATE OR REPLACE FUNCTION public.extender_reserva_descuento(
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   UPDATE "codigosDescuento" c
-  SET reserva_expira = now() + make_interval(mins => p_ttl_min)
+  SET reserva_expira = now() + make_interval(mins => COALESCE(p_ttl_min, 30))
   WHERE c.reserva_token = p_token
     AND c.acreditado IS NOT TRUE;
   RETURN FOUND;
@@ -188,7 +200,7 @@ CREATE OR REPLACE FUNCTION public.liberar_codigo_descuento(
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   UPDATE "codigosDescuento" c
@@ -217,7 +229,7 @@ CREATE OR REPLACE FUNCTION public.canjear_codigo_descuento(
 RETURNS TABLE(resultado text, pi_desplazado text)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_row "codigosDescuento"%ROWTYPE;

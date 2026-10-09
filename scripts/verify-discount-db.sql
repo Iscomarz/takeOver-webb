@@ -6,6 +6,14 @@
 
 BEGIN;
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public."mEvento") THEN
+    RAISE EXCEPTION 'mEvento is empty: create at least one event before running this script';
+  END IF;
+END
+$$;
+
 -- Fixtures: one event-scoped code (15%) on the first existing event.
 INSERT INTO public."codigosDescuento" (codigo, acreditado, "idEvento", porcentaje)
 SELECT 'VERIFYQR01', false, min(idevento), 15 FROM public."mEvento";

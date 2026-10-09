@@ -15,7 +15,7 @@
 - [x] 1.8 canjear
 - [x] 1.9 SECURITY DEFINER, search_path, grants to service_role only
 - [x] 1.10 Rollback script
-- [x] 1.11 scripts/verify-discount-db.sql (NOT executed: no psql/local DB available)
+- [x] 1.11 scripts/verify-discount-db.sql (validated by an independent reviewer on local PG 15.8 before the review fixes; re-validated after fixes on local PG 15.8.1.073)
 
 ## Files
 - supabase/migrations/20261009120000_discount_codes_qr.sql
@@ -33,8 +33,19 @@
    - `select grantee, routine_name from information_schema.routine_privileges where routine_schema = 'public' and routine_name like '%descuento%';`
    - `select codigo, count(*) from "codigosDescuento" group by codigo having count(*) > 1;` (must be empty or UNIQUE fails)
    - Signup setting: Dashboard > Auth > "Allow new users to sign up" (or Management API `config/auth.disable_signup`); flag if enabled.
-3. Run `scripts/verify-discount-db.sql` on a local/staging DB (`supabase start` + psql) and the manual two-session race at its end. Not executed here (no psql, nothing applied).
-4. SQL was not syntax-checked against a real Postgres.
+3. Run `scripts/verify-discount-db.sql` on a local/staging DB and the manual two-session race at its end (the race is still manual).
+4. Validation: the original SQL was validated by an independent reviewer on local PG 15.8 BEFORE the review fixes below. Re-validated after the fixes on a throwaway local supabase/postgres 15.8.1.073 container (stub schema): guard aborts with no partial change, migration applies, verify script passes, rollback runs.
+5. Deploy coupling: the migration must be applied together with the app deploy (design Rollout step 3); it is not standalone (REVOKE ALL FROM anon breaks the deployed legacy anon code check and the legacy webhook update).
+
+## Review fixes applied (post-review)
+- W1: placeholder guard is now the FIRST statement of the migration (stores the uid in a session setting `qr_discount.admin_uid`; section 3 reads it), so a non-transactional run aborts before any change.
+- W2: rollback voids QR rows (`acreditado = true WHERE "idEvento" IS NOT NULL`) before restoring anon SELECT / GRANT ALL and dropping the columns.
+- W3: tasks.md note corrected (not standalone).
+- S1: `COALESCE(p_ttl_min, 30)` in reservar/extender.
+- S2: vincular requires `reserva_pi IS NULL OR reserva_pi = p_payment_intent`.
+- S3: `SET search_path = public, pg_temp` on all functions.
+- S6: verify script raises a clear error when `mEvento` is empty.
+- DEFERRED: S4, S5 (not applied in this slice).
 
 ## Notes / decisions
 - Local-only drift evidence: repo migrations end at 20260910120000; table defined in 20260729215327_remote_schema.sql; policy "Enable read access for all users" (line 727) and admin `USING (true)` policy (20260729220000:67) are the ones replaced. Remote state unverified.
