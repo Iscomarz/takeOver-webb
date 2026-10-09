@@ -182,7 +182,7 @@ async function createWithDiscount({
 }) {
     let token = null;
     try {
-        const { items, subtotalCents, realPrices } = await resolvePricesFailClosed(stripe, idEvento, tickets);
+        const { subtotalCents, realPrices, totalQty, faseNombre } = await resolvePricesFailClosed(stripe, idEvento, tickets);
 
         const previo = typeof reservaPrevia === 'string' && UUID_REGEX.test(reservaPrevia) ? reservaPrevia : null;
         token = randomUUID();
@@ -199,20 +199,22 @@ async function createWithDiscount({
                 automatic_payment_methods: { enabled: true },
                 metadata: {
                     ...clientMetadata,
+                    // The webhook issues tickets from these two fields: never trust the client's values.
+                    cantidad: String(totalQty),
+                    nombreFase: faseNombre || '',
                     nombreEvento: nombreEvento || '',
-                    nombreFase: nombreFase || '',
                     codigoDescuento: codigoDescuento.trim().toUpperCase(),
                     porcentajeDescuento: String(porcentaje),
                     reservaDescuento: token,
                     idEvento: String(idEvento),
                     subtotalCentavos: String(subtotalCents)
                 },
-                description: `${nombreEvento} - ${nombreFase}`
+                description: `${nombreEvento} - ${faseNombre || nombreFase}`
             });
         } catch (err) {
             console.error('Error creating discounted payment intent:', err);
             await liberar(codigoDescuento, token);
-            return json({ error: err.message }, { status: 500 });
+            return json({ error: 'No se pudo crear el pago.' }, { status: 500 });
         }
 
         let linked = false;
@@ -299,7 +301,7 @@ async function resolvePricesFailClosed(stripe, idEvento, tickets) {
     const priceIds = [...qtyByPrice.keys()];
     const { data: fases, error: fasesError } = await supabaseAdmin
         .from('cFaseEvento')
-        .select('idPrecioStripe')
+        .select('idPrecioStripe, nombreFace')
         .eq('idEvento', idEvento)
         .in('idPrecioStripe', priceIds);
 
@@ -312,7 +314,6 @@ async function resolvePricesFailClosed(stripe, idEvento, tickets) {
 
     const realPrices = {};
     let subtotalCents = 0;
-    const items = [];
     for (const [idPrecioStripe, cantidad] of qtyByPrice) {
         let price;
         try {
@@ -331,10 +332,13 @@ async function resolvePricesFailClosed(stripe, idEvento, tickets) {
         }
         subtotalCents += price.unit_amount * cantidad;
         realPrices[idPrecioStripe] = price.unit_amount / 100;
-        items.push({ idPrecioStripe, cantidad, unitAmount: price.unit_amount });
     }
 
-    return { items, subtotalCents, realPrices };
+    // Phase name resolved from the server-side phase rows (first requested ticket, as the client does).
+    const nameByPrice = new Map((fases || []).map((f) => [f.idPrecioStripe, f.nombreFace]));
+    const faseNombre = nameByPrice.get(tickets[0].idPrecioStripe) || '';
+
+    return { subtotalCents, realPrices, totalQty, faseNombre };
 }
 
 async function callReservar(args) {
@@ -348,6 +352,8 @@ async function callReservar(args) {
     });
     if (error) {
         console.error('reservar_codigo_descuento error:', error.message);
+        // The RPC may have committed before the response failed; release by token (token-matched, safe).
+        await liberar(args.codigo, args.token);
         throw new DiscountError(500, { error: 'No se pudo reservar el código de descuento.' });
     }
     return Array.isArray(data) ? data[0] : data;
@@ -423,12 +429,15 @@ async function reserveCode({ stripe, codigoDescuento, idEvento, token, previo })
         return Number(cas.porcentaje);
     };
 
-    const pending = async () => {
+    // alreadyPaid only when the buyer's own PI is really past the point of payment
+    // (processing / requires_capture). Unknown status or a failed cancel stays plain CODE_PENDING.
+    const pending = async (status) => {
         await extender(tokenActual);
+        const alreadyPaid = isOwn && (status === 'processing' || status === 'requires_capture');
         throw new DiscountError(409, {
             error: 'Hay un pago en proceso con este código.',
             code: 'CODE_PENDING',
-            ...(isOwn ? { alreadyPaid: true } : {})
+            ...(alreadyPaid ? { alreadyPaid: true } : {})
         });
     };
 
@@ -452,7 +461,7 @@ async function reserveCode({ stripe, codigoDescuento, idEvento, token, previo })
     };
 
     let earlier = await retrieve();
-    if (!earlier) return pending();
+    if (!earlier) return pending(null);
 
     if (['requires_payment_method', 'requires_confirmation', 'requires_action'].includes(earlier.status)) {
         try {
@@ -460,7 +469,7 @@ async function reserveCode({ stripe, codigoDescuento, idEvento, token, previo })
         } catch (cancelErr) {
             console.error('No se pudo cancelar el PaymentIntent anterior:', cancelErr.message);
             earlier = await retrieve();
-            if (!earlier) return pending();
+            if (!earlier) return pending(null);
         }
     }
 
@@ -471,6 +480,6 @@ async function reserveCode({ stripe, codigoDescuento, idEvento, token, previo })
             return paid();
         default:
             // processing, requires_capture, or a PI that is still payable after a failed cancel
-            return pending();
+            return pending(earlier.status);
     }
 }

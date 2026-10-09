@@ -64,3 +64,5 @@ Chain strategy: pending
 - [ ] 4.3 Cancel releases the code. Takeover of an expired `requires_payment_method` PI. Paid-buyer return gets `alreadyPaid`.
 - [ ] 4.4 Referral checkout still works. Discount plus referral gives 400. Legacy code gives 409. Validate/create-PI return 429 after the threshold.
 - [ ] 4.5 Rollout: add the Vercel key, subscribe `payment_intent.canceled`, apply the migration, confirm the production origin, run the generator, run the insert SQL, grep for `DISCOUNT_REDEEM_FAILED`.
+
+> DEPLOY COUPLING (W2): PR 2 (Phase 2 server) must NOT be deployed without PR 3 (client) and the Phase 1 migration. The current client sends referral codes in `metadata.codigoDescuento` and no `idEvento`, so the new server returns 400. Deploy PR 1 + 2 + 3 together.

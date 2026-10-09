@@ -104,3 +104,16 @@ None material.
 3. Apply the Phase 1 migration together with this deploy (RPCs must exist; REVOKE from anon).
 4. Phase 4 manual E2E in Stripe test mode (task 4.x): none of the Stripe/DB behavior was exercised against real services.
 5. After deploy, grep logs for `DISCOUNT_REDEEM_FAILED` / `DISCOUNT_DOUBLE_SPEND`.
+
+## Post-review fixes (Phase 2)
+Applied to `src/routes/api/create-payment-intent/+server.js` after an independent review.
+- W1: `pending(status)` now sets `alreadyPaid: true` only when the buyer's own hold has PI status `processing` or `requires_capture`. A failed Stripe retrieve (status null) or a failed cancel leaving `requires_*` returns plain 409 `CODE_PENDING`. The `succeeded` branch (`paid()`) keeps `alreadyPaid` for own holds as designed.
+- W3: on the discount path the PI metadata `cantidad` is forced to the server-computed total quantity and `nombreFase` is derived from the server-side `cFaseEvento.nombreFace` of the first requested ticket (query now selects `idPrecioStripe, nombreFace`), so the webhook cannot issue more tickets or a pricier phase than paid. The no-code path is unchanged.
+- S2: `callReservar` calls `liberar(codigo, token)` when the `reservar` RPC returns an error (token-matched, so a no-op if our hold was not committed).
+- S3: Stripe PI create failure on the discount path returns a generic message (`No se pudo crear el pago.`); detail is logged server-side only. (The legacy no-code path still returns `err.message`; left unchanged on purpose.)
+- S6: removed the unused `items` variable.
+- Deferred / out of scope: S1, S4, S5 (not addressed in this pass).
+- Verification: `node --check` OK, `node scripts/verify-discount-amount.mjs` OK, `npx vite build` OK. New stub harness (kept outside the repo) passes: alreadyPaid true for own processing / requires_capture / succeeded, false for failed cancel (requires_*) and failed retrieve; `cantidad`/`nombreFase` forced from server; `reservar` error -> `liberar`; no raw Stripe message.
+
+### DEPLOY COUPLING (W2) - PENDING, prominent
+PR 2 (server) CANNOT be deployed without PR 3 (client) and the Phase 1 migration. The current client still sends referral codes in `metadata.codigoDescuento` and sends no `idEvento`, so the new server treats them as discount codes and returns 400/409. Ship PR 1 + PR 2 + PR 3 together. No code change made for this.
