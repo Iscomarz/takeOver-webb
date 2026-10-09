@@ -38,17 +38,17 @@ Chain strategy: pending
 - [x] 1.11 Create `scripts/verify-discount-db.sql`: race (two `psql` sessions), CAS miss, takeover branches, release, idempotent redeem, anon read returns 0 rows, anon/non-admin RPC denied.
 
 ## Phase 2: Server (PR 2)
-- [ ] 2.1 Create `src/lib/server/supabaseAdmin.js` (service-role client, server only); document `SUPABASE_SERVICE_ROLE_KEY`.
-- [ ] 2.2 Create `src/routes/api/validate-discount/+server.js` calling `validar`; generic invalid response.
-- [ ] 2.3 Modify `src/hooks.server.js`: add both endpoints to `CRITICAL_ROUTES`.
-- [ ] 2.4 Create `src/lib/server/discount.js` with `computeDiscountedAmount`, plus `scripts/verify-discount-amount.mjs` (Node assert, 1-10 tickets at 35000).
-- [ ] 2.5 Modify `src/routes/api/create-payment-intent/+server.js`: split `codigoDescuento`/`codigoReferido` (400 if both), metadata allowlist, fail-closed price resolution (event ownership, integer quantities 1-10).
-- [ ] 2.6 Same file: reserve flow with takeover. Retrieved `canceled` goes to CAS. `requires_*` is cancelled, then CAS. `processing` or failed cancel goes to `extender`, then 409 `CODE_PENDING`. `succeeded` goes to `canjear`, then 409 (`alreadyPaid` if own token).
-- [ ] 2.7 Same file: expired hold with no PI that is not the buyer's own goes straight to CAS (no clientSecret was ever returned); never call `stripe.retrieve(null)`.
-- [ ] 2.8 Same file: Stripe create failure calls `liberar`. `vincular` failure or false cancels the PI and calls `liberar`, then 500. `totalPriceReal` (line 77) returns the discounted amount. Legacy codes now get 409 (intended; document in a code comment).
-- [ ] 2.9 Modify `src/routes/api/update-payment-intent/+server.js`: allowlist `nombre, correo`.
-- [ ] 2.10 Modify `src/routes/api/webhook/+server.js`: delete `acreditarCodigoDescuentoDesdeMetadata`. On `succeeded`, call `canjear` through `supabaseAdmin` only when `metadata.reservaDescuento` is present, with 2 retries, `DISCOUNT_REDEEM_FAILED` error log, and a best-effort cancel of `pi_desplazado`.
-- [ ] 2.11 Same file: add a `payment_intent.canceled` case calling `liberar`; guard the legacy `checkout.session` path with `"idEvento" IS NULL`. Do NOT touch the fall-through at lines 88-94.
+- [x] 2.1 Create `src/lib/server/supabaseAdmin.js` (service-role client, server only); document `SUPABASE_SERVICE_ROLE_KEY`.
+- [x] 2.2 Create `src/routes/api/validate-discount/+server.js` calling `validar`; generic invalid response.
+- [x] 2.3 Modify `src/hooks.server.js`: add both endpoints to `CRITICAL_ROUTES`.
+- [x] 2.4 Create `src/lib/server/discount.js` with `computeDiscountedAmount`, plus `scripts/verify-discount-amount.mjs` (Node assert, 1-10 tickets at 35000).
+- [x] 2.5 Modify `src/routes/api/create-payment-intent/+server.js`: split `codigoDescuento`/`codigoReferido` (400 if both), metadata allowlist, fail-closed price resolution (event ownership, integer quantities 1-10).
+- [x] 2.6 Same file: reserve flow with takeover. Retrieved `canceled` goes to CAS. `requires_*` is cancelled, then CAS. `processing` or failed cancel goes to `extender`, then 409 `CODE_PENDING`. `succeeded` goes to `canjear`, then 409 (`alreadyPaid` if own token).
+- [x] 2.7 Same file: expired hold with no PI that is not the buyer's own goes straight to CAS (no clientSecret was ever returned); never call `stripe.retrieve(null)`.
+- [x] 2.8 Same file: Stripe create failure calls `liberar`. `vincular` failure or false cancels the PI and calls `liberar`, then 500. `totalPriceReal` (line 77) returns the discounted amount. Legacy codes now get 409 (intended; document in a code comment).
+- [x] 2.9 Modify `src/routes/api/update-payment-intent/+server.js`: allowlist `nombre, correo`.
+- [x] 2.10 Modify `src/routes/api/webhook/+server.js`: delete `acreditarCodigoDescuentoDesdeMetadata`. On `succeeded`, call `canjear` through `supabaseAdmin` only when `metadata.reservaDescuento` is present, with 2 retries, `DISCOUNT_REDEEM_FAILED` error log, and a best-effort cancel of `pi_desplazado`.
+- [x] 2.11 Same file: add a `payment_intent.canceled` case calling `liberar`; guard the legacy `checkout.session` path with `"idEvento" IS NULL`. Do NOT touch the fall-through at lines 88-94.
 
 ## Phase 3: Client and Generator (PR 3)
 - [ ] 3.1 Modify `src/routes/components/Tickets.svelte`: `codigoInicial` prop, split fields (mutually exclusive), call `/api/validate-discount`, remove the hardcoded price (line 85).

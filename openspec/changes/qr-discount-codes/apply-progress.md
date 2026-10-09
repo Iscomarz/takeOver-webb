@@ -59,3 +59,48 @@
 
 ## Deviations from design
 None material.
+
+---
+
+# Phase 2: Server (slice 2 of 3)
+
+**Branch**: feat/qr-discount-server (from feat/qr-discount-db). **Mode**: Standard (no test runner).
+
+- [x] 2.1 src/lib/server/supabaseAdmin.js (service-role client; logs an error if SUPABASE_SERVICE_ROLE_KEY is missing)
+- [x] 2.2 src/routes/api/validate-discount/+server.js (token-less `validar`; any failure returns `{ valid: false }`)
+- [x] 2.3 hooks.server.js: `/api/validate-discount` and `/api/create-payment-intent` added to CRITICAL_ROUTES
+- [x] 2.4 src/lib/server/discount.js + scripts/verify-discount-amount.mjs (passes: 1-10 tickets at 35000, exact 85%)
+- [x] 2.5 create-payment-intent: split fields, 400 if both, allowlist, fail-closed pricing (event ownership via cFaseEvento, Stripe prices, mxn, integer qty 1-10)
+- [x] 2.6 reserve flow with takeover (cancel -> CAS, processing/failed cancel -> extender + 409 CODE_PENDING, succeeded -> canjear + 409)
+- [x] 2.7 no-PI hold goes straight to CAS; never retrieve(null)
+- [x] 2.8 create failure -> liberar; vincular error/false -> cancel PI + liberar + 500; totalPriceReal is the discounted amount; legacy codes -> 409 (documented in code)
+- [x] 2.9 update-payment-intent allowlist (`nombre`, `correo`)
+- [x] 2.10 webhook: `acreditarCodigoDescuentoDesdeMetadata` deleted; `canjear` via supabaseAdmin only when `metadata.reservaDescuento` is present, 2 retries, `DISCOUNT_REDEEM_FAILED`, best-effort cancel of `pi_desplazado`, always 200
+- [x] 2.11 `payment_intent.canceled` -> `liberar`; legacy `acreditarCodigoDescuento` guarded with `.is("idEvento", null)`. Fall-through at the old lines 88-94 untouched.
+
+## Commits
+- f886ea0 feat(server): service-role client, validate endpoint, amount helper (2.1-2.4)
+- baa9b94 feat(payments): create-payment-intent (2.5-2.8)
+- cab187d fix(payments): update-payment-intent allowlist (2.9)
+- 97f0f69 feat(webhook): canjear/liberar (2.10-2.11)
+
+## Verification performed (no real Stripe/Supabase touched)
+- `node scripts/verify-discount-amount.mjs`: OK
+- `node --check` on all touched files; `npx vite build`: OK
+- Throwaway node harness (Node loader stubbing Stripe + supabaseAdmin, kept outside the repo): create-payment-intent (no-code legacy path + allowlist, 400 both fields, happy path with 85%-style amount and server metadata, unavailable, takeover requires_* -> cancel -> CAS, failed cancel -> extender/CODE_PENDING, processing own -> alreadyPaid, succeeded -> canjear + 409, vincular false -> cancel+liberar+500, Stripe create failure -> liberar, no-PI CAS without retrieve, ownership failure 400, qty 11 / 1.5 -> 400, legacy code via metadata -> 409) and webhook (canceled -> liberar, no canjear without reservaDescuento, 3 attempts then DISCOUNT_REDEEM_FAILED without 5xx, retry success, superseded -> cancel displaced PI). All pass. The harness is not committed.
+
+## Decisions / deviations
+- `canjear` runs at the START of `payment_intent.succeeded` (design data flow says "canjear FIRST"), before existePago/tickets; it is idempotent (`already_same_pi`) so Stripe retries are safe. Because `checkout.session.completed` falls through into this case (existing behavior), canjear is a no-op there since checkout sessions never carry `reservaDescuento`.
+- A discount code sent in the legacy `metadata.codigoDescuento` is still treated as a discount code (so a client cannot bypass server validation); legacy codes therefore get 409 CODE_UNAVAILABLE.
+- Referral code accepted from `codigoReferido` or `metadata.codigoReferido`; both a discount and a referral => 400.
+- Own hold in `processing` returns 409 `CODE_PENDING` with `alreadyPaid: true` (design "paid-buyer return"); the client slice must handle both flags.
+- `reservar` result `reserved` on the first call sets reserva_pi NULL; `vincular` attaches the PI after Stripe create. Extra response fields: `reservaDescuento`, `porcentajeDescuento`.
+- Rate limiter is a single per-IP counter (15/min) shared across all CRITICAL_ROUTES, so create-payment-intent now counts against the same budget as `/checkout`; no change to thresholds.
+- The Stripe `payment_intent.canceled` in turn fires when the server itself cancels a displaced PI; `liberar` is token-matched, so it cannot release the new holder.
+
+## PENDING items for the user (Phase 2)
+1. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel (server-side only, no VITE_ prefix) and to local `.env` for dev. `supabaseAdmin.js` reads URL from `SUPABASE_PROJECT_URL` (fallback `VITE_SUPABASE_URL`).
+2. Stripe Dashboard: subscribe the webhook endpoint to `payment_intent.canceled` (currently unhandled events return 400).
+3. Apply the Phase 1 migration together with this deploy (RPCs must exist; REVOKE from anon).
+4. Phase 4 manual E2E in Stripe test mode (task 4.x): none of the Stripe/DB behavior was exercised against real services.
+5. After deploy, grep logs for `DISCOUNT_REDEEM_FAILED` / `DISCOUNT_DOUBLE_SPEND`.
