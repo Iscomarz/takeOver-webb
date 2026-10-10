@@ -7,12 +7,15 @@
   import Cards from "../../components/cards.svelte";
   import EventMedia from "../../components/EventMedia.svelte";
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import { fade } from "svelte/transition";
   import BotonComunidad from "../../components/botonComunidad.svelte";
 
   export let data;
 
   let loading = false;
+  // QR deep link: /eventos/<id>?code=<CODE>. Tickets validates it against the server.
+  $: codigoQR = ($page.url.searchParams.get("code") || "").trim().slice(0, 64);
   $: ({ mEvento, fases, media = [], urlImagenPortada, eventoActivo, id: idEvento } = data);
 
   async function getProducts() {
@@ -217,6 +220,7 @@
                 eventoReferidos={mEvento.referidos}
                 mEvento={mEvento}
                 urlImagenPortada={urlImagenPortada}
+                codigoInicial={codigoQR}
               />
             </div>
           </div>

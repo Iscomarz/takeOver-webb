@@ -4,6 +4,7 @@ import { json } from "@sveltejs/kit";
 import { createClient } from "@supabase/supabase-js";
 import { generarTicket } from "$lib/utils/generarTicket";
 import QRCode from "qrcode";
+import { supabaseAdmin } from "$lib/server/supabaseAdmin";
 
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL,
@@ -82,14 +83,12 @@ export async function POST(event) {
       }
     case "payment_intent.succeeded":
       console.log("Pago exitoso, procesando...");
+      // Redeem the QR discount code first. Never throws and never blocks tickets.
+      await canjearDescuentoDesdePaymentIntent(session);
       if (await existePago(session.id)) {
         console.log("existe pago");
         //Este procedimiento acredita el pago en mPago y genera los tickets en la tabla ticket
         if (await acreditaPagoYGeneraTickets(event, session.id)) {
-          // Acreditar código de descuento desde metadata del Payment Intent
-          if (session.metadata?.codigoDescuento) {
-            await acreditarCodigoDescuentoDesdeMetadata(session.metadata);
-          }
           return json({ message: "Pago acreditado" }, { status: 200 });
         }
       } else {
@@ -99,9 +98,6 @@ export async function POST(event) {
         if (guardado) {
           // Acreditar y generar tickets inmediatamente después de insertar
           if (await acreditaPagoYGeneraTickets(event, session.id)) {
-            if (session.metadata?.codigoDescuento) {
-              await acreditarCodigoDescuentoDesdeMetadata(session.metadata);
-            }
             return json({ message: "Pago guardado y acreditado exitosamente" }, { status: 200 });
           }
         }
@@ -125,6 +121,10 @@ export async function POST(event) {
       console.log("Sesión expirada, no se procesa el pago");
 
       return json({ message: "Sesión expirada" }, { status: 200 });
+    case "payment_intent.canceled":
+      console.log("Payment Intent cancelado, liberando código de descuento si aplica...");
+      await liberarDescuentoDesdePaymentIntent(session);
+      return json({ message: "Payment Intent cancelado" }, { status: 200 });
     default:
       return json({ message: "Evento no manejado" }, { status: 400 });
   }
@@ -519,7 +519,9 @@ async function acreditarCodigoDescuento(session) {
           fecha_acreditado: new Date().toISOString(),
           session_id: session.id,
         })
-        .eq("codigo", codigoDescuento);
+        .eq("codigo", codigoDescuento)
+        // QR codes (idEvento set) are redeemed only through canjear_codigo_descuento
+        .is("idEvento", null);
 
       if (error) {
         console.error("Error al acreditar código de descuento:", error);
@@ -539,39 +541,80 @@ async function acreditarCodigoDescuento(session) {
   }
 }
 
-// Función para acreditar código de descuento desde metadata
-async function acreditarCodigoDescuentoDesdeMetadata(metadata) {
-  try {
-    const codigoDescuento = metadata?.codigoDescuento;
+const REDEEM_RETRIES = 2;
+const REDEEM_RETRY_DELAY_MS = 300;
 
-    if (codigoDescuento) {
-      console.log(
-        `Acreditando código de descuento desde metadata: ${codigoDescuento}`,
+// Redeems a QR discount code reserved for this PaymentIntent. Only runs when the
+// server stamped metadata.reservaDescuento at creation time. Failures are logged
+// (DISCOUNT_REDEEM_FAILED) and swallowed: the buyer already paid, so tickets must
+// not depend on code bookkeeping and Stripe must receive a 200.
+async function canjearDescuentoDesdePaymentIntent(paymentIntent) {
+  const metadata = paymentIntent?.metadata || {};
+  const token = metadata.reservaDescuento;
+  const codigo = metadata.codigoDescuento;
+  if (!token) return;
+
+  for (let attempt = 0; attempt <= REDEEM_RETRIES; attempt++) {
+    try {
+      const { data, error } = await supabaseAdmin.rpc("canjear_codigo_descuento", {
+        p_codigo: codigo,
+        p_token: token,
+        p_payment_intent: paymentIntent.id,
+      });
+      if (error) throw new Error(error.message);
+
+      const row = Array.isArray(data) ? data[0] : data;
+      const resultado = row?.resultado;
+      console.log(`Código de descuento ${codigo}: ${resultado}`);
+
+      if (resultado === "double_spend") {
+        console.error("DISCOUNT_DOUBLE_SPEND", { pi: paymentIntent.id, codigo });
+      }
+      if (
+        resultado === "superseded_redeemed" &&
+        row.pi_desplazado &&
+        row.pi_desplazado !== paymentIntent.id
+      ) {
+        try {
+          await stripe.paymentIntents.cancel(row.pi_desplazado);
+        } catch (cancelErr) {
+          console.error(
+            `No se pudo cancelar el PaymentIntent desplazado ${row.pi_desplazado}:`,
+            cancelErr.message,
+          );
+        }
+      }
+      return;
+    } catch (err) {
+      console.error(
+        `Error canjeando código de descuento (intento ${attempt + 1}):`,
+        err.message,
       );
-
-      const { data, error } = await supabase
-        .from("codigosDescuento")
-        .update({
-          acreditado: true,
-          fecha_acreditado: new Date().toISOString(),
-        })
-        .eq("codigo", codigoDescuento);
-
-      if (error) {
-        console.error("Error al acreditar código de descuento:", error);
-        return false;
-      } else {
-        console.log(
-          "Código de descuento acreditado exitosamente:",
-          codigoDescuento,
-        );
-        return true;
+      if (attempt < REDEEM_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, REDEEM_RETRY_DELAY_MS));
       }
     }
-    return true;
-  } catch (error) {
-    console.error("Error en acreditarCodigoDescuentoDesdeMetadata:", error);
-    return false;
+  }
+
+  console.error("DISCOUNT_REDEEM_FAILED", { pi: paymentIntent.id, codigo });
+}
+
+// Releases the hold of a canceled PaymentIntent. The RPC matches on the
+// reservation token, so a hold already taken over by someone else is untouched.
+async function liberarDescuentoDesdePaymentIntent(paymentIntent) {
+  const metadata = paymentIntent?.metadata || {};
+  if (!metadata.reservaDescuento || !metadata.codigoDescuento) return;
+
+  try {
+    const { error } = await supabaseAdmin.rpc("liberar_codigo_descuento", {
+      p_codigo: metadata.codigoDescuento,
+      p_token: metadata.reservaDescuento,
+    });
+    if (error) {
+      console.error("Error liberando código de descuento:", error.message);
+    }
+  } catch (err) {
+    console.error("Error liberando código de descuento:", err);
   }
 }
 

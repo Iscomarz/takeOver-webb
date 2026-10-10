@@ -7,6 +7,10 @@
   export let eventoPasado = false;
   export let descuentoAplicado = false;
   export let codigoDescuentoUsado = null;
+  // "descuento" | "referido" | null. Decides which request field carries the code.
+  export let tipoCodigo = null;
+  export let porcentajeDescuento = 0;
+  export let idEvento = null;
   export let nombreEvento = "";
   export let nombreFase = "";
   export let tickets = []; 
@@ -28,6 +32,9 @@
       cantidad,
       descuentoAplicado,
       codigoDescuentoUsado,
+      tipoCodigo,
+      porcentajeDescuento,
+      idEvento,
       nombreEvento,
       nombreFase,
       tickets: tickets.filter(t => t.cantidad > 0).map(t => ({

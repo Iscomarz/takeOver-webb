@@ -28,6 +28,14 @@
   let urlImagenPortada = "";
   let descuentoAplicado = false;
   let codigoDescuentoUsado = null;
+  let tipoCodigo = null;
+  let porcentajeDescuento = 0;
+  let idEvento = null;
+  // Blocking message for discount-code conflicts (409) and the "payment received" case.
+  let errorCodigo = "";
+  let pagoRecibido = false;
+
+  const RESERVA_KEY = "reservaPrevia";
 
   onMount(async () => {
     const stored = sessionStorage.getItem("takeover_checkout_data");
@@ -59,6 +67,12 @@
       urlImagenPortada = checkoutData.urlImagenPortada || "";
       descuentoAplicado = checkoutData.descuentoAplicado || false;
       codigoDescuentoUsado = checkoutData.codigoDescuentoUsado || null;
+      tipoCodigo = codigoDescuentoUsado ? checkoutData.tipoCodigo || null : null;
+      porcentajeDescuento = tipoCodigo === "descuento" ? Number(checkoutData.porcentajeDescuento) || 0 : 0;
+      const idEventoGuardado = Number(
+        checkoutData.idEvento ?? tickets[0]?.idEvento ?? mEvento?.idevento
+      );
+      idEvento = Number.isInteger(idEventoGuardado) ? idEventoGuardado : null;
 
       // Si es una compra (precio > 0), inicializamos Stripe
       if (finalPrice > 0) {
@@ -83,29 +97,51 @@
         .map(t => `${t.nombreFace} (x${t.cantidad})`)
         .join(", ");
 
+      // Discount and referral codes are mutually exclusive: send exactly one field.
+      const payload = {
+        amount: finalPrice,
+        tickets: tickets,
+        idEvento,
+        metadata: {
+          nombre: nombre,
+          correo: correo,
+          cantidad: cantidad,
+          ticketsDescripcion: ticketsDescripcion
+        },
+        nombreEvento: nombreEvento,
+        nombreFase: tickets.length > 0 ? tickets[0].nombreFace : ""
+      };
+      if (codigoDescuentoUsado && tipoCodigo === "descuento") {
+        payload.codigoDescuento = codigoDescuentoUsado;
+        const reservaPrevia = sessionStorage.getItem(RESERVA_KEY);
+        if (reservaPrevia) payload.reservaPrevia = reservaPrevia;
+      } else if (codigoDescuentoUsado && tipoCodigo === "referido") {
+        payload.codigoReferido = codigoDescuentoUsado;
+      }
+
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          amount: finalPrice,
-          tickets: tickets,
-          metadata: {
-            codigoDescuento: codigoDescuentoUsado,
-            nombre: nombre, 
-            correo: correo,
-            cantidad: cantidad,
-            ticketsDescripcion: ticketsDescripcion
-          },
-          nombreEvento: nombreEvento,
-          nombreFase: tickets.length > 0 ? tickets[0].nombreFace : ""
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+
+      if (response.status === 409 && (data.code === "CODE_PENDING" || data.code === "CODE_UNAVAILABLE")) {
+        manejarConflictoCodigo(data);
+        return;
+      }
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "No se pudo iniciar el pago");
+      }
+
+      if (data.reservaDescuento) {
+        sessionStorage.setItem(RESERVA_KEY, data.reservaDescuento);
+      }
+      if (data.porcentajeDescuento !== undefined) {
+        porcentajeDescuento = Number(data.porcentajeDescuento) || 0;
       }
 
       // Actualizar precios y total con los valores reales obtenidos de Stripe
@@ -179,6 +215,26 @@
     }
   }
 
+  function manejarConflictoCodigo(data) {
+    showPaymentForm = false;
+    if (data.alreadyPaid) {
+      // The buyer's own payment already went through: never create a second PaymentIntent.
+      sessionStorage.removeItem(RESERVA_KEY);
+      sessionStorage.removeItem("takeover_checkout_data");
+      pagoRecibido = true;
+      errorCodigo =
+        "Recibimos tu pago con este código. Recibirás tus accesos por correo electrónico en unos minutos.";
+    } else if (data.code === "CODE_PENDING") {
+      errorCodigo =
+        "Hay un pago en proceso con este código. Espera unos minutos y vuelve a intentarlo.";
+    } else {
+      sessionStorage.removeItem(RESERVA_KEY);
+      errorCodigo =
+        "El código de descuento ya no está disponible. Regresa al evento para continuar sin descuento.";
+    }
+    toast.error(errorCodigo);
+  }
+
   async function handleSubmit() {
     if (!stripe || !elements) {
       toast.error("La pasarela de pago no está lista. Por favor espera.");
@@ -243,6 +299,11 @@
         }
       },
     });
+
+    if (!error) {
+      // Payment confirmed (the browser is being redirected): the hold is no longer needed.
+      sessionStorage.removeItem(RESERVA_KEY);
+    }
 
     if (error) {
       console.error("Error confirmando pago:", error);
@@ -419,7 +480,9 @@
           {#if descuentoAplicado && codigoDescuentoUsado}
             <div class="applied-discount">
               <span>Código aplicado: <strong>{codigoDescuentoUsado}</strong></span>
-              <span class="discount-badge">¡Descuento Activo!</span>
+              <span class="discount-badge">
+                {tipoCodigo === "descuento" && porcentajeDescuento ? `${porcentajeDescuento}% de descuento` : "¡Descuento Activo!"}
+              </span>
             </div>
           {/if}
 
@@ -476,7 +539,14 @@
           {#if finalPrice > 0}
             <div class="payment-method-section">
               <h4>Método de pago</h4>
-              {#if showPaymentForm}
+              {#if errorCodigo}
+                <div class="code-conflict" class:paid={pagoRecibido} role="alert">
+                  <p>{errorCodigo}</p>
+                  {#if !pagoRecibido}
+                    <button class="btn-back" on:click={volverAtras}>Volver al evento</button>
+                  {/if}
+                </div>
+              {:else if showPaymentForm}
                 <div id="payment-element" class="payment-element-container">
                   <!-- Stripe se montará aquí -->
                 </div>
@@ -707,6 +777,25 @@
     border-radius: 8px;
     margin-bottom: 15px;
     font-size: 0.9em;
+  }
+
+  .code-conflict {
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #dc3545;
+    background-color: rgba(220, 53, 69, 0.08);
+    color: #f1b0b7;
+    font-size: 0.95em;
+  }
+
+  .code-conflict.paid {
+    border-color: #56fdb8;
+    background-color: rgba(86, 253, 184, 0.08);
+    color: #56fdb8;
+  }
+
+  .code-conflict p {
+    margin: 0 0 10px;
   }
 
   .discount-badge {
