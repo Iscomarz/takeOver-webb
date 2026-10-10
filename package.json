@@ -7,7 +7,7 @@
 		"preview": "vite preview"
 	},
 	"engines": {
-		"node": "20.x"
+		"node": "24.x"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.0.0",
