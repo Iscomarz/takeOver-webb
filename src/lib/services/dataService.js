@@ -72,17 +72,6 @@ export function getImagenPublicUrl(path) {
   return data ? data.publicUrl : null;
 }
 
-export async function validarCodigoDescuentoSupabase(codigo) {
-    const { data, error } = await supabase
-        .from("codigosDescuento")
-        .select("*")
-        .eq("codigo", codigo)
-        .eq("acreditado", false)
-        .single();
-
-    return { data, error };
-}
-
 export async function getMediaByEvento(idEvento) {
   const { data, error } = await supabase
     .from("tEventoMedia")
