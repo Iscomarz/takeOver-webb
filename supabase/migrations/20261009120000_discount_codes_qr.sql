@@ -11,7 +11,7 @@
 DO $$
 DECLARE
   -- PENDING: set to the auth.users.id of franmtz96@gmail.com before applying.
-  v_admin_uid text := '__ADMIN_UUID_PLACEHOLDER__';
+  v_admin_uid text := 'b2e2464a-cadf-4e5c-8ac9-851d6261f90c';
 BEGIN
   IF v_admin_uid !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
     RAISE EXCEPTION 'Admin uuid placeholder not replaced in migration 20261009120000';
