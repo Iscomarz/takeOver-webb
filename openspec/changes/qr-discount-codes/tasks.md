@@ -25,7 +25,7 @@ Chain strategy: pending
 | 3 | UI, QR deep link, generator, `.gitignore` | PR 3 | Base: PR 2 |
 
 ## Phase 1: Database (PR 1)
-- [ ] 1.1 Drift check (design Rollout 1): migrations, policies, grants, duplicate `codigo`, admin uuid, signup setting. Record in apply-progress. (PENDING: needs live DB access; queries recorded in apply-progress)
+- [x] 1.1 Drift check (design Rollout 1): migrations, policies, grants, duplicate `codigo`, admin uuid, signup setting. Record in apply-progress. (DONE 2026-10-09 via read-only `supabase db query --linked`: local/remote migrations in sync; policies are exactly the two expected (anon+authenticated SELECT true, admin ALL true); anon holds ALL grants; no duplicate `codigo`; 10 legacy codes, 0 redeemed; admin uuid applied to the migration. PENDING: hosted signup setting, dashboard-only.)
 - [x] 1.2 Create `supabase/migrations/20261009120000_discount_codes_qr.sql`: add columns `idEvento`, `porcentaje`, `reserva_*`; UNIQUE(`codigo`).
 - [x] 1.3 Same file: `DROP POLICY IF EXISTS "Enable read access for all users"` (remote_schema.sql:727) and `REVOKE ALL ON "codigosDescuento" FROM anon` (spec: Enumeration).
 - [x] 1.4 Same file: replace "Admin All Access codigosDescuento" with `auth.uid() = '<admin uuid>'` USING/WITH CHECK. (written with a guarded placeholder; admin uuid PENDING, see apply-progress)
