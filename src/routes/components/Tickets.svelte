@@ -333,6 +333,7 @@
       idEvento={obtenerIdEvento()}
       nombreEvento={nombreEvento}
       nombreFase={$tickets.filter(t => t.cantidad > 0)[0]?.nombreFace || ""}
+      descripcionFase={$tickets.filter(t => t.cantidad > 0)[0]?.descripcion || ""}
       tickets={$tickets}
       {mEvento}
       {urlImagenPortada}

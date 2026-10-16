@@ -34,6 +34,7 @@
   // Blocking message for discount-code conflicts (409) and the "payment received" case.
   let errorCodigo = "";
   let pagoRecibido = false;
+  let descripcionFase = "";
 
   const RESERVA_KEY = "reservaPrevia";
 
@@ -69,6 +70,7 @@
       codigoDescuentoUsado = checkoutData.codigoDescuentoUsado || null;
       tipoCodigo = codigoDescuentoUsado ? checkoutData.tipoCodigo || null : null;
       porcentajeDescuento = tipoCodigo === "descuento" ? Number(checkoutData.porcentajeDescuento) || 0 : 0;
+      descripcionFase = checkoutData.descripcionFase || tickets.find(t => t.descripcion)?.descripcion || "";
       const idEventoGuardado = Number(
         checkoutData.idEvento ?? tickets[0]?.idEvento ?? mEvento?.idevento
       );
@@ -475,6 +477,18 @@
             {/each}
           </div>
 
+          {#if descripcionFase}
+            <div class="ticket-restriction-box">
+              <div class="restriction-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path>
+                </svg>
+                <span>Restricción / Condición de acceso</span>
+              </div>
+              <p class="restriction-text">{descripcionFase}</p>
+            </div>
+          {/if}
+
           <div class="divider"></div>
 
           {#if descuentoAplicado && codigoDescuentoUsado}
@@ -759,6 +773,34 @@
   .ticket-price {
     color: #fff;
     font-weight: 500;
+  }
+
+  .ticket-restriction-box {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background-color: rgba(86, 253, 184, 0.06);
+    border: 1px solid rgba(86, 253, 184, 0.25);
+    border-radius: 8px;
+  }
+
+  .restriction-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #56fdb8;
+    font-size: 0.82em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .restriction-text {
+    margin: 0;
+    font-size: 0.9em;
+    color: #e5e5e5;
+    line-height: 1.45;
+    white-space: pre-line;
   }
 
   .divider {

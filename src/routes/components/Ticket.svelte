@@ -3,6 +3,7 @@
   import Counter from "./Counter.svelte";
   import { createEventDispatcher, onMount } from "svelte";
   import { get } from "svelte/store";
+  import infoIcon from "$lib/images/icons/info.svg";
 
   export let vigencia;
   export let precio;
@@ -41,6 +42,7 @@
     tickets.update((currentTickets) => {
       const updatedTickets = [...currentTickets];
       updatedTickets[index] = {
+        ...currentTickets[index],
         precio: precio,
         cantidad: cantidad,
         nombreFace: nombreFace,
@@ -49,6 +51,7 @@
         idFase: idFase,
         idEvento: idEvento,
         fechaExpira: vigencia,
+        descripcion: descripcion,
       };
       return updatedTickets;
     });
@@ -85,18 +88,21 @@
 {#if !oculto}
 <div class="rounded" class:inactivo class:first={isFirst} class:last={isLast} class:middle={!isFirst && !isLast}>
   {#if descripcion}
-    <span 
+    <button 
+      type="button"
       class="info-icon"
+      aria-label="Información de la fase"
       on:mouseenter={() => mostrarPopup = true}
       on:mouseleave={() => mostrarPopup = false}
+      on:click|stopPropagation={() => mostrarPopup = !mostrarPopup}
     >
-      <img src="/src/lib/images/icons/info.svg" alt="info" class="icon-img" />
+      <img src={infoIcon} alt="info" class="icon-img" />
       {#if mostrarPopup}
-        <div class="popup">
+        <span class="popup" role="tooltip">
           {descripcion}
-        </div>
+        </span>
       {/if}
-    </span>
+    </button>
   {/if}
   
   <div style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 10px;">
@@ -168,7 +174,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: help;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
     transition: opacity 0.2s;
     z-index: 10;
   }
@@ -184,6 +194,7 @@
   }
 
   .popup {
+    display: block;
     position: absolute;
     top: 100%;
     right: 0;
