@@ -15,8 +15,13 @@
   // Code coming from the QR deep link (?code=). Auto-filled and validated on mount.
   export let codigoInicial = "";
 
-  let ticketsPublicos = [];
-  let ticketReferidoInfo = null;
+  // Filtramos el ticket especial y tickets ocultos para que no rompan el cálculo de isFirst / isLast
+  $: ticketsPublicos = (ticketDataEve || []).filter(
+    (t) => t.nombreFace !== "Referido Especial" && !t.oculto
+  );
+  $: ticketReferidoInfo = (ticketDataEve || []).find(
+    (t) => t.nombreFace === "Referido Especial"
+  );
   let idStripeSeleccionado = null;
   let cantidad = 0;
   
@@ -41,9 +46,6 @@
 
   onMount(async () => {
     await tick();
-    // Filtramos el ticket especial para que no aparezca en la lista normal
-    ticketsPublicos = ticketDataEve.filter(t => t.nombreFace !== 'Referido Especial');
-    ticketReferidoInfo = ticketDataEve.find(t => t.nombreFace === 'Referido Especial');
 
     tickets.set(ticketsPublicos);
     inactivoState.set(ticketsPublicos.map((ticket) => !ticket.activo));
@@ -358,6 +360,19 @@
     flex-direction: column;
     align-items: center;
     gap: 0;
+  }
+
+  /* Asegura que el primer ticket visible cierre su borde y redondee esquinas superiores */
+  .tickets-container :global(.rounded:first-of-type) {
+    border-top: 1px solid #4b4b4b !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+  }
+
+  /* Asegura que el último ticket visible redondee esquinas inferiores */
+  .tickets-container :global(.rounded:last-of-type) {
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
   }
 
   /* Estilos para código de descuento */

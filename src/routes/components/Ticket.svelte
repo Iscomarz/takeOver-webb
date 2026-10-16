@@ -147,6 +147,7 @@
   /* Primer ticket - borde superior redondeado */
   .rounded.first {
     border-radius: 10px 10px 0 0;
+    border-top: 1px solid #4b4b4b;
   }
 
   /* Último ticket - borde inferior redondeado */
