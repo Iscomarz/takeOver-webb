@@ -13,6 +13,7 @@
   export let idEvento = null;
   export let nombreEvento = "";
   export let nombreFase = "";
+  export let descripcionFase = "";
   export let tickets = []; 
   export let mEvento = null;
   export let urlImagenPortada = null;
@@ -26,6 +27,8 @@
       return;
     }
 
+    const ticketSeleccionado = tickets.find(t => t.cantidad > 0);
+
     // Guardar los datos en sessionStorage para recuperarlos en la pantalla de checkout
     const checkoutData = {
       totalPrice: $totalPrice, // Valor desenrollado de la store derivada
@@ -36,14 +39,16 @@
       porcentajeDescuento,
       idEvento,
       nombreEvento,
-      nombreFase,
+      nombreFase: nombreFase || ticketSeleccionado?.nombreFace || "",
+      descripcionFase: descripcionFase || ticketSeleccionado?.descripcion || "",
       tickets: tickets.filter(t => t.cantidad > 0).map(t => ({
         idFase: t.idFase,
         idEvento: t.idEvento,
         nombreFace: t.nombreFace,
         precio: t.precio,
         cantidad: t.cantidad,
-        idPrecioStripe: t.idPrecioStripe
+        idPrecioStripe: t.idPrecioStripe,
+        descripcion: t.descripcion || ""
       })),
       mEvento,
       urlImagenPortada
