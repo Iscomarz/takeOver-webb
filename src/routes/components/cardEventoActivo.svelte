@@ -6,7 +6,7 @@
     export let lugar;
     export let idEvento;
 
-        import { goto } from '$app/navigation';
+    import { goto } from '$app/navigation';
     import { formatDiaYHora, formatDate } from '$lib/utils/formatFechas.js';
     import { slugify } from '$lib/utils/slugify.js';
 
@@ -102,6 +102,8 @@
         <img 
           src={pathImage} 
           alt={titulo}
+          loading="lazy"
+          decoding="async"
           class="w-full h-full object-cover transition-all duration-700 group-hover/image:scale-110 group-hover/image:brightness-110"
         />
       </div>

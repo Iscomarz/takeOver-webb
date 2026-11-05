@@ -16,7 +16,7 @@
 <div class="evento-list-card">
   <div class="image-container">
     <a href={`/eventos/${slugify(titulo)}`}>
-      <img class="image-list" src={pathImage} alt={titulo} />
+      <img class="image-list" src={pathImage} alt={titulo} loading="lazy" decoding="async" />
     </a>
   </div>
   

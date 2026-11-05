@@ -23,3 +23,6 @@ vite.config.ts.timestamp-*
 # Generated discount QR codes (never commit)
 scripts/output/
 .env*
+
+# Supabase
+supabase/.temp/
